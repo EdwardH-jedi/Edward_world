@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edward's World — Portfolio Concept Board</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#1E1B16;}
+a{color:#C98A52;text-decoration:none}
+a:hover{color:#EFE7D3}
+@keyframes blink{0%,55%{opacity:1}60%,100%{opacity:0}}
+
+/* Concept-board props, exposed as real controls. Mirrors the two props the
+   design declared: `motion` (ambient animation) and `showLabels` (world callouts). */
+#props{position:fixed;right:16px;bottom:16px;z-index:10;display:flex;gap:14px;
+  background:rgba(38,34,28,.94);border:1px solid #3A362C;padding:10px 14px;
+  font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#9C9482}
+#props label{display:flex;align-items:center;gap:7px;cursor:pointer}
+#props input{accent-color:#C98A52;margin:0}
+#props label:hover{color:#EFE7D3}
+[data-labels="off"] .world-labels{display:none}
+</style>
+</head>
+<body>
+<section id="1a" data-screen-label="Concept board" style="padding:72px 80px 96px;color:#EFE7D3;font-family:'Archivo',sans-serif;width:2016px">
+
+  <div style="display:flex;align-items:baseline;gap:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#C98A52">
+    <span style="border:1px solid #3A362C;padding:3px 8px;color:#9C9482">1A</span>
+    <span>PORTFOLIO CONCEPT BOARD — V1</span>
+    <span style="flex:1"></span>
+    <span style="color:#6E675A">CONCEPT ONLY · NOT PRODUCTION · AUG 2026</span>
+  </div>
+  <h1 style="margin:20px 0 10px;font-size:64px;font-weight:800;letter-spacing:-1px;color:#EFE7D3">EDWARD'S WORLD</h1>
+  <p style="margin:0;max-width:760px;font-size:15px;line-height:1.6;color:#9C9482">A developer portfolio entered as a small original pixel world. The RPG layer is the interface; a clean INDEX is always one interaction away. Palette, sprites and scenes below are live pixel renders — ambient motion shows where anime.js would act.</p>
+
+  <!-- A — TITLE SCREEN -->
+  <div data-screen-label="A Title screen" style="border-top:1px solid #3A362C;margin-top:56px;padding-top:40px">
+    <div style="display:flex;align-items:baseline;gap:16px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#C98A52">A</span>
+      <span style="font-size:26px;font-weight:700">TITLE SCREEN</span>
+      <span style="flex:1"></span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6E675A">QUIET · THE WORLD IS ALREADY VISIBLE</span>
+    </div>
+    <div style="display:flex;gap:32px;align-items:flex-start;margin-top:24px">
+      <div style="position:relative;width:960px;height:540px;border:1px solid #3A362C;flex:none">
+        <canvas data-scene="title" data-u="4" style="width:960px;height:540px;display:block;image-rendering:pixelated;background:#E9E0C8"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;pointer-events:none">
+          <div style="height:132px"></div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:7px;color:#57473A">WELCOME TO</div>
+          <div style="margin-top:14px;font-family:'Silkscreen',monospace;font-weight:700;font-size:36px;letter-spacing:2px;color:#2B2823;text-align:center">EDWARD HWANG'S<br>WORLD</div>
+          <div style="margin-top:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:4px;color:#7E7763">SYDNEY, AU — 2026</div>
+          <div style="flex:1"></div>
+          <div style="margin-bottom:96px;font-family:'Silkscreen',monospace;font-size:15px;letter-spacing:2px;color:#F7F1E2;animation:blink 1.4s step-end infinite;text-shadow:0 1px 0 rgba(43,40,35,.4)">[ PRESS ENTER ]</div>
+        </div>
+        <div style="position:absolute;right:20px;bottom:16px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;color:#EFE7D3">SKIP TO INDEX →</div>
+      </div>
+      <div style="width:380px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.9;color:#9C9482">
+        <div style="color:#EFE7D3;letter-spacing:2px;margin-bottom:12px">INTENT</div>
+        <p style="margin:0 0 20px;font-family:'Archivo',sans-serif;font-size:14px;line-height:1.6">A game waiting for Start, composed like a poster. The world is already partly revealed: distant village, treeline, lake, one ruin on the right hill. Type is modern; only the world itself is pixel.</p>
+        <div style="color:#C98A52;letter-spacing:2px;margin-bottom:8px">▸ MOTION</div>
+        <div>water shimmer · birds crossing · clouds drift<br>village window flicker · ruin slot pulse<br>[ PRESS ENTER ] blink</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B — INTRO EVENT -->
+  <div data-screen-label="B Intro event" style="border-top:1px solid #3A362C;margin-top:56px;padding-top:40px">
+    <div style="display:flex;align-items:baseline;gap:16px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#C98A52">B</span>
+      <span style="font-size:26px;font-weight:700">INTRO EVENT — THE SEALED DOOR</span>
+      <span style="flex:1"></span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6E675A">≈6 SECONDS · RESTRAINED · NO SPECTACLE</span>
+    </div>
+    <div style="display:flex;gap:32px;align-items:flex-start;margin-top:24px">
+      <div style="width:800px;height:480px;border:1px solid #3A362C;flex:none">
+        <canvas data-scene="intro" data-u="4" style="width:800px;height:480px;display:block;image-rendering:pixelated;background:#252822"></canvas>
+      </div>
+      <div style="width:420px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:2;color:#9C9482">
+        <div style="color:#EFE7D3;letter-spacing:2px;margin-bottom:12px">EVENT BEATS</div>
+        <div>01&nbsp;&nbsp;avatar approaches the sealed structure</div>
+        <div>02&nbsp;&nbsp;the environment goes still</div>
+        <div>03&nbsp;&nbsp;glyph creatures emerge — living letterforms</div>
+        <div>04&nbsp;&nbsp;they briefly assemble: <span style="font-family:'Silkscreen',monospace;color:#EFE7D3">EDWARD</span></div>
+        <div>05&nbsp;&nbsp;each glyph locks into a carved slot</div>
+        <div>06&nbsp;&nbsp;the door opens — warm white light → transition</div>
+        <div style="color:#C98A52;letter-spacing:2px;margin:20px 0 8px">▸ MOTION</div>
+        <div>glyph float · slot glow fill · door seam pulse<br>light bloom becomes the scene transition</div>
+        <p style="margin:20px 0 0;font-family:'Archivo',sans-serif;font-size:14px;line-height:1.6">Shown frame: three slots filled, three to go. No explosions, no neon portal — one warm seam of light in a dark, quiet clearing.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- C — MAIN WORLD -->
+  <div data-screen-label="C Main world" style="border-top:1px solid #3A362C;margin-top:56px;padding-top:40px">
+    <div style="display:flex;align-items:baseline;gap:16px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#C98A52">C</span>
+      <span style="font-size:26px;font-weight:700">MAIN WORLD</span>
+      <span style="flex:1"></span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6E675A">SIDE-VIEW DIORAMA · ONE COHERENT PLACE · READ IN ~10s</span>
+    </div>
+    <div style="position:relative;width:1440px;height:600px;border:1px solid #3A362C;margin-top:24px">
+      <canvas data-scene="world" data-u="3" style="width:1440px;height:600px;display:block;image-rendering:pixelated;background:#E9E0C8"></canvas>
+      <div class="world-labels" style="position:absolute;inset:0;pointer-events:none">
+        <div style="position:absolute;left:117px;top:14px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><div style="background:#2B2823;color:#EFE7D3;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 7px">EDWARD'S HOUSE</div><div style="width:1px;height:218px;background:rgba(43,40,35,.4)"></div></div>
+        <div style="position:absolute;left:243px;top:64px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><div style="background:rgba(43,40,35,.75);color:#C9BC9C;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:3px 6px">TOMODACHI · NPC</div><div style="width:1px;height:238px;background:rgba(43,40,35,.35)"></div></div>
+        <div style="position:absolute;left:396px;top:14px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><div style="background:#2B2823;color:#EFE7D3;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 7px">WARDROBE</div><div style="width:1px;height:290px;background:rgba(43,40,35,.4)"></div></div>
+        <div style="position:absolute;left:582px;top:14px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><div style="background:#2B2823;color:#EFE7D3;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 7px">TOWN</div><div style="width:1px;height:344px;background:rgba(43,40,35,.4)"></div></div>
+        <div style="position:absolute;left:828px;top:14px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><div style="background:#2B2823;color:#EFE7D3;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 7px">SPORTSGANG</div><div style="width:1px;height:308px;background:rgba(43,40,35,.4)"></div></div>
+        <div style="position:absolute;left:990px;top:14px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><div style="background:#2B2823;color:#EFE7D3;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 7px">AFL LAB</div><div style="width:1px;height:266px;background:rgba(43,40,35,.4)"></div></div>
+        <div style="position:absolute;left:1221px;top:14px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><div style="background:#2B2823;color:#EFE7D3;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 7px">ARCADE</div><div style="width:1px;height:308px;background:rgba(43,40,35,.4)"></div></div>
+        <div style="position:absolute;left:1362px;top:64px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center"><div style="background:#2B2823;color:#EFE7D3;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1px;padding:4px 7px">UNDER CONSTRUCTION</div><div style="width:1px;height:276px;background:rgba(43,40,35,.4)"></div></div>
+      </div>
+      <div style="position:absolute;right:16px;top:14px;display:flex;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px">
+        <div style="background:#2B2823;color:#EFE7D3;padding:5px 10px">WORLD</div>
+        <div style="border:1px solid #2B2823;color:#2B2823;background:rgba(239,231,211,.55);padding:4px 10px">INDEX</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:48px;margin-top:18px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.9;color:#9C9482;max-width:1440px">
+      <div style="flex:1"><span style="color:#EFE7D3;letter-spacing:2px">CONNECTIVE TISSUE&nbsp;&nbsp;</span>stone path end-to-end · stream + footbridge · lamp cables over the town · signs · benches · notice board · fountain · backyard AFL oval · path ends in dirt at the construction fence</div>
+      <div style="flex:1"><span style="color:#C98A52;letter-spacing:2px">▸ MOTION&nbsp;&nbsp;</span>avatar walking · chimney smoke · stream shimmer · CRT flicker · antenna blink · marquee bulbs · TOMODACHI idle · clouds + birds</div>
+    </div>
+  </div>
+
+  <!-- D — LOCATION EXPLORATION -->
+  <div data-screen-label="D Locations" style="border-top:1px solid #3A362C;margin-top:56px;padding-top:40px">
+    <div style="display:flex;align-items:baseline;gap:16px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#C98A52">D</span>
+      <span style="font-size:26px;font-weight:700">LOCATION EXPLORATION</span>
+      <span style="flex:1"></span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6E675A">EXTERIORS ONLY · INTERIORS COME LATER</span>
+    </div>
+    <div style="display:flex;gap:24px;margin-top:24px">
+      <div style="width:384px">
+        <div style="border:1px solid #3A362C"><canvas data-scene="house" data-u="4" style="width:384px;height:288px;display:block;image-rendering:pixelated;background:#E9E0C8"></canvas></div>
+        <div style="margin-top:14px;font-family:'Silkscreen',monospace;font-size:13px;color:#EFE7D3">EDWARD'S HOUSE</div>
+        <div style="margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#C98A52">ABOUT · PERSONAL</div>
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.8;color:#9C9482">interior hooks: map (Korea→Sydney) · desk · GitHub · resume · game PC · wardrobe<br>details: computer glowing through the window, runners by the door, jangdok jar, mailbox</div>
+      </div>
+      <div style="width:384px">
+        <div style="border:1px solid #3A362C"><canvas data-scene="sports" data-u="4" style="width:384px;height:288px;display:block;image-rendering:pixelated;background:#E9E0C8"></canvas></div>
+        <div style="margin-top:14px;font-family:'Silkscreen',monospace;font-size:13px;color:#EFE7D3">SPORTSGANG</div>
+        <div style="margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#C98A52">PEER COMPETITION</div>
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.8;color:#9C9482">DISCOVER → CHALLENGE → MATCH → RESULT → RANK<br>details: community court, mid-match 3–2, challenge board with open invites, venue flag</div>
+      </div>
+      <div style="width:384px">
+        <div style="border:1px solid #3A362C"><canvas data-scene="wardrobe" data-u="4" style="width:384px;height:288px;display:block;image-rendering:pixelated;background:#E9E0C8"></canvas></div>
+        <div style="margin-top:14px;font-family:'Silkscreen',monospace;font-size:13px;color:#EFE7D3">WARDROBE</div>
+        <div style="margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#C98A52">LOCAL ARCHIVE</div>
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.8;color:#9C9482">CAPTURE → ARCHIVE → ORGANISE → COMPOSE → SAVE LOOK<br>details: rack + mannequin behind glass, archive boxes at the door, restrained charcoal signage</div>
+      </div>
+      <div style="width:384px">
+        <div style="border:1px solid #3A362C"><canvas data-scene="afl" data-u="4" style="width:384px;height:288px;display:block;image-rendering:pixelated;background:#E9E0C8"></canvas></div>
+        <div style="margin-top:14px;font-family:'Silkscreen',monospace;font-size:13px;color:#EFE7D3">AFL LAB</div>
+        <div style="margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#C98A52">FORECASTING</div>
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.8;color:#9C9482">MATCH DATA → FEATURES → MODELS → CALIBRATION → PREDICTION → EVALUATION<br>details: backyard oval with four posts, CRT flicker, antennas, match board — no metrics shown</div>
+      </div>
+      <div style="width:384px">
+        <div style="border:1px solid #3A362C"><canvas data-scene="arcade" data-u="4" style="width:384px;height:288px;display:block;image-rendering:pixelated;background:#E9E0C8"></canvas></div>
+        <div style="margin-top:14px;font-family:'Silkscreen',monospace;font-size:13px;color:#EFE7D3">ARCADE</div>
+        <div style="margin-top:4px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#C98A52">SOONPERMARIO · PLAYABLE EXPERIMENT</div>
+        <div style="margin-top:10px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.8;color:#9C9482">one cabinet launches Soonpermario itself<br>details: marquee bulbs, pennant string, A-frame sign, the loudest colour in the world — still muted</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- E — INDEX MODE -->
+  <div data-screen-label="E Index mode" style="border-top:1px solid #3A362C;margin-top:56px;padding-top:40px">
+    <div style="display:flex;align-items:baseline;gap:16px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#C98A52">E</span>
+      <span style="font-size:26px;font-weight:700">INDEX MODE — THE RECRUITER'S FAST PATH</span>
+      <span style="flex:1"></span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6E675A">ALWAYS ONE INTERACTION AWAY</span>
+    </div>
+    <div style="display:flex;gap:32px;align-items:flex-start;margin-top:24px">
+      <div style="width:960px;flex:none;background:#F4EEDF;color:#26231E;padding:52px 56px 44px;box-sizing:border-box">
+        <div style="display:flex;align-items:center">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:3px;color:#26231E">E.HWANG — SYDNEY, AU</div>
+          <div style="flex:1"></div>
+          <div style="display:flex;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px">
+            <div style="border:1px solid #26231E;color:#8A8172;padding:4px 10px">WORLD</div>
+            <div style="background:#26231E;color:#F4EEDF;padding:5px 10px">INDEX</div>
+          </div>
+        </div>
+        <div style="margin-top:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:4px;color:#8A8172">SELECTED WORK</div>
+        <div style="margin-top:8px">
+          <div style="display:grid;grid-template-columns:72px 1fr auto;align-items:baseline;padding:20px 0;border-bottom:1px solid #DCD2BC"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A89E88">01</span><span style="font-size:30px;font-weight:700;letter-spacing:-.5px">SPORTSGANG</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;color:#8A8172">PEER SPORTS COMPETITION</span></div>
+          <div style="display:grid;grid-template-columns:72px 1fr auto;align-items:baseline;padding:20px 0;border-bottom:1px solid #DCD2BC"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A89E88">02</span><span style="font-size:30px;font-weight:700;letter-spacing:-.5px">AFL PREDICT</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;color:#8A8172">FORECASTING PIPELINE</span></div>
+          <div style="display:grid;grid-template-columns:72px 1fr auto;align-items:baseline;padding:20px 0;border-bottom:1px solid #DCD2BC"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A89E88">03</span><span style="font-size:30px;font-weight:700;letter-spacing:-.5px">WARDROBE</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;color:#8A8172">LOCAL-FIRST ARCHIVE</span></div>
+          <div style="display:grid;grid-template-columns:72px 1fr auto;align-items:baseline;padding:20px 0;border-bottom:1px solid #DCD2BC"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#A89E88">04</span><span style="font-size:30px;font-weight:700;letter-spacing:-.5px">SOONPERMARIO</span><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1px;color:#8A8172">PLAYABLE EXPERIMENT</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px">
+          <div style="font-size:15px;font-weight:600">ABOUT <span style="font-family:'IBM Plex Mono',monospace;color:#A89E88">↗</span></div>
+          <div style="font-size:15px;font-weight:600">RESUME <span style="font-family:'IBM Plex Mono',monospace;color:#A89E88">↗</span></div>
+          <div style="font-size:15px;font-weight:600">GITHUB <span style="font-family:'IBM Plex Mono',monospace;color:#A89E88">↗</span></div>
+          <div style="font-size:15px;font-weight:600">CONTACT <span style="font-family:'IBM Plex Mono',monospace;color:#A89E88">↗</span></div>
+        </div>
+        <div style="margin-top:44px;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;color:#A89E88">PORTFOLIO · 2026 · ALSO AVAILABLE AS A SMALL WORLD</div>
+      </div>
+      <div style="width:420px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.9;color:#9C9482">
+        <div style="color:#EFE7D3;letter-spacing:2px;margin-bottom:12px">INTENT</div>
+        <p style="margin:0 0 20px;font-family:'Archivo',sans-serif;font-size:14px;line-height:1.6">Deliberate whiplash against the pixel world: warm off-white, charcoal, editorial grid, no game styling. The WORLD / INDEX control is persistent in both modes — nothing professional is ever gated behind gameplay.</p>
+        <div style="color:#C98A52;letter-spacing:2px;margin-bottom:8px">▸ MOTION</div>
+        <div>WORLD ↔ INDEX: a single quiet cross-fade,<br>world audio/motion pauses underneath</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- F — DESIGN SYSTEM -->
+  <div data-screen-label="F Design system" style="border-top:1px solid #3A362C;margin-top:56px;padding-top:40px">
+    <div style="display:flex;align-items:baseline;gap:16px">
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#C98A52">F</span>
+      <span style="font-size:26px;font-weight:700">DESIGN SYSTEM</span>
+      <span style="flex:1"></span>
+      <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#6E675A">AN OLD CARTRIDGE, IMAGINED BY A CONTEMPORARY DESIGNER</span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:24px;margin-top:24px">
+      <div style="background:#26221C;border:1px solid #3A362C;padding:22px;width:460px;box-sizing:border-box">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:#9C9482;margin-bottom:16px">COLOUR — RESTRAINED, AGED, TACTILE</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+          <div><div style="height:56px;background:#EFE7D3"></div><div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9C9482">EFE7D3<br>cream</div></div>
+          <div><div style="height:56px;background:#E6DCC4"></div><div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9C9482">E6DCC4<br>paper</div></div>
+          <div><div style="height:56px;background:#C4BAA3"></div><div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9C9482">C4BAA3<br>stone</div></div>
+          <div><div style="height:56px;background:#7E7763"></div><div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9C9482">7E7763<br>shadow</div></div>
+          <div><div style="height:56px;background:#75825A"></div><div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9C9482">75825A<br>green</div></div>
+          <div><div style="height:56px;background:#7C6450"></div><div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9C9482">7C6450<br>brown</div></div>
+          <div><div style="height:56px;background:#2B2823"></div><div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9C9482">2B2823<br>charcoal</div></div>
+          <div><div style="height:56px;background:#6F8892"></div><div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9C9482">6F8892<br>faded blue</div></div>
+          <div><div style="height:56px;background:#C98A52"></div><div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9C9482">C98A52<br>orange</div></div>
+          <div><div style="height:56px;background:#F3E3B2"></div><div style="margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#9C9482">F3E3B2<br>warm glow</div></div>
+        </div>
+      </div>
+      <div style="background:#26221C;border:1px solid #3A362C;padding:22px;width:400px;box-sizing:border-box">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:#9C9482;margin-bottom:16px">PIXEL SCALE</div>
+        <div style="background:#EFE7D3;padding:18px;display:flex;align-items:flex-end;gap:28px">
+          <canvas data-scene="avatar" data-u="2" style="width:28px;height:36px;image-rendering:pixelated;display:block"></canvas>
+          <canvas data-scene="avatar" data-u="4" style="width:56px;height:72px;image-rendering:pixelated;display:block"></canvas>
+          <canvas data-scene="avatar" data-u="8" style="width:112px;height:144px;image-rendering:pixelated;display:block"></canvas>
+        </div>
+        <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.8;color:#9C9482">sprites authored on a 12×16 grid<br>world renders at 3× · detail views at 4×<br>no sub-pixel positions, ever</div>
+      </div>
+      <div style="background:#26221C;border:1px solid #3A362C;padding:22px;width:320px;box-sizing:border-box">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:#9C9482;margin-bottom:16px">AVATAR — EDWARD</div>
+        <div style="background:#EFE7D3;padding:18px;display:flex;justify-content:center"><canvas data-scene="avatar" data-u="8" style="width:112px;height:144px;image-rendering:pixelated;display:block"></canvas></div>
+        <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.8;color:#9C9482">dark hair · oversized neutral hoodie<br>a normal person inside a strange world<br>no weapons · no franchise props</div>
+      </div>
+      <div style="background:#26221C;border:1px solid #3A362C;padding:22px;width:400px;box-sizing:border-box">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:#9C9482;margin-bottom:16px">TOMODACHI — NPC · EASTER EGG</div>
+        <div style="display:flex;gap:18px;align-items:flex-start">
+          <div style="background:#EFE7D3;padding:16px;flex:none"><canvas data-scene="tomo" data-u="8" style="width:160px;height:120px;image-rendering:pixelated;display:block"></canvas></div>
+          <div style="flex:1;background:#2B2823;padding:14px;font-family:'Silkscreen',monospace;font-size:10px;line-height:2.1;color:#EFE7D3">&gt; hello.<br>&gt; you've been walking<br>&nbsp;&nbsp;around for a while.<br>&gt; that's nice.<span style="animation:blink 1.2s step-end infinite">▸</span></div>
+        </div>
+        <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.8;color:#9C9482">chunky beige CRT · one small eye, one big<br>wanders near the house · never dominates</div>
+      </div>
+      <div style="background:#26221C;border:1px solid #3A362C;padding:22px;width:460px;box-sizing:border-box">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:#9C9482;margin-bottom:16px">GLYPH CREATURES — LIVING LETTERFORMS</div>
+        <div style="background:#EFE7D3;padding:18px;display:flex;justify-content:center"><canvas data-scene="glyphs" data-u="6" style="width:372px;height:78px;image-rendering:pixelated;display:block"></canvas></div>
+        <div style="margin-top:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.8;color:#9C9482">ancient language × code × forgotten interfaces<br>one glowing eye each · assemble to spell EDWARD<br>original forms — not a borrowed alphabet</div>
+      </div>
+      <div style="background:#26221C;border:1px solid #3A362C;padding:22px;width:560px;box-sizing:border-box">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:#9C9482;margin-bottom:16px">BUILDING LANGUAGE</div>
+        <div style="display:flex;gap:20px;align-items:flex-start">
+          <div style="border:1px solid #3A362C;flex:none"><canvas data-scene="anatomy" data-u="4" style="width:280px;height:208px;image-rendering:pixelated;display:block;background:#E9E0C8"></canvas></div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:2;color:#9C9482">charcoal sign band — dashes, never readable text at world scale<br>exactly one warm window per building<br>one identity prop at the door<br>2px stone plinth grounds every facade<br>signage posts carry the real labels</div>
+        </div>
+      </div>
+      <div style="background:#26221C;border:1px solid #3A362C;padding:22px;width:460px;box-sizing:border-box">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:3px;color:#9C9482;margin-bottom:16px">TYPOGRAPHY — TWO DELIBERATE SYSTEMS</div>
+        <div style="border-bottom:1px solid #3A362C;padding-bottom:14px"><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:#6E675A;margin-bottom:8px">GAME WORLD · BITMAP</div><div style="font-family:'Silkscreen',monospace;font-size:20px;color:#EFE7D3">EDWARD'S WORLD</div></div>
+        <div style="border-bottom:1px solid #3A362C;padding:14px 0"><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:#6E675A;margin-bottom:8px">PORTFOLIO UI · GROTESK</div><div style="font-size:24px;font-weight:600;color:#EFE7D3">Selected Work</div></div>
+        <div style="padding-top:14px"><div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:2px;color:#6E675A;margin-bottom:8px">METADATA · MONO</div><div style="font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:2px;color:#EFE7D3">SYDNEY, AU — 2026</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="border-top:1px solid #3A362C;margin-top:56px;padding-top:32px;display:flex;gap:48px;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:2;color:#9C9482">
+    <div style="flex:none;color:#EFE7D3;letter-spacing:2px">REVIEW<br>CHECKLIST</div>
+    <div style="flex:1">01 does the world look distinctive?<br>02 does it feel personal?<br>03 does it avoid reading as a Pokémon clone?</div>
+    <div style="flex:1">04 can the projects be understood?<br>05 is it still credible as an engineering portfolio?<br>06 would exploring it actually be enjoyable?</div>
+    <div style="flex:none;color:#6E675A;text-align:right">STOP POINT — concept board only.<br>No production build, no sprite sheets,<br>no interiors until this direction is approved.</div>
+  </div>
+</section>
+
+<div id="props">
+  <label><input type="checkbox" id="p-motion" checked>MOTION</label>
+  <label><input type="checkbox" id="p-labels" checked>LABELS</label>
+</div>
+
+<script type="module">
+import { draw } from './scenes.js';
+
+const canvases = [...document.querySelectorAll('canvas[data-scene]')];
+let f = 0;
+
+function drawAll() {
+  for (const cv of canvases) {
+    try { draw(cv.dataset.scene, cv, f, +(cv.dataset.u || 4)); }
+    catch (e) { console.error(cv.dataset.scene, e); }
+  }
+}
+
+// Ambient tick — 450ms was the concept board's cadence; it is what the
+// "▸ MOTION" notes describe as the anime.js layer.
+const motion = document.getElementById('p-motion');
+setInterval(() => { if (motion.checked) { f++; drawAll(); } }, 450);
+
+document.getElementById('p-labels').addEventListener('change', e => {
+  document.body.dataset.labels = e.target.checked ? 'on' : 'off';
+});
+
+drawAll();
+// Bitmap type shifts the layout on load; redraw once fonts settle.
+if (document.fonts) document.fonts.ready.then(drawAll);
+</script>
+</body>
+</html>
