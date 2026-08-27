@@ -337,7 +337,7 @@ Defect found by looking: the objects were positioned in absolute pixels and
 crowded the left two-thirds of the room. They are laid out as fractions of a
 centred stage now, so the room holds its shape at any width.
 
-**Commit.** `<phase-5>`
+**Commit.** `37586cc`
 
 ---
 
