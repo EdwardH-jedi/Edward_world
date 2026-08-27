@@ -172,6 +172,19 @@ Pressing `E` at the cabinet runs the same screen-to-slot expansion the phone
 uses in SportsGang — `measureScreenProjection` and `applyScreenProjection` are
 shared for exactly that reason.
 
+## Edward's House
+
+`data/personal.ts` is the single source for biography and contact, and every
+line in it was read from Edward's own public repositories — the roadmap's
+*Verified facts* table records where. Nothing is inferred or rounded up. What
+is not known is `null`, and the room says so: the League of Legends shelf is a
+typed hook waiting for a real value rather than an invented rank.
+
+The room is walked, not read. Six objects, the world's own `movePlayerX`, a
+proximity reach, and `E` to look — the same verbs as outside. Opening a
+non-project location goes through a typed `OPEN_LOCATION` action rather than
+being special-cased on a building id.
+
 ## Visual implementation seam
 
 `MainWorld` is done. `IntroSequence` still holds placeholder DOM: replace it with

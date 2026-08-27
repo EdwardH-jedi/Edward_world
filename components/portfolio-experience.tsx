@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { IntroSequence } from "@/components/intro/intro-sequence";
 import { AflExperience } from "@/components/afl/afl-experience";
 import { ArcadeExperience } from "@/components/arcade/arcade-experience";
+import { HouseExperience } from "@/components/house/house-experience";
 import { PortfolioIndex } from "@/components/index/portfolio-index";
 import { SportsgangExperience } from "@/components/sportsgang/sportsgang-experience";
 import { WardrobeExperience } from "@/components/wardrobe/wardrobe-experience";
@@ -11,7 +12,7 @@ import { InteractionDialog } from "@/components/world/interaction-dialog";
 import { MainWorld } from "@/components/world/main-world";
 import { WorldIndexControl } from "@/components/world/world-index-control";
 import type { PortfolioProjectId } from "@/types/portfolio";
-import type { InteractionAction } from "@/types/world";
+import type { InteractionAction, WorldLocationId } from "@/types/world";
 
 /**
  * Projects that open a full location experience instead of a summary dialog.
@@ -32,11 +33,13 @@ export function PortfolioExperience() {
     useState<InteractionAction | null>(null);
   const [activeProjectExperience, setActiveProjectExperience] =
     useState<PortfolioProjectId | null>(null);
+  const [activeLocation, setActiveLocation] = useState<WorldLocationId | null>(null);
 
   const showWorld = useCallback(() => {
     setIndexOpen(false);
     setActiveInteraction(null);
     setActiveProjectExperience(null);
+    setActiveLocation(null);
     setExperience("world");
   }, []);
 
@@ -45,6 +48,7 @@ export function PortfolioExperience() {
     // The index is the recruiter's fast path; leaving a scripted sequence
     // running underneath it would only make returning ambiguous.
     setActiveProjectExperience(null);
+    setActiveLocation(null);
     setExperience("world");
     setIndexOpen(true);
   }, []);
@@ -52,6 +56,10 @@ export function PortfolioExperience() {
   const handleInteraction = useCallback((action: InteractionAction) => {
     if (action.type === "OPEN_PROJECT" && EXPERIENCE_PROJECTS.has(action.projectId)) {
       setActiveProjectExperience(action.projectId);
+      return;
+    }
+    if (action.type === "OPEN_LOCATION") {
+      setActiveLocation(action.locationId);
       return;
     }
     setActiveInteraction(action);
@@ -63,6 +71,7 @@ export function PortfolioExperience() {
     () => setActiveProjectExperience(null),
     [],
   );
+  const closeLocation = useCallback(() => setActiveLocation(null), []);
 
   return (
     <div className="experience-shell">
@@ -78,7 +87,8 @@ export function PortfolioExperience() {
           disabled={
             indexOpen ||
             activeInteraction !== null ||
-            activeProjectExperience !== null
+            activeProjectExperience !== null ||
+            activeLocation !== null
           }
           onInteraction={handleInteraction}
         />
@@ -94,6 +104,9 @@ export function PortfolioExperience() {
       ) : null}
       {activeProjectExperience === "soonpermario" ? (
         <ArcadeExperience onExit={closeProjectExperience} />
+      ) : null}
+      {activeLocation === "edwards-house" ? (
+        <HouseExperience onExit={closeLocation} />
       ) : null}
       {indexOpen ? <PortfolioIndex onClose={closeIndex} /> : null}
       {activeInteraction ? (

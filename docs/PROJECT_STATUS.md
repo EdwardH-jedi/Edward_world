@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-27 · after Phase 4
+**Last updated:** 2026-08-27 · after Phase 5
 
 ---
 
@@ -16,7 +16,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 2 | Wardrobe | **DONE** |
 | 3 | AFL Lab | **DONE** |
 | 4 | Soonpermario arcade | **DONE** |
-| 5 | Edward's House | TODO |
+| 5 | Edward's House | **DONE** |
 | 6 | Index mode final pass | TODO |
 | 7 | Title screen | TODO |
 | 8 | Six-second intro | TODO |
@@ -53,6 +53,10 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   display expands into a playable segment of Soonpermario: move, jump, stomp
   three bugs, clear three pits, reach the offer. Coffees are lives, commits are
   the collectibles.
+- **Edward's House** — the personal room. Walk up to six objects and look at
+  them: the map from Jeju to Sydney, the desk, the computer, the resume, the
+  clothes rail, the gaming PC. Every line is verified biography; the one thing
+  that is not known says so.
 - **Index mode** — editorial overlay listing the four projects, resume and
   GitHub. Reachable at any time.
 - **Routes** — `/`, `/resume`, `/case-studies/[slug]` ×4, `/manifest.webmanifest`,
@@ -62,13 +66,12 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 
 - Intro sequence (`components/intro/intro-sequence.tsx`) — placeholder DOM.
 - Title screen — plain text, not the approved composition.
-- Edward's House — summary dialog only.
 - `/resume` and `/case-studies/*` — placeholder bodies (D2, D4).
 - Contact in Index — "details coming soon" (D1).
 
 ## Quality gates
 
-All green as of Phase 4:
+All green as of Phase 5:
 
 ```
 npm run lint        eslint . --max-warnings 0

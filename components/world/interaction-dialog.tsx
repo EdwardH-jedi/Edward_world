@@ -31,6 +31,9 @@ export function InteractionDialog({ action, onClose }: InteractionDialogProps) {
     );
   }
 
+  // Locations are opened as full experiences by the router, never as a dialog.
+  if (action.type === "OPEN_LOCATION") return null;
+
   if (action.type === "TALK") {
     return (
       <AccessibleDialog title={action.speaker} onClose={onClose}>
@@ -41,7 +44,7 @@ export function InteractionDialog({ action, onClose }: InteractionDialogProps) {
     );
   }
 
-  const title = action.type === "READ" ? action.heading : action.heading;
+  const title = action.heading;
   const body = action.type === "READ" ? action.text : action.body;
 
   return (

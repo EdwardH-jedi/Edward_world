@@ -24,6 +24,7 @@ export function findNearestInteractable(
 export function getInteractionPrompt(action: InteractionAction) {
   switch (action.type) {
     case "OPEN_PROJECT":
+    case "OPEN_LOCATION":
     case "OPEN_INFO":
       return "E TO ENTER";
     case "TALK":

@@ -38,11 +38,7 @@ export const buildings: readonly Building[] = [
     position: { x: 340, y: HILL_GROUND_Y - 200 },
     size: { width: 272, height: 200 },
     interactionRange: 72,
-    interaction: {
-      type: "OPEN_INFO",
-      heading: "Edward's House",
-      body: "A placeholder for Edward's story, working principles, and background.",
-    },
+    interaction: { type: "OPEN_LOCATION", locationId: "edwards-house" },
   },
   {
     kind: "building",

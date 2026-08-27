@@ -698,6 +698,311 @@ p {
   opacity: 1;
 }
 
+/* ── Edward's House ──────────────────────────────────────────────────────────
+   The other buildings say what Edward builds. This one says who he is, and it
+   says it by being walked around rather than read. */
+
+.hs-house { --hs-wood: #7c6450; }
+
+.hs-room { inset: 0; position: absolute; }
+
+.hs-wall {
+  background: #cfc3a8;
+  height: 62%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.hs-skirting {
+  background: #a2917a;
+  height: 12px;
+  position: absolute;
+  top: calc(62% - 12px);
+  width: 100%;
+}
+
+.hs-floor {
+  background: var(--hs-wood);
+  bottom: 0;
+  height: 38%;
+  position: absolute;
+  width: 100%;
+}
+
+.hs-floor::after {
+  background: repeating-linear-gradient(
+    90deg,
+    rgb(0 0 0 / 0%) 0 58px,
+    rgb(60 46 34 / 40%) 58px 62px
+  );
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.hs-window {
+  background: var(--loc-warm, #f3e3b2);
+  border: 7px solid #8c7a63;
+  height: 24%;
+  position: absolute;
+  right: 6%;
+  top: 12%;
+  width: 11%;
+}
+
+.hs-window::after {
+  background: #8c7a63;
+  content: "";
+  inset: 0 48%;
+  position: absolute;
+}
+
+.hs-lamp {
+  background: #f3e3b2;
+  border: 3px solid #57473a;
+  height: 22px;
+  left: 8%;
+  position: absolute;
+  top: 8%;
+  width: 46px;
+}
+
+/* ── Things ──────────────────────────────────────────────────────────────── */
+
+/* The room's furniture, laid out as fractions of the stage. */
+.hs-stage {
+  --hs-stage-width: min(96vw, 1240px);
+
+  bottom: 30%;
+  height: 120px;
+  left: 50%;
+  margin-left: calc(var(--hs-stage-width) / -2);
+  position: absolute;
+  width: var(--hs-stage-width);
+  z-index: 2;
+}
+
+.hs-thing {
+  background: transparent;
+  border: 0;
+  bottom: 0;
+  cursor: pointer;
+  display: grid;
+  gap: 0.35rem;
+  justify-items: center;
+  padding: 0;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.hs-thing__art {
+  border: 2px solid #57473a;
+  display: block;
+}
+
+.hs-thing[data-kind="map"] .hs-thing__art {
+  background: #b9c7c2;
+  height: 74px;
+  width: 96px;
+}
+
+.hs-thing[data-kind="desk"] .hs-thing__art {
+  background: var(--hs-wood);
+  border-top: 8px solid #967c63;
+  height: 58px;
+  width: 120px;
+}
+
+.hs-thing[data-kind="computer"] .hs-thing__art {
+  background: #2b2823;
+  box-shadow: inset 0 0 0 6px #6f8892;
+  height: 62px;
+  width: 82px;
+}
+
+.hs-thing[data-kind="papers"] .hs-thing__art {
+  background: #efe7d3;
+  height: 40px;
+  width: 60px;
+}
+
+.hs-thing[data-kind="rail"] .hs-thing__art {
+  background: linear-gradient(
+    90deg,
+    #5e6b4b 0 22%,
+    #7b7669 22% 46%,
+    #6f8892 46% 70%,
+    #a08466 70% 100%
+  );
+  height: 78px;
+  width: 96px;
+}
+
+.hs-thing[data-kind="rig"] .hs-thing__art {
+  background: #26221c;
+  box-shadow: inset 0 0 0 5px #c98a52;
+  height: 86px;
+  width: 58px;
+}
+
+.hs-thing__label {
+  color: var(--loc-char);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.46rem;
+  letter-spacing: 0.16em;
+}
+
+.hs-thing[data-seen] .hs-thing__label { color: #7a6f5d; }
+
+.hs-thing[data-near] .hs-thing__art,
+.hs-thing:focus-visible .hs-thing__art {
+  border-color: var(--loc-orange);
+  box-shadow: 0 0 0 3px rgb(201 138 82 / 40%);
+}
+
+.hs-thing[data-near] .hs-thing__label { color: var(--loc-orange); }
+
+.hs-edward {
+  bottom: 0;
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.hs-edward canvas { height: 4.4rem; width: auto; }
+
+/* ── Hint and card ───────────────────────────────────────────────────────── */
+
+.hs-hint {
+  background: rgb(34 31 26 / 92%);
+  border: 1px solid #57534a;
+  bottom: 6%;
+  left: 50%;
+  padding: 0.6rem 0.9rem;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.hs-hint p {
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  margin: 0;
+}
+
+.hs-hint__progress {
+  color: #6c6559 !important;
+  font-size: 0.46rem !important;
+  margin-top: 0.3rem !important;
+}
+
+.hs-card {
+  background: rgb(24 22 18 / 97%);
+  border: 1px solid #57534a;
+  bottom: 0;
+  left: 50%;
+  margin-left: calc(min(90vw, 46rem) / -2);
+  max-height: 56vh;
+  overflow: auto;
+  padding: 1.3rem 1.5rem 1.5rem;
+  position: absolute;
+  width: min(90vw, 46rem);
+  z-index: 6;
+}
+
+.hs-card__eyebrow {
+  color: var(--loc-orange);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.48rem;
+  letter-spacing: 0.22em;
+  margin: 0;
+}
+
+.hs-card__heading {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  margin: 0.4rem 0 0;
+}
+
+.hs-body {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.hs-body p {
+  color: var(--loc-cream);
+  font-family: var(--font-archivo), Arial, sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 40rem;
+}
+
+.hs-placeholder {
+  border-left: 2px solid #57534a;
+  color: var(--loc-muted) !important;
+  font-size: 0.8rem !important;
+  padding-left: 0.7rem;
+}
+
+.hs-chapters {
+  display: grid;
+  gap: 0.9rem;
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+}
+
+.hs-chapters__place {
+  align-items: baseline;
+  color: var(--loc-cream);
+  display: flex;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  gap: 0.7rem;
+  letter-spacing: 0.12em;
+  margin: 0 0 0.25rem;
+}
+
+.hs-chapters__place span { color: var(--loc-orange); font-size: 0.5rem; }
+
+.hs-chapters__line {
+  color: var(--loc-muted);
+  font-family: var(--font-archivo), Arial, sans-serif;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.hs-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.3rem;
+}
+
+.hs-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+
+@media (max-width: 860px) {
+  .hs-thing[data-kind="desk"] .hs-thing__art { width: 84px; }
+  .hs-thing[data-kind="map"] .hs-thing__art { width: 70px; }
+  .hs-thing[data-kind="rail"] .hs-thing__art { width: 70px; }
+  .hs-card { margin-left: -45vw; max-height: 66vh; padding: 1rem; width: 90vw; }
+  .hs-stage { --hs-stage-width: 96vw; }
+}
+
 /* ── Arcade ──────────────────────────────────────────────────────────────────
    One cabinet on a carpeted floor. Walk over, press E, and the cabinet's
    display grows out into the game — the same trick the phone does in

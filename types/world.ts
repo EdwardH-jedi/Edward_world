@@ -18,8 +18,12 @@ export interface Player {
   facing: "left" | "right";
 }
 
+/** Locations that are not a project: places rather than work. */
+export type WorldLocationId = "edwards-house";
+
 export type InteractionAction =
   | { type: "OPEN_PROJECT"; projectId: PortfolioProjectId }
+  | { type: "OPEN_LOCATION"; locationId: WorldLocationId }
   | { type: "OPEN_INFO"; heading: string; body: string }
   | { type: "TALK"; speaker: string; lines: readonly string[] }
   | { type: "READ"; heading: string; text: string };

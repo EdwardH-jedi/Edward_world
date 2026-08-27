@@ -22,6 +22,9 @@ describe("interaction prompts", () => {
     expect(getInteractionPrompt({ type: "OPEN_PROJECT", projectId: "wardrobe" })).toBe(
       "E TO ENTER",
     );
+    expect(
+      getInteractionPrompt({ type: "OPEN_LOCATION", locationId: "edwards-house" }),
+    ).toBe("E TO ENTER");
     expect(getInteractionPrompt({ type: "TALK", speaker: "A", lines: [] })).toBe(
       "E TO TALK",
     );

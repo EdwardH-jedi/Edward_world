@@ -300,7 +300,7 @@ level units inside it.
 
 ## Phase 5 — Edward's House
 
-**Status:** TODO
+**Status:** DONE
 
 **Scope.** The personal/About experience, discovered through objects rather
 than a page. Interactions: map (Korea → Sydney), desk (Computer Science /
@@ -310,12 +310,34 @@ Communicates *who Edward is*, where the other buildings communicate *what he
 builds*. Personal details stay subtle.
 
 **Acceptance criteria.**
-- [ ] Six object interactions, each a short discovered beat.
-- [ ] Every biographical claim traceable to [Verified facts](#verified-facts).
-- [ ] No conventional About panel inside the room.
-- [ ] LoL rank is an explicit placeholder with a typed data hook.
+- [x] Six objects — map, desk, computer, papers, rail, gaming PC — each a
+      short beat you walk up to and look at.
+- [x] Every biographical line traceable to [Verified facts](#verified-facts),
+      via `data/personal.ts`.
+- [x] No About panel: the room is walked with `A`/`D` and `E`, the same verbs
+      as the world outside. Objects are also clickable.
+- [x] The League of Legends shelf is a typed `leagueRank: string | null` hook.
+      While it is null the room says the rank is not published rather than
+      inventing a tier (D3).
 
-**Validation result.** _(pending)_ · **Commit.** _(pending)_
+**Validation result.**
+
+Gates: lint, typecheck, **99 tests (12 files)**, production build — all pass.
+
+Browser: entered from the world, walked the room, opened all six objects and
+confirmed each carries only verified content — Jeju/Seoul/Sydney/Hungary with
+real years, the University of Sydney degree, the Sensorway internship, the
+published contact address, the Wardrobe cross-link, and the honest
+"rank not published here yet" placeholder. Progress read `6 OF 6 LOOKED AT`.
+
+Non-project locations now open through a typed `OPEN_LOCATION` action, so the
+router does not have to special-case a building id.
+
+Defect found by looking: the objects were positioned in absolute pixels and
+crowded the left two-thirds of the room. They are laid out as fractions of a
+centred stage now, so the room holds its shape at any width.
+
+**Commit.** `<phase-5>`
 
 ---
 
