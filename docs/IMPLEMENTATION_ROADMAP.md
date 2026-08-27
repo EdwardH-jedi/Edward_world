@@ -449,7 +449,7 @@ paused now, and each beat pins the state it inherits. And the old placeholder
 stylesheet still defined `.intro-stage` and `.intro-door`, which quietly
 overrode the real scene — 64 stale lines removed.
 
-**Commit.** `<phase-8>`
+**Commit.** `6ca3ad2`
 
 ---
 
