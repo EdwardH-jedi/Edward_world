@@ -374,7 +374,7 @@ takes focus programmatically — that ring belongs on controls a keyboard moves
 between, not on a container. And the old index stylesheet left three orphaned
 selectors behind, now removed.
 
-**Commit.** `<phase-6>`
+**Commit.** `1120cbe`
 
 ---
 
