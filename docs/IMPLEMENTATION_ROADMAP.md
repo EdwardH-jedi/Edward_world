@@ -201,7 +201,7 @@ Also added, from the same verified sources as Phase 0: real `techStack` for
 Wardrobe, AFL Predict and Soonpermario, and Soonpermario's GitHub URL, which
 was previously `undefined`.
 
-**Commit.** `<phase-2>`
+**Commit.** `0f85d71`
 
 ---
 
