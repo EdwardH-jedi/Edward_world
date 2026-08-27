@@ -153,7 +153,7 @@ Four defects found by looking rather than by reading code, all fixed:
    level rather than at the ring; the hoop had no post and collided with a
    backdrop banner.
 
-**Commit.** `<phase-1>`
+**Commit.** `4f75600`
 
 ---
 
