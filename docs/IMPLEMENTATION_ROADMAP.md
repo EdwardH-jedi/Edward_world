@@ -294,7 +294,7 @@ pixels while the level itself was scaled, so the view would have drifted as the
 player advanced. The scale now lives on a wrapper and the camera translates in
 level units inside it.
 
-**Commit.** `<phase-4>`
+**Commit.** `786ed03`
 
 ---
 
