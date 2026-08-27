@@ -698,6 +698,496 @@ p {
   opacity: 1;
 }
 
+/* ── Wardrobe location ───────────────────────────────────────────────────────
+   A compact interior, built from blocks rather than a canvas so every garment
+   is a real control the visitor can click, tab to and read. Same palette, same
+   hard edges as the world outside. */
+
+.wd-room {
+  --loc-rail: #6b5a4a;
+}
+
+.wd-interior {
+  inset: 0;
+  position: absolute;
+}
+
+.wd-wall {
+  background: #d9cfb5;
+  border-bottom: 4px solid #b9ad92;
+  height: 56%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+.wd-window {
+  background: var(--loc-warm, #f3e3b2);
+  border: 6px solid #8c7a63;
+  height: 22%;
+  left: 2.5%;
+  position: absolute;
+  top: 20%;
+  width: 7%;
+}
+
+.wd-window::after {
+  background: #8c7a63;
+  content: "";
+  inset: 0 48%;
+  position: absolute;
+}
+
+/* A picture rail keeps the wall from reading as a void. */
+.wd-wall::after {
+  background: #c3b79c;
+  border-bottom: 2px solid #ab9f85;
+  bottom: 12%;
+  content: "";
+  height: 5px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.wd-mirror {
+  background: #c7d0cf;
+  border: 6px solid #8c7a63;
+  height: 32%;
+  position: absolute;
+  right: 2.5%;
+  top: 20%;
+  width: 5.5%;
+}
+
+.wd-boxes {
+  align-items: flex-end;
+  bottom: -4px;
+  display: flex;
+  gap: 6px;
+  left: 12%;
+  position: absolute;
+}
+
+.wd-boxes span {
+  background: var(--loc-rail);
+  border-top: 3px solid #85735f;
+  display: block;
+  height: 34px;
+  width: 46px;
+}
+
+.wd-boxes span:nth-child(2) { height: 26px; }
+.wd-boxes span:nth-child(3) { height: 40px; }
+
+.wd-floor {
+  background: #7c6450;
+  bottom: 0;
+  height: 44%;
+  position: absolute;
+  width: 100%;
+}
+
+.wd-floor::before {
+  background: repeating-linear-gradient(
+    90deg,
+    rgb(0 0 0 / 0%) 0 62px,
+    rgb(60 46 34 / 45%) 62px 66px
+  );
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.wd-edward {
+  bottom: 30%;
+  left: 6%;
+  position: absolute;
+}
+
+.wd-edward canvas {
+  height: 4.4rem;
+  width: auto;
+}
+
+/* ── Stage ───────────────────────────────────────────────────────────────── */
+
+.wd-stage {
+  --wd-width: min(84vw, 58rem);
+
+  align-items: start;
+  display: flex;
+  gap: 1.2rem;
+  justify-content: center;
+  left: 50%;
+  margin-left: calc(var(--wd-width) / -2);
+  position: absolute;
+  top: 9%;
+  width: var(--wd-width);
+  z-index: 3;
+}
+
+.wd-rail {
+  flex: 1;
+  position: relative;
+}
+
+.wd-rail__bar {
+  background: var(--loc-rail);
+  border-bottom: 3px solid #4f4234;
+  height: 8px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.wd-rail__items {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: repeat(4, 1fr);
+  list-style: none;
+  margin: 0;
+  padding: 1rem 0 0;
+}
+
+.wd-garment {
+  background: rgb(34 31 26 / 88%);
+  border: 1px solid #57534a;
+  color: var(--loc-cream);
+  cursor: pointer;
+  display: grid;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  gap: 0.35rem;
+  justify-items: center;
+  padding: 0.55rem 0.4rem;
+  width: 100%;
+}
+
+.wd-garment:hover,
+.wd-garment:focus-visible {
+  border-color: var(--loc-orange);
+}
+
+.wd-garment__swatch {
+  border: 1px solid rgb(20 17 13 / 55%);
+  display: block;
+  height: 30px;
+  width: 34px;
+}
+
+.wd-garment__swatch[data-slot="BOTTOM"] { height: 36px; width: 24px; }
+.wd-garment__swatch[data-slot="SHOES"] { height: 16px; width: 34px; }
+
+.wd-garment__name {
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+.wd-garment__state {
+  color: var(--loc-orange);
+  font-size: 0.46rem;
+  letter-spacing: 0.14em;
+}
+
+.wd-garment[data-archived] {
+  border-color: var(--loc-orange);
+}
+
+.wd-garment[data-archived] .wd-garment__state {
+  color: var(--loc-muted);
+}
+
+.wd-garment--compact {
+  grid-template-columns: auto 1fr;
+  justify-items: start;
+  text-align: left;
+}
+
+.wd-garment--compact .wd-garment__swatch {
+  height: 18px;
+  width: 20px;
+}
+
+.wd-garment[data-worn] {
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
+  color: #241f18;
+}
+
+/* ── Archive ─────────────────────────────────────────────────────────────── */
+
+.wd-archive {
+  align-items: start;
+  display: grid;
+  flex: 1;
+  gap: 0.6rem;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.wd-archive__group {
+  background: rgb(34 31 26 / 82%);
+  border: 1px solid #57534a;
+  min-height: 11rem;
+  padding: 0.5rem;
+}
+
+.wd-archive__slot {
+  color: var(--loc-muted);
+  font-size: 0.48rem;
+  letter-spacing: 0.18em;
+  margin: 0 0 0.4rem;
+}
+
+.wd-archive__empty {
+  color: #6c6559;
+  font-size: 0.46rem;
+  letter-spacing: 0.12em;
+  margin: 0;
+}
+
+.wd-archive ul {
+  display: grid;
+  gap: 0.3rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Mannequin ───────────────────────────────────────────────────────────── */
+
+.wd-mannequin {
+  background: rgb(34 31 26 / 88%);
+  border: 1px solid #57534a;
+  flex: none;
+  min-height: 11rem;
+  padding: 0.7rem;
+  width: 13rem;
+}
+
+.wd-mannequin__title {
+  color: var(--loc-muted);
+  font-size: 0.48rem;
+  letter-spacing: 0.2em;
+  margin: 0 0 0.5rem;
+}
+
+.wd-mannequin__figure {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.wd-slot {
+  align-items: center;
+  border: 1px dashed #57534a;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 34px 1fr auto;
+  padding: 0.3rem;
+}
+
+.wd-slot__fill {
+  background: repeating-linear-gradient(
+    45deg,
+    #3a362f 0 4px,
+    #2f2b25 4px 8px
+  );
+  display: block;
+  height: 26px;
+}
+
+.wd-slot[data-slot="SHOES"] .wd-slot__fill { height: 14px; }
+
+.wd-slot__label {
+  color: var(--loc-cream);
+  font-size: 0.48rem;
+  letter-spacing: 0.1em;
+}
+
+.wd-slot__remove {
+  background: transparent;
+  border: 1px solid #57534a;
+  color: var(--loc-muted);
+  cursor: pointer;
+  font-size: 0.6rem;
+  line-height: 1;
+  padding: 0.1rem 0.3rem;
+}
+
+.wd-visually-hidden {
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+/* ── Panel ───────────────────────────────────────────────────────────────── */
+
+.wd-panel {
+  --wd-width: min(84vw, 58rem);
+
+  background: rgb(34 31 26 / 95%);
+  border: 1px solid #57534a;
+  bottom: 0;
+  left: 50%;
+  margin-left: calc(var(--wd-width) / -2);
+  max-height: 44vh;
+  overflow: auto;
+  padding: 1.1rem 1.3rem 1.3rem;
+  position: absolute;
+  width: var(--wd-width);
+  z-index: 5;
+}
+
+.wd-panel__head {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.wd-panel__step {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  margin: 0;
+}
+
+.wd-panel__flow {
+  color: #6c6559;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.48rem;
+  gap: 0.3rem 0.5rem;
+  letter-spacing: 0.14em;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wd-panel__flow li + li::before {
+  content: "→ ";
+}
+
+.wd-panel__flow li[data-done] {
+  color: var(--loc-orange);
+}
+
+.wd-panel__body {
+  color: var(--loc-cream);
+  font-family: var(--font-archivo), Arial, sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  margin: 0.6rem 0 0;
+  max-width: 46rem;
+}
+
+.wd-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.4rem;
+  margin: 0.8rem 0 0;
+}
+
+.wd-meta div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.wd-meta dt {
+  color: #6c6559;
+  font-size: 0.44rem;
+  letter-spacing: 0.16em;
+}
+
+.wd-meta dd {
+  color: var(--loc-cream);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+.wd-panel__count {
+  color: var(--loc-muted);
+  font-size: 0.5rem;
+  letter-spacing: 0.16em;
+  margin: 0.7rem 0 0;
+}
+
+.wd-recall {
+  align-items: center;
+  border: 1px solid var(--loc-orange);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  justify-content: space-between;
+  margin-top: 0.8rem;
+  padding: 0.5rem 0.7rem;
+}
+
+.wd-recall p {
+  color: var(--loc-orange);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  margin: 0;
+}
+
+.wd-panel__actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+.wd-panel__hint {
+  color: #6c6559;
+  font-size: 0.48rem;
+  letter-spacing: 0.14em;
+}
+
+.loc-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@media (max-width: 860px) {
+  .wd-stage {
+    /* Stretch, or align-items: start leaves each panel at content width. */
+    align-items: stretch;
+    flex-direction: column;
+    top: 4%;
+  }
+
+  .wd-rail__items,
+  .wd-archive {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .wd-mannequin {
+    width: 100%;
+  }
+
+  .wd-stage,
+  .wd-panel {
+    --wd-width: 94vw;
+  }
+
+  .wd-panel {
+    max-height: 54vh;
+    padding: 0.8rem 0.9rem 1rem;
+  }
+
+  .wd-edward {
+    display: none;
+  }
+}
+
 /* ── Sport furniture ─────────────────────────────────────────────────────── */
 
 .sg-court__key {

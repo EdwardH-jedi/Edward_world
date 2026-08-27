@@ -28,6 +28,8 @@ export const projects = [
     githubUrl: "https://github.com/EdwardH-jedi/AFL_predict",
     caseStudyUrl: "/case-studies/afl-predict",
     worldBuildingId: "afl-lab",
+    // Named in the repository description; languages from the repository itself.
+    techStack: ["Python", "FastAPI", "TypeScript"],
   },
   {
     id: "wardrobe",
@@ -38,6 +40,7 @@ export const projects = [
     githubUrl: "https://github.com/EdwardH-jedi/wadrobe",
     caseStudyUrl: "/case-studies/wardrobe",
     worldBuildingId: "wardrobe",
+    techStack: ["React", "TypeScript", "Vite", "Three.js", "FastAPI"],
   },
   {
     id: "soonpermario",
@@ -45,9 +48,11 @@ export const projects = [
     displayName: "Soonpermario",
     shortDescriptor: "An interactive browser experiment in playful movement.",
     category: "Interactive experience",
-    githubUrl: undefined,
+    githubUrl: "https://github.com/EdwardH-jedi/soonpermario",
     caseStudyUrl: "/case-studies/soonpermario",
     worldBuildingId: "arcade",
+    // The repository's own README: "pure HTML5 Canvas + vanilla JavaScript".
+    techStack: ["JavaScript", "HTML5 Canvas", "No build step"],
   },
 ] as const satisfies readonly PortfolioProject[];
 

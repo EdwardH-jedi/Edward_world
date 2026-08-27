@@ -112,6 +112,29 @@ Two rules make the sequence robust:
    post-transition state explicitly when the stage leaves, so a timeline still
    mid-flight cannot strand the phone half-faded.
 
+## Wardrobe
+
+An archive rather than a game, so it needs no timed machinery:
+
+- `types/wardrobe.ts` + `data/wardrobe.ts` — the five steps and the garments.
+  Garment metadata is structural only: name, layer, colour, fabric, season.
+  Nothing is inferred, scored or claimed about recognition.
+- `lib/game/wardrobe-archive.ts` — the rules as a pure reducer. A garment
+  cannot be worn before it is archived, a layer takes only its own kind, and a
+  look needs enough on it to be a look.
+- `lib/storage/saved-look.ts` — the product's philosophy made literal. The look
+  is written to `localStorage` on this device and read back on the next visit;
+  nothing is sent anywhere. Every read and write is guarded, and a stored value
+  the catalogue does not recognise is discarded rather than trusted.
+- `lib/storage/use-saved-look.ts` — reads that store through
+  `useSyncExternalStore`. The snapshot is the raw string, not a parsed object,
+  because React compares snapshots by identity and a fresh parse every read
+  would never settle.
+
+The interior is DOM and CSS rather than canvas: every garment is a real control
+that can be clicked, tabbed to and read out, and there is no cover-fitted
+backdrop to align against.
+
 ## Visual implementation seam
 
 `MainWorld` is done. `IntroSequence` still holds placeholder DOM: replace it with

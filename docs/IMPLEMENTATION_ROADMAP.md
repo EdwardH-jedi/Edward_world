@@ -159,7 +159,7 @@ Four defects found by looking rather than by reading code, all fixed:
 
 ## Phase 2 — Wardrobe
 
-**Status:** TODO
+**Status:** DONE
 
 **Scope.** An interactive clothing archive, **not** a mini-game. Compact pixel
 interior consistent with the world. Flow: `CAPTURE → ARCHIVE → ORGANISE →
@@ -169,14 +169,39 @@ look. Interaction should explain the product philosophy: local-first,
 browser-persisted, the archive is yours.
 
 **Acceptance criteria.**
-- [ ] All five flow steps reachable and legible.
-- [ ] Garment metadata is structural (type, colour, season) — no fabricated AI
-      accuracy, no invented product data.
-- [ ] Mannequin composition reads clearly at the existing pixel scale.
-- [ ] Ends in the shared project-context state with real links and stack.
-- [ ] Keyboard and pointer paths; reduced motion respected.
+- [x] All five flow steps reachable and legible, each gated on its own
+      precondition.
+- [x] Garment metadata is structural only — name, layer, colour, fabric,
+      season. No inferred style, no confidence score, no product claims.
+- [x] Composition reads clearly; layers stack in body order.
+- [x] Ends in the shared project-context state with real links and stack.
+- [x] Every garment is a real focusable control; pointer and keyboard both work.
 
-**Validation result.** _(pending)_ · **Commit.** _(pending)_
+**Validation result.**
+
+Gates: lint, typecheck, **73 tests (10 files)**, production build — all pass.
+
+Browser, entering the real way: captured six garments, walked CAPTURE → ARCHIVE
+→ ORGANISE → COMPOSE → SAVE, dressed all four layers, saved.
+`localStorage` genuinely held
+`{"TOP":"grey-hoodie","BOTTOM":"faded-denim","SHOES":"leather-boots"}`.
+Left to the world and came back: **the recall notice appeared** — "YOUR SAVED
+LOOK IS STILL HERE · STORED IN THIS BROWSER · NOTHING LEFT THIS DEVICE". That
+return visit is the point of the location: the philosophy is enacted, not
+described. Mobile at 390x844: everything inside the viewport, no horizontal
+scroll. Console clean.
+
+Defects found by looking: the panel was pushed off-centre because anime.js
+writes `transform` and overwrote the CSS `translateX(-50%)` centring (now
+centred with margin); the room read as a vast empty wall (picture rail, raised
+floor, minimum column heights); and on mobile the columns sat at content width
+rather than stretching.
+
+Also added, from the same verified sources as Phase 0: real `techStack` for
+Wardrobe, AFL Predict and Soonpermario, and Soonpermario's GitHub URL, which
+was previously `undefined`.
+
+**Commit.** `<phase-2>`
 
 ---
 
