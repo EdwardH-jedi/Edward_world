@@ -408,7 +408,7 @@ Defect found by looking: `[ PRESS ENTER ]` was charcoal on dark earth and
 almost invisible mid-blink. It is cream with a shadow now, and the blink floor
 was raised from 0.25 to 0.45.
 
-**Commit.** `<phase-7>`
+**Commit.** `3f4ebf4`
 
 ---
 
