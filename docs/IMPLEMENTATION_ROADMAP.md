@@ -528,7 +528,7 @@ world now has pointer walk controls and the status bar doubles as the tap
 target for whatever is in reach — verified by moving 345px and opening Edward's
 House without touching the keyboard.
 
-**Commit.** `<phase-10>`
+**Commit.** `007a6bf`
 
 ---
 
