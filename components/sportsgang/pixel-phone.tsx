@@ -2,7 +2,8 @@
 
 import type { RefObject } from "react";
 import {
-  PLAYABLE_SPORT,
+  DEFAULT_SPORT,
+  SPORT_BLURBS,
   SPORTSGANG_SPORTS,
   type SportsgangSport,
   type SportsgangStage,
@@ -68,24 +69,20 @@ export function PixelPhone({
             <div className="sg-phone__panel">
               <p className="sg-phone__label">CHOOSE A SPORT</p>
               <ul className="sg-phone__sports">
-                {SPORTSGANG_SPORTS.map((option) => {
-                  const playable = option === PLAYABLE_SPORT;
-                  return (
-                    <li key={option}>
-                      <button
-                        className="sg-phone__sport"
-                        data-playable={playable || undefined}
-                        disabled={!playable}
-                        onClick={() => onChooseSport(option)}
-                        ref={playable ? primaryRef : undefined}
-                        type="button"
-                      >
-                        <span>{option}</span>
-                        {playable ? null : <span className="sg-phone__soon">SOON</span>}
-                      </button>
-                    </li>
-                  );
-                })}
+                {SPORTSGANG_SPORTS.map((option) => (
+                  <li key={option}>
+                    <button
+                      className="sg-phone__sport"
+                      data-playable
+                      onClick={() => onChooseSport(option)}
+                      ref={option === DEFAULT_SPORT ? primaryRef : undefined}
+                      type="button"
+                    >
+                      <span>{option}</span>
+                      <span className="sg-phone__soon">{SPORT_BLURBS[option]}</span>
+                    </button>
+                  </li>
+                ))}
               </ul>
             </div>
           ) : null}

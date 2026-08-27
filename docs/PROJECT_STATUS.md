@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-27 · after Phase 0
+**Last updated:** 2026-08-27 · after Phase 1
 
 ---
 
@@ -12,7 +12,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | Phase | Area | Status |
 |---|---|---|
 | 0 | Baseline commits + roadmap | **DONE** |
-| 1 | SportsGang complete experience | TODO |
+| 1 | SportsGang complete experience | **DONE** |
 | 2 | Wardrobe | TODO |
 | 3 | AFL Lab | TODO |
 | 4 | Soonpermario arcade | TODO |
@@ -30,9 +30,16 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   A/D + arrow movement, terrain-following, camera follow, proximity prompts,
   ambient animation on a shared frame counter.
 - **SportsGang location** — the only project location with a full experience.
-  Enter with `E` → pixel phone → choose a sport → matchmaking → accept → the
-  phone screen expands into a real tennis court → scripted rally → result →
-  project context with real links and stack.
+  Enter with `E` → pixel phone → choose one of four sports → matchmaking →
+  accept → the phone screen expands into the venue for that sport → play →
+  result → project context with real links and stack.
+  - **Golf** — stop the power bar, then the contact bar; carry distance and
+    fairway/rough are computed from those two stops.
+  - **Tennis** — three timed returns graded PERFECT / GOOD / MISS.
+  - **Basketball** — three hold-and-release shots; make or miss from the
+    release point alone.
+  - **Running** — 200 m of pace against stamina; exhaustion latches, so going
+    out too hard is slower than pacing it.
 - **Index mode** — editorial overlay listing the four projects, resume and
   GitHub. Reachable at any time.
 - **Routes** — `/`, `/resume`, `/case-studies/[slug]` ×4, `/manifest.webmanifest`,
@@ -48,12 +55,12 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 
 ## Quality gates
 
-All green as of Phase 0:
+All green as of Phase 1:
 
 ```
 npm run lint        eslint . --max-warnings 0
 npm run typecheck   tsc --noEmit
-npm test            8 files, 35 tests
+npm test            9 files, 58 tests
 npm run build       production build
 ```
 

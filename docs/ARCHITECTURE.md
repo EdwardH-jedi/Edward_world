@@ -76,7 +76,31 @@ SportsGang is the first one:
   else. No function here advances state.
 - `lib/pixel/sportsgang.ts` — the venue and courtside backdrops plus the two
   players, on the same grid and palette as the world.
-- `components/sportsgang/*` — the stage host, the pixel phone, and the court.
+- `components/sportsgang/*` — the stage host, the pixel phone, and the venue.
+
+### Mini-games
+
+A third timing regime lives inside `PLAY`: the player is driving, in real time.
+
+- `lib/game/minigames/<sport>.ts` — pure, tick-based simulations shaped as
+  `advance(state, input, dt) -> state`. No React, no DOM, no rAF. Golf, tennis,
+  basketball and running each have one, and each is unit-tested for
+  determinism, bounds and the property that matters most: **every number a
+  sport reports is computed from what the player actually did.** Carry distance
+  comes from the meter, the tennis verdict from the timing delta, make or miss
+  from the release point, finishing time from the pace actually held.
+- `lib/motion/use-game-loop.ts` — the only rAF loop, delta-clamped, stopped
+  when inactive or unfocused. Pausing player-controlled play in a background
+  tab is correct, where pausing a scripted stage would not be.
+- `components/sportsgang/minigames/use-minigame-input.ts` — keyboard and
+  pointer collapsed into one neutral input shape, with press/release edges
+  latched so a tap between frames is never lost or double-counted.
+- `components/sportsgang/minigames/index.ts` — the registry. Adding a sport is
+  a simulation, a component and one line here; the phone, the matchmaking and
+  the venue transition need no changes.
+
+`PLAY` is a gated stage, never a timed one: it lasts exactly as long as the
+player takes, and the mini-game reports its own completion.
 
 Two rules make the sequence robust:
 

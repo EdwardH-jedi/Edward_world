@@ -10,22 +10,22 @@ import {
   useRef,
   useState,
 } from "react";
+import { MINIGAMES } from "@/components/sportsgang/minigames";
 import { PHONE_STAGES, PixelPhone } from "@/components/sportsgang/pixel-phone";
-import { TennisCourt } from "@/components/sportsgang/tennis-court";
+import { SportVenue } from "@/components/sportsgang/sport-venue";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { getProjectById } from "@/data/projects";
+import type { SportResult } from "@/lib/game/minigames/types";
 import {
   getSportsgangStageDuration,
   isTimedSportsgangStage,
   nextSportsgangStage,
-  RALLY_EXCHANGES,
   SPORTSGANG_STAGE_TIMINGS,
 } from "@/lib/game/sportsgang-machine";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
 import {
   applyCourtProjection,
   measureCourtProjection,
-  playBallRally,
   playCourtExpansion,
   playPhoneRaise,
   playResultReveal,
@@ -41,7 +41,7 @@ import {
   VENUE_ART_SIZE,
   type PlayerFrame,
 } from "@/lib/pixel/sportsgang";
-import type { SportsgangSport, SportsgangStage } from "@/types/sportsgang";
+import { DEFAULT_SPORT, type SportsgangSport, type SportsgangStage } from "@/types/sportsgang";
 
 interface SportsgangExperienceProps {
   onExit: () => void;
@@ -56,36 +56,18 @@ const STAGE_CAPTIONS: Readonly<Record<SportsgangStage, string>> = {
   MATCH_FOUND: "Match found: Edward versus Player 02",
   COURT_TRANSITION: "Heading to the court",
   MEET: "Player 02 has arrived",
-  RALLY: "The match is under way",
-  RESULT: "Match complete. Edward 3, Player 02 2",
+  PLAY: "Your turn to play",
+  RESULT: "Result",
   COMPLETE: "SportsGang project summary",
 };
 
 /** The product's own loop, as the brief states it. Scene copy, not project data. */
 const PRODUCT_FLOW = ["DISCOVER", "MATCH", "PLAY", "RESULT", "RANK"] as const;
 
-const FINAL_SCORE = { edward: 3, opponent: 2 } as const;
-
-function getRallyFrames(beat: number): {
-  edward: PlayerFrame;
-  opponent: PlayerFrame;
-} {
-  const exchange = Math.floor(beat / 4);
-  const step = beat % 4;
-  const edwardHits = exchange % 2 === 0;
-
-  const hitter: PlayerFrame = step === 0 ? "contact" : "ready";
-  const receiver: PlayerFrame = step >= 2 ? "back" : "ready";
-
-  return edwardHits
-    ? { edward: hitter, opponent: receiver }
-    : { edward: receiver, opponent: hitter };
-}
-
 export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
   const [stage, setStage] = useState<SportsgangStage>("ENTER");
   const [sport, setSport] = useState<SportsgangSport | null>(null);
-  const [rallyBeat, setRallyBeat] = useState(0);
+  const [result, setResult] = useState<SportResult | null>(null);
   const reducedMotion = useReducedMotion();
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -93,7 +75,6 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
   const slotRef = useRef<HTMLDivElement>(null);
   const sweepRef = useRef<HTMLDivElement>(null);
   const courtRef = useRef<HTMLDivElement>(null);
-  const ballRef = useRef<HTMLDivElement>(null);
   const edwardRef = useRef<HTMLDivElement>(null);
   const opponentRef = useRef<HTMLDivElement>(null);
   const venueRef = useRef<HTMLDivElement>(null);
@@ -171,16 +152,6 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
       );
     }
 
-    if (stage === "RALLY" && ballRef.current && edwardRef.current && opponentRef.current) {
-      timeline = playBallRally({
-        ball: ballRef.current,
-        edward: edwardRef.current,
-        opponent: opponentRef.current,
-        exchanges: RALLY_EXCHANGES,
-        duration: SPORTSGANG_STAGE_TIMINGS.RALLY,
-      });
-    }
-
     if (stage === "RESULT" && scoreRef.current && rankNoteRef.current) {
       timeline = playResultReveal(
         scoreRef.current,
@@ -226,27 +197,6 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
     },
     [],
   );
-
-  /* ── Rally beats ────────────────────────────────────────────────────────
-     Player poses are React state so the sprite frames stay declarative; they
-     share the machine's timings with the ball, so the two stay in step. */
-  useEffect(() => {
-    if (stage !== "RALLY") return;
-
-    const step = SPORTSGANG_STAGE_TIMINGS.RALLY / (RALLY_EXCHANGES * 4);
-    let beat = 0;
-    const interval = window.setInterval(() => {
-      beat += 1;
-      setRallyBeat(beat);
-    }, step);
-
-    // Reset on the way out rather than on the way in, so entering RALLY never
-    // needs a synchronous state write inside an effect.
-    return () => {
-      window.clearInterval(interval);
-      setRallyBeat(0);
-    };
-  }, [stage]);
 
   /* ── Exit, focus and keyboard ───────────────────────────────────────────── */
   useEffect(() => {
@@ -299,24 +249,29 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
       courtRef.current,
       venueRef.current,
       courtsideRef.current,
-      ballRef.current,
       edwardRef.current,
       opponentRef.current,
       sweepRef.current,
     ]);
     setSport(null);
-    setRallyBeat(0);
+    setResult(null);
     setStage("ENTER");
   }, []);
 
-  const frames = useMemo(() => {
-    if (stage === "MEET") return { edward: "greet" as const, opponent: "greet" as const };
-    if (stage === "RALLY") return getRallyFrames(rallyBeat);
-    return { edward: "idle" as const, opponent: "idle" as const };
-  }, [rallyBeat, stage]);
+  const frames = useMemo<{ edward: PlayerFrame; opponent: PlayerFrame }>(() => {
+    if (stage === "MEET") return { edward: "greet", opponent: "greet" };
+    if (stage === "PLAY") return { edward: "ready", opponent: "ready" };
+    return { edward: "idle", opponent: "idle" };
+  }, [stage]);
 
-  const showCourtPlayers = ["MEET", "RALLY", "RESULT", "COMPLETE"].includes(stage);
-  const showBall = stage === "RALLY" || stage === "RESULT";
+  const activeSport = sport ?? DEFAULT_SPORT;
+  const Minigame = MINIGAMES[activeSport];
+  const showCourtPlayers = ["MEET", "PLAY", "RESULT", "COMPLETE"].includes(stage);
+
+  const finishPlay = useCallback((sportResult: SportResult) => {
+    setResult(sportResult);
+    setStage((current) => nextSportsgangStage(current));
+  }, []);
 
   return (
     <section
@@ -349,16 +304,19 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
         />
       </div>
 
-      <TennisCourt
-        ballRef={ballRef}
+      <SportVenue
         courtRef={courtRef}
         edwardFrame={frames.edward}
         edwardRef={edwardRef}
         opponentFrame={frames.opponent}
         opponentRef={opponentRef}
-        showBall={showBall}
         showPlayers={showCourtPlayers}
+        sport={activeSport}
       />
+
+      {stage === "PLAY" ? (
+        <Minigame active onFinish={finishPlay} />
+      ) : null}
 
       <PixelPhone
         onAccept={advance}
@@ -385,7 +343,7 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
 
       {stage === "MEET" ? (
         <div className="sg-beat">
-          <p className="sg-beat__text">PLAYER 02 IS READY</p>
+          <p className="sg-beat__text">PLAYER 02 IS READY · {activeSport}</p>
           <button
             className="sg-button sg-button--primary"
             onClick={advance}
@@ -397,20 +355,22 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
         </div>
       ) : null}
 
-      {stage === "RALLY" ? <p className="sg-caption">MATCH IN PROGRESS</p> : null}
-
-      {stage === "RESULT" ? (
+      {stage === "RESULT" && result ? (
         <div className="sg-result">
-          <p className="sg-result__heading">MATCH COMPLETE</p>
+          <p className="sg-result__heading">{result.heading}</p>
           <p className="sg-result__score" ref={scoreRef}>
-            <span>EDWARD</span>
-            <span className="sg-result__numbers">
-              {FINAL_SCORE.edward} : {FINAL_SCORE.opponent}
-            </span>
-            <span>PLAYER 02</span>
+            <span>{result.playerLabel}</span>
+            <span className="sg-result__numbers">{result.playerScore}</span>
+            {result.opponentLabel ? (
+              <>
+                <span className="sg-result__divider">/</span>
+                <span>{result.opponentLabel}</span>
+                <span className="sg-result__numbers">{result.opponentScore}</span>
+              </>
+            ) : null}
           </p>
           <p className="sg-result__note" ref={rankNoteRef}>
-            RESULT RECORDED · COUNTS TOWARDS RANKING
+            {result.note}
           </p>
         </div>
       ) : null}

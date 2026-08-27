@@ -87,7 +87,7 @@ before each commit. Working tree clean afterwards.
 
 ## Phase 1 — SportsGang complete experience
 
-**Status:** TODO
+**Status:** DONE
 
 **Scope.** Turn SportsGang into the most interactive location: a reusable
 mini-game architecture plus four selectable sports. Preserve the existing
@@ -118,21 +118,42 @@ Pure simulation per sport in `lib/game/minigames/<sport>.ts` as
 basketball release are the same component).
 
 **Acceptance criteria.**
-- [ ] Four sports selectable from the existing phone `SPORT_SELECT` stage.
-- [ ] Every displayed number derives from real player input — golf distance
-      from meter accuracy, tennis verdict from timing delta, basketball
-      make/miss from release point, running finish from the actual pace curve.
-      No random or invented metrics.
-- [ ] Keyboard **and** pointer/touch input for every sport.
-- [ ] Each sport returns to the shared result → project-context state, reading
+- [x] Four sports selectable from the existing phone `SPORT_SELECT` stage.
+- [x] Every displayed number derives from real player input.
+- [x] Keyboard **and** pointer/touch input for every sport.
+- [x] Each sport returns to the shared result → project-context state, reading
       links and stack from canonical project data.
-- [ ] Pure simulations unit-tested for determinism and bounds.
-- [ ] Reduced motion respected; Escape exits; sequence replayable.
-- [ ] Existing 35 tests still pass; existing tennis flow still works end to end.
+- [x] Pure simulations unit-tested for determinism and bounds.
+- [x] Escape exits; sequence replayable; sport switchable via REPLAY.
+- [~] Reduced motion: stage dwell and choreography are guarded, but the media
+      query still cannot be emulated with the available tooling. Carried to
+      Phase 10.
 
-**Validation result.** _(pending)_
+**Validation result.**
 
-**Commit.** _(pending)_
+Gates: lint, typecheck, **58 tests (9 files)**, production build — all pass.
+
+Browser, entering the real way (walk to the building, press `E`):
+
+| Sport | Evidence |
+|---|---|
+| Golf | 88% power + centred contact → **245 M, FAIRWAY, PURE STRIKE**. Control run at 29% power → **80 M**. Distance tracks input. |
+| Tennis | Three points swung on the window → **3 PERFECT, 3–0**. |
+| Basketball | Three releases inside the band → **3/3 made, 3 swishes**. |
+| Running | Push-then-ease pacing → **200 m in 0:31.5, 62% stamina left, "JUDGED IT WELL"**; ~34s wall clock. |
+
+Four defects found by looking rather than by reading code, all fixed:
+1. The 800 m race took ~3 minutes. Retuned to 200 m so pacing bites inside a
+   demonstration; locked in by a test asserting the race stays 15–50s.
+2. Going all out beat pacing, because exhaustion cleared the instant stamina
+   ticked above zero. Exhaustion now latches until the tank is 45% back.
+3. The court was invisible during play — the stylesheet still keyed visibility
+   on the old `RALLY` stage name after the rename to `PLAY`.
+4. The golf flag floated above the green and the basketball arc ended at floor
+   level rather than at the ring; the hoop had no post and collided with a
+   backdrop banner.
+
+**Commit.** `<phase-1>`
 
 ---
 

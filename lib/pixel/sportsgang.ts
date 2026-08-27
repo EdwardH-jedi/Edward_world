@@ -301,8 +301,9 @@ export const drawCourtside: ArtRoutine = (draw, frame) => {
   draw(27, 91, 1, 3, palette.brown3);
   draw(40, 91, 1, 3, palette.brown3);
 
-  draw(150, 76, 40, 10, palette.char);
-  dashes(draw, 155, 80, 30, palette.cream);
+  // Kept to the far left so it never sits behind a player or the hoop.
+  draw(14, 78, 30, 8, palette.char);
+  dashes(draw, 18, 81, 22, palette.cream);
 
   draw(200, 88, 16, 1, palette.brown);
   draw(200, 89, 16, 2, palette.brown2);

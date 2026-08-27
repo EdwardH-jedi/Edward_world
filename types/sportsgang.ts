@@ -13,7 +13,7 @@ export const SPORTSGANG_STAGES = [
   "MATCH_FOUND",
   "COURT_TRANSITION",
   "MEET",
-  "RALLY",
+  "PLAY",
   "RESULT",
   "COMPLETE",
 ] as const;
@@ -23,17 +23,30 @@ export type SportsgangStage = (typeof SPORTSGANG_STAGES)[number];
 /** Stages that advance on their own after a fixed dwell. */
 export type TimedSportsgangStage = Extract<
   SportsgangStage,
-  "ENTER" | "PHONE" | "SEARCHING" | "COURT_TRANSITION" | "RALLY" | "RESULT"
+  "ENTER" | "PHONE" | "SEARCHING" | "COURT_TRANSITION" | "RESULT"
 >;
 
-/** Stages that wait for the visitor to act. */
+/**
+ * Stages that wait rather than tick.
+ *
+ * `PLAY` is here because it lasts exactly as long as the player takes: the
+ * mini-game reports its own completion, so no timer may move it on.
+ */
 export type GatedSportsgangStage = Extract<
   SportsgangStage,
-  "SPORT_SELECT" | "MATCH_FOUND" | "MEET"
+  "SPORT_SELECT" | "MATCH_FOUND" | "MEET" | "PLAY"
 >;
 
-export const SPORTSGANG_SPORTS = ["TENNIS", "BASKETBALL", "RUNNING"] as const;
+export const SPORTSGANG_SPORTS = ["TENNIS", "BASKETBALL", "RUNNING", "GOLF"] as const;
 export type SportsgangSport = (typeof SPORTSGANG_SPORTS)[number];
 
-/** The only sport wired through to a full match in this version. */
-export const PLAYABLE_SPORT: SportsgangSport = "TENNIS";
+/** Sport shown first, and the one the phone focuses on arrival. */
+export const DEFAULT_SPORT: SportsgangSport = "TENNIS";
+
+/** What each sport is called in the world, and how it is played. */
+export const SPORT_BLURBS: Readonly<Record<SportsgangSport, string>> = {
+  TENNIS: "TIME YOUR RETURNS",
+  BASKETBALL: "HOLD AND RELEASE",
+  RUNNING: "MANAGE YOUR PACE",
+  GOLF: "POWER THEN CONTACT",
+};

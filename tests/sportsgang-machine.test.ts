@@ -9,7 +9,8 @@ import {
   SPORTSGANG_STAGE_TIMINGS,
 } from "@/lib/game/sportsgang-machine";
 import {
-  PLAYABLE_SPORT,
+  DEFAULT_SPORT,
+  SPORT_BLURBS,
   SPORTSGANG_SPORTS,
   SPORTSGANG_STAGES,
   type SportsgangStage,
@@ -54,18 +55,24 @@ describe("sportsgang stage machine", () => {
 
   it("gives every timed stage a positive centralized duration", () => {
     const timed = [...SPORTSGANG_STAGES].filter(isTimedSportsgangStage);
-    expect(timed).toHaveLength(6);
+    expect(timed).toHaveLength(5);
     for (const stage of timed) {
       expect(SPORTSGANG_STAGE_TIMINGS[stage]).toBeGreaterThan(0);
     }
   });
 
-  it("waits for the visitor at sport choice, match acceptance, and the greeting", () => {
+  it("waits for the visitor at every stage that is theirs to finish", () => {
     expect([...SPORTSGANG_STAGES].filter(isGatedSportsgangStage)).toEqual([
       "SPORT_SELECT",
       "MATCH_FOUND",
       "MEET",
+      "PLAY",
     ]);
+  });
+
+  it("never puts a timer on play, which lasts as long as the player takes", () => {
+    expect(isTimedSportsgangStage("PLAY")).toBe(false);
+    expect(isGatedSportsgangStage("PLAY")).toBe(true);
   });
 
   it("shortens but never collapses stage dwell under reduced motion", () => {
@@ -83,10 +90,17 @@ describe("sportsgang stage machine", () => {
 });
 
 describe("sportsgang content sources", () => {
-  it("offers three sports with tennis as the playable path", () => {
-    expect(SPORTSGANG_SPORTS).toEqual(["TENNIS", "BASKETBALL", "RUNNING"]);
-    expect(SPORTSGANG_SPORTS).toContain(PLAYABLE_SPORT);
-    expect(PLAYABLE_SPORT).toBe("TENNIS");
+  it("offers four playable sports, each with a description", () => {
+    expect(SPORTSGANG_SPORTS).toEqual([
+      "TENNIS",
+      "BASKETBALL",
+      "RUNNING",
+      "GOLF",
+    ]);
+    expect(SPORTSGANG_SPORTS).toContain(DEFAULT_SPORT);
+    for (const sport of SPORTSGANG_SPORTS) {
+      expect(SPORT_BLURBS[sport]?.length).toBeGreaterThan(0);
+    }
   });
 
   it("keeps the tech stack in the canonical project data", () => {

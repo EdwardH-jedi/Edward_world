@@ -19,7 +19,6 @@ export const SPORTSGANG_STAGE_TIMINGS: Readonly<
   PHONE: 1_100,
   SEARCHING: 2_200,
   COURT_TRANSITION: 1_400,
-  RALLY: 6_400,
   RESULT: 3_200,
 };
 
@@ -31,6 +30,7 @@ const GATED_STAGES = new Set<SportsgangStage>([
   "SPORT_SELECT",
   "MATCH_FOUND",
   "MEET",
+  "PLAY",
 ]);
 
 /**
@@ -71,5 +71,8 @@ export function getSportsgangStageDuration(
     : duration;
 }
 
-/** Beats of the scripted rally, as fractions of the RALLY stage. */
-export const RALLY_EXCHANGES = 4;
+/**
+ * How long the greeting animation runs before play may begin. The MEET stage
+ * itself is gated on the visitor, so this is choreography timing only.
+ */
+export const GREETING_MS = 900;
