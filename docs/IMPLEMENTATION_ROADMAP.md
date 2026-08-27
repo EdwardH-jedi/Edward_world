@@ -244,7 +244,7 @@ Defect found by looking: at `RESULT` the console and the project summary were
 both anchored to the bottom and overlapped. `ProjectSummary` now accepts
 children, so the outcome lives inside it and the console steps aside.
 
-**Commit.** `<phase-3>`
+**Commit.** `782bf96`
 
 ---
 
