@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { IntroSequence } from "@/components/intro/intro-sequence";
 import { AflExperience } from "@/components/afl/afl-experience";
+import { ArcadeExperience } from "@/components/arcade/arcade-experience";
 import { PortfolioIndex } from "@/components/index/portfolio-index";
 import { SportsgangExperience } from "@/components/sportsgang/sportsgang-experience";
 import { WardrobeExperience } from "@/components/wardrobe/wardrobe-experience";
@@ -21,6 +22,7 @@ const EXPERIENCE_PROJECTS = new Set<PortfolioProjectId>([
   "sportsgang",
   "wardrobe",
   "afl-predict",
+  "soonpermario",
 ]);
 
 export function PortfolioExperience() {
@@ -89,6 +91,9 @@ export function PortfolioExperience() {
       ) : null}
       {activeProjectExperience === "afl-predict" ? (
         <AflExperience onExit={closeProjectExperience} />
+      ) : null}
+      {activeProjectExperience === "soonpermario" ? (
+        <ArcadeExperience onExit={closeProjectExperience} />
       ) : null}
       {indexOpen ? <PortfolioIndex onClose={closeIndex} /> : null}
       {activeInteraction ? (

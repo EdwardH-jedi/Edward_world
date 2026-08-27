@@ -3,9 +3,14 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { IDLE_INPUT, type MinigameInput } from "@/lib/game/minigames/types";
 
+/** Every input channel a mini-game can bind to. */
+type Channel = "action" | "up" | "down" | "left" | "right";
+
 const ACTION_KEYS = new Set([" ", "spacebar", "enter"]);
 const UP_KEYS = new Set(["arrowup", "w"]);
 const DOWN_KEYS = new Set(["arrowdown", "s"]);
+const LEFT_KEYS = new Set(["arrowleft", "a"]);
+const RIGHT_KEYS = new Set(["arrowright", "d"]);
 
 /**
  * Collects keyboard and pointer input into the neutral shape the simulations
@@ -16,10 +21,16 @@ const DOWN_KEYS = new Set(["arrowdown", "s"]);
  * never counted twice.
  */
 export function useMinigameInput(active: boolean) {
-  const held = useRef({ action: false, up: false, down: false });
+  const held = useRef({
+    action: false,
+    up: false,
+    down: false,
+    left: false,
+    right: false,
+  });
   const edges = useRef({ pressed: false, released: false });
 
-  const press = useCallback((channel: "action" | "up" | "down") => {
+  const press = useCallback((channel: Channel) => {
     if (channel === "action") {
       if (!held.current.action) edges.current.pressed = true;
       held.current.action = true;
@@ -28,7 +39,7 @@ export function useMinigameInput(active: boolean) {
     held.current[channel] = true;
   }, []);
 
-  const release = useCallback((channel: "action" | "up" | "down") => {
+  const release = useCallback((channel: Channel) => {
     if (channel === "action") {
       if (held.current.action) edges.current.released = true;
       held.current.action = false;
@@ -39,7 +50,13 @@ export function useMinigameInput(active: boolean) {
 
   useEffect(() => {
     if (!active) {
-      held.current = { action: false, up: false, down: false };
+      held.current = {
+        action: false,
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+      };
       return;
     }
 
@@ -55,6 +72,12 @@ export function useMinigameInput(active: boolean) {
       } else if (DOWN_KEYS.has(key)) {
         event.preventDefault();
         press("down");
+      } else if (LEFT_KEYS.has(key)) {
+        event.preventDefault();
+        press("left");
+      } else if (RIGHT_KEYS.has(key)) {
+        event.preventDefault();
+        press("right");
       }
     }
 
@@ -63,11 +86,19 @@ export function useMinigameInput(active: boolean) {
       if (ACTION_KEYS.has(key)) release("action");
       else if (UP_KEYS.has(key)) release("up");
       else if (DOWN_KEYS.has(key)) release("down");
+      else if (LEFT_KEYS.has(key)) release("left");
+      else if (RIGHT_KEYS.has(key)) release("right");
     }
 
     function clear() {
       if (held.current.action) release("action");
-      held.current = { action: false, up: false, down: false };
+      held.current = {
+        action: false,
+        up: false,
+        down: false,
+        left: false,
+        right: false,
+      };
     }
 
     window.addEventListener("keydown", onKeyDown);
@@ -89,6 +120,8 @@ export function useMinigameInput(active: boolean) {
       released: edges.current.released,
       up: held.current.up,
       down: held.current.down,
+      left: held.current.left,
+      right: held.current.right,
     };
     edges.current = { pressed: false, released: false };
     return input;
@@ -96,7 +129,7 @@ export function useMinigameInput(active: boolean) {
 
   /** Props for an on-screen control, so touch has a real path in. */
   const bind = useCallback(
-    (channel: "action" | "up" | "down") => ({
+    (channel: Channel) => ({
       onPointerDown: (event: React.PointerEvent) => {
         event.preventDefault();
         event.currentTarget.setPointerCapture?.(event.pointerId);

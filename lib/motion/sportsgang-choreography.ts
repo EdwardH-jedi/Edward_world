@@ -21,13 +21,16 @@ export interface CourtProjection {
 }
 
 /**
- * Measures the transform that maps the real court onto the phone's court slot.
+ * Measures the transform that maps a full-size element onto a small slot.
+ *
+ * Used by any location whose small screen becomes the real thing: the phone's
+ * court preview, the arcade cabinet's display.
  *
  * `getBoundingClientRect` reports the *transformed* box, so the court's own
  * transform is cleared for the measurement and restored immediately after —
  * otherwise every recomputation would compound the previous one.
  */
-export function measureCourtProjection(
+export function measureScreenProjection(
   slot: HTMLElement,
   court: HTMLElement,
 ): CourtProjection | null {
@@ -55,7 +58,7 @@ export function measureCourtProjection(
 }
 
 /** anime.js owns the court transform end to end, so writes go through it. */
-export function applyCourtProjection(
+export function applyScreenProjection(
   court: HTMLElement,
   projection: CourtProjection | null,
 ) {

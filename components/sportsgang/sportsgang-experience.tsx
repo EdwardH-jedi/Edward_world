@@ -23,8 +23,8 @@ import {
 } from "@/lib/game/sportsgang-machine";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
 import {
-  applyCourtProjection,
-  measureCourtProjection,
+  applyScreenProjection,
+  measureScreenProjection,
   playCourtExpansion,
   playPhoneRaise,
   playResultReveal,
@@ -114,14 +114,14 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
     const slot = slotRef.current;
     if (!PHONE_STAGES.has(stage) || !slot) {
       projectionRef.current = null;
-      applyCourtProjection(court, null);
+      applyScreenProjection(court, null);
       return;
     }
 
     const update = () => {
-      const projection = measureCourtProjection(slot, court);
+      const projection = measureScreenProjection(slot, court);
       projectionRef.current = projection;
-      applyCourtProjection(court, projection);
+      applyScreenProjection(court, projection);
     };
 
     update();

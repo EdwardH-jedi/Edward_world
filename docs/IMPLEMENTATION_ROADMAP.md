@@ -250,7 +250,7 @@ children, so the outcome lives inside it and the console steps aside.
 
 ## Phase 4 — Soonpermario arcade
 
-**Status:** TODO
+**Status:** DONE
 
 **Scope.** Arcade interior; approach the cabinet; `E TO PLAY`; the machine
 screen expands (reuse the SportsGang FLIP transition); one polished playable
@@ -259,13 +259,42 @@ Preserve the playful identity of "Edward's Career Quest" using original assets
 only — no Nintendo likenesses.
 
 **Acceptance criteria.**
-- [ ] Cabinet is a world-consistent interactable; screen expands into play.
-- [ ] Move / jump / obstacle / finish all work on keyboard and touch.
-- [ ] A run is completable in well under a minute; failure is recoverable.
-- [ ] Original art only.
-- [ ] Ends in the shared project-context state.
+- [x] Walk the arcade floor with the world's own movement, approach the
+      cabinet, `E TO PLAY`; the cabinet's display expands into the game using
+      the same screen-to-slot projection the SportsGang phone uses.
+- [x] Move, jump, three patrolling bugs, three pits, a flag. Keyboard and
+      on-screen touch controls.
+- [x] Completable in about eleven seconds; falls and hits cost a coffee and
+      return you to a checkpoint, so failure is recoverable.
+- [x] Original geometry, original wording, original art. No Nintendo likeness.
+- [x] Ends in the shared project-context state with the run's own figures.
 
-**Validation result.** _(pending)_ · **Commit.** _(pending)_
+**Validation result.**
+
+Gates: lint, typecheck, **99 tests (12 files)**, production build — all pass.
+
+Completability is proved by a bot that plays the level rather than by
+assertion: it finishes in ~10.7s with one recoverable fall. Two real defects
+surfaced only because that bot kept dying:
+
+1. The jump cut was a per-frame multiplier, so it compounded and any jump not
+   held for its whole rise collapsed to nothing. It is a clamp now — a tap
+   clears a bug, a hold clears a gap.
+2. Landing on a bug killed the player, which made the level close to
+   unplayable. The original's own README says stomping works, so it does here.
+
+Browser: walked the floor (prompt changes from "WALK TO THE CABINET" to
+"SOONPERMARIO · E TO PLAY", the play button enables only in range), pressed
+`E`, the screen expanded, played, and reached the summary. The camera was
+confirmed scrolling (259px) with the player clearing the first pit. Console
+clean.
+
+A third defect found by looking: the camera translate was applied in unscaled
+pixels while the level itself was scaled, so the view would have drifted as the
+player advanced. The scale now lives on a wrapper and the camera translates in
+level units inside it.
+
+**Commit.** `<phase-4>`
 
 ---
 

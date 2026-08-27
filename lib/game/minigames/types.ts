@@ -23,6 +23,9 @@ export interface MinigameInput {
   /** Steering intent, for sports that have one. */
   readonly up: boolean;
   readonly down: boolean;
+  /** Horizontal intent, for anything the player walks. */
+  readonly left: boolean;
+  readonly right: boolean;
 }
 
 export const IDLE_INPUT: MinigameInput = {
@@ -31,6 +34,8 @@ export const IDLE_INPUT: MinigameInput = {
   released: false,
   up: false,
   down: false,
+  left: false,
+  right: false,
 };
 
 /** How a finished sport reports itself, shaped for the shared result panel. */

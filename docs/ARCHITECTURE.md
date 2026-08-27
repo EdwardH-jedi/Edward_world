@@ -150,6 +150,28 @@ The lab reports agreement between the visitor's pick and the model's, and
 nothing else: one run over demonstration data cannot support a claim about
 accuracy, and the repository publishes none for this to borrow.
 
+## Arcade
+
+`lib/game/arcade/platformer.ts` is one segment of Edward's Career Quest rebuilt
+small: move, jump, close three bugs, clear three pits, reach the offer. Pure
+and deterministic like every other simulation here, and unit-tested for the one
+property that matters most — that it can actually be finished, proved by a bot
+that plays it rather than by assertion.
+
+Two things the tests caught that reading the code would not have:
+
+- The jump cut was a per-frame multiplier, so any jump not held for its whole
+  rise collapsed to nothing. It is a clamp now: a tap clears a bug, a hold
+  clears a gap.
+- Landing on a bug killed the player. The original's own README says stomping
+  works, so it does here: falling onto a bug closes it and bounces you off.
+
+The arcade floor reuses `movePlayerX` and `getCameraX` from the world's own
+movement module, so walking to the cabinet feels like walking anywhere else.
+Pressing `E` at the cabinet runs the same screen-to-slot expansion the phone
+uses in SportsGang — `measureScreenProjection` and `applyScreenProjection` are
+shared for exactly that reason.
+
 ## Visual implementation seam
 
 `MainWorld` is done. `IntroSequence` still holds placeholder DOM: replace it with
