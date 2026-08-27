@@ -485,7 +485,7 @@ in order.
 Deliberately **not** done: no new props, signs or ambient layers. The world
 reads as a place already, and the brief asks not to overload it.
 
-**Commit.** `<phase-9>`
+**Commit.** `dc6160e`
 
 ---
 
