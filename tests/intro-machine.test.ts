@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   INTRO_STAGE_TIMINGS,
+  INTRO_TOTAL_MS,
   getIntroStageDuration,
   isTimedIntroStage,
   nextIntroStage,
@@ -21,6 +22,10 @@ describe("intro state machine", () => {
     for (const stage of timedStages) {
       expect(INTRO_STAGE_TIMINGS[stage]).toBeGreaterThan(0);
     }
+  });
+
+  it("runs for about six seconds, as the approved direction asks", () => {
+    expect(INTRO_TOTAL_MS).toBe(6_000);
   });
 
   it("collapses automatic stage waits when reduced motion is requested", () => {

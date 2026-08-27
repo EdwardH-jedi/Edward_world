@@ -414,7 +414,7 @@ was raised from 0.25 to 0.45.
 
 ## Phase 8 — Six-second intro
 
-**Status:** TODO
+**Status:** DONE
 
 **Scope.** The approved opening ritual, only once the world and project
 experiences work. `Edward approaches → stops → glyph creatures emerge →
@@ -423,11 +423,33 @@ choreography, original glyph creatures only (reference forms exist in
 `scenes.js`). `SKIP INTRO` always available; `prefers-reduced-motion` respected.
 
 **Acceptance criteria.**
-- [ ] Full sequence in ~6s; existing `intro-machine` timings reused.
-- [ ] Skip works at every stage.
-- [ ] Reduced motion collapses motion without breaking the sequence.
+- [x] `Edward approaches → stops → glyph creatures emerge → E D W A R D →
+      glyphs move into the door → door unlocks → world reveal`, in **6000ms
+      exactly**, asserted by a test on `INTRO_TOTAL_MS`.
+- [x] `SKIP INTRO →` and `SKIP TO INDEX` are present at every stage.
+- [x] Six original glyph creatures, one per letter, each with one glowing eye.
+      No borrowed alphabet.
+- [x] Reduced motion collapses every tween to a millisecond while the stage
+      sequence still plays.
 
-**Validation result.** _(pending)_ · **Commit.** _(pending)_
+**Validation result.**
+
+Gates: lint, typecheck, **100 tests (12 files)**, production build — all pass.
+
+Browser: pressed Enter and watched the machine walk
+`APPROACH → STOP → GLYPH_REVEAL → EDWARD_FORMATION → DOOR_UNLOCK → DOOR_OPEN →
+WORLD` in **6071ms** wall clock. At the formation beat all six creatures were
+lined up at 30–70% across, fully visible. Skipping mid-sequence landed straight
+in the world.
+
+Two defects found by looking. The creatures were invisible through the whole
+formation beat: each stage's cleanup reverted its timeline, which wiped the
+opacity the previous beat had just animated in. The intro's timelines are
+paused now, and each beat pins the state it inherits. And the old placeholder
+stylesheet still defined `.intro-stage` and `.intro-door`, which quietly
+overrode the real scene — 64 stale lines removed.
+
+**Commit.** `<phase-8>`
 
 ---
 

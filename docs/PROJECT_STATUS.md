@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-27 · after Phase 7
+**Last updated:** 2026-08-27 · after Phase 8
 
 ---
 
@@ -19,7 +19,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 5 | Edward's House | **DONE** |
 | 6 | Index mode final pass | **DONE** |
 | 7 | Title screen | **DONE** |
-| 8 | Six-second intro | TODO |
+| 8 | Six-second intro | **DONE** |
 | 9 | World polish / TOMODACHI | TODO |
 | 10 | Release pass | TODO |
 
@@ -28,6 +28,10 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 - **Title screen** — the approved composition over the real world: the same
   backdrop and building art the player is about to walk through. `Enter`, click
   or tap to start; `SKIP TO INDEX →` for anyone who would rather read.
+- **Opening ritual** — six seconds exactly: Edward approaches a sealed door in
+  a dark clearing, six original glyph creatures emerge and assemble into
+  EDWARD, lock into the carved slots, and the door opens into the world.
+  Skippable at every stage.
 - **Main world** — side-view pixel town, six buildings, terraced terrain,
   stone path, stream and footbridge, town cluster, AFL oval, TOMODACHI. Smooth
   A/D + arrow movement, terrain-following, camera follow, proximity prompts,
@@ -70,7 +74,6 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 
 ## What is still placeholder
 
-- Intro sequence (`components/intro/intro-sequence.tsx`) — placeholder DOM.
 - `/resume` and `/case-studies/*` — placeholder bodies (D2, D4).
 
 ## Quality gates
@@ -80,7 +83,7 @@ All green as of Phase 6:
 ```
 npm run lint        eslint . --max-warnings 0
 npm run typecheck   tsc --noEmit
-npm test            12 files, 99 tests
+npm test            12 files, 100 tests
 npm run build       production build
 ```
 

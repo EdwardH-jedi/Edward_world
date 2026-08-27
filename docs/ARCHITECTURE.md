@@ -185,11 +185,27 @@ proximity reach, and `E` to look — the same verbs as outside. Opening a
 non-project location goes through a typed `OPEN_LOCATION` action rather than
 being special-cased on a building id.
 
+## The opening ritual
+
+Six seconds exactly (`INTRO_TOTAL_MS`), spent on the two beats that carry
+meaning — the creatures arriving and the word forming — rather than on the
+door. `lib/pixel/glyphs.ts` holds six original letterforms, one per letter of
+EDWARD, each with a single glowing eye. `lib/pixel/intro.ts` draws the clearing.
+
+The whole scene is one fixed-aspect stage, so the backdrop, the six carved
+slots and the creatures share a coordinate space and nothing needs re-aligning
+at another width.
+
+Stages advance on timers, as everywhere else. The choreography differs from the
+locations in one way: its timelines are **paused, never reverted**, because
+each beat hands its end state to the next — reverting would wipe the creatures
+back to invisible the moment they finished arriving. Each beat also pins the
+state it depends on before animating, so it can start from a known place rather
+than trusting the previous tween to have landed.
+
 ## Visual implementation seam
 
-`MainWorld` is done. `IntroSequence` still holds placeholder DOM: replace it with
-asset-backed presentational components while preserving its props, typed records,
-state transitions, and interaction dispatch. World objects expose stable
+Every surface now has its real art. World objects expose stable
 `data-object-id` hooks matching their typed IDs. Add tunable motion presets to the
 existing motion layer rather than coupling anime.js timelines to portfolio data or
 game rules. Ambient world animation runs off a single shared frame counter

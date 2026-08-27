@@ -111,17 +111,131 @@ p {
 
 .intro-screen {
   align-items: center;
+  background: #161713;
   display: flex;
   flex-direction: column;
+  height: 100dvh;
   justify-content: center;
-  min-height: 100dvh;
-  padding: 5rem 1.5rem 2rem;
-  text-align: center;
+  overflow: hidden;
+  position: relative;
 }
 
-.intro-screen h1 {
-  font-size: clamp(2.5rem, 8vw, 6rem);
-  margin-bottom: 1rem;
+/* A fixed-aspect stage: the backdrop, the slots and the creatures all share
+   one coordinate space, so nothing has to be re-aligned at another width. */
+.intro-stage {
+  aspect-ratio: 200 / 120;
+  max-height: 82vh;
+  position: relative;
+  width: min(94vw, 62rem);
+}
+
+.intro-clearing {
+  height: 100%;
+  image-rendering: pixelated;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.intro-stage canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.intro-slot {
+  background: var(--loc-warm, #f3e3b2);
+  box-shadow: 0 0 10px rgb(243 227 178 / 60%);
+  height: 1.6%;
+  opacity: 0;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 1%;
+}
+
+.intro-edward {
+  bottom: 20%;
+  left: 8%;
+  position: absolute;
+}
+
+.intro-edward canvas {
+  height: 12%;
+  height: clamp(2.4rem, 7vh, 3.6rem);
+  width: auto;
+}
+
+.intro-glyph {
+  left: 0;
+  position: absolute;
+  top: 0;
+  transform: translate(-50%, -50%);
+}
+
+.intro-glyph canvas {
+  /* The creatures are ink, as the design system says. Against a night sky that
+     needs a little light around them to read as living rather than as holes. */
+  filter: drop-shadow(0 0 5px rgb(243 227 178 / 42%));
+  height: clamp(1.6rem, 4.6vh, 2.4rem);
+  width: auto;
+}
+
+/* The seam of light in the door, and the bloom it becomes. */
+.intro-door {
+  background: var(--loc-warm, #f3e3b2);
+  height: 28%;
+  left: 70%;
+  opacity: 0;
+  position: absolute;
+  top: 48%;
+  transform-origin: center;
+  width: 0.8%;
+}
+
+.intro-screen[data-stage="DOOR_OPEN"] .intro-door { opacity: 1; }
+
+.intro-bloom {
+  background: radial-gradient(
+    circle at 70% 62%,
+    rgb(247 241 226 / 95%) 0%,
+    rgb(243 227 178 / 70%) 28%,
+    rgb(243 227 178 / 0%) 62%
+  );
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.intro-actions {
+  bottom: 1.6rem;
+  display: flex;
+  gap: 0.6rem;
+  position: absolute;
+  right: 1.6rem;
+  z-index: 4;
+}
+
+.intro-skip {
+  background: rgb(43 40 35 / 90%);
+  border: 1px solid #57534a;
+  color: #efe7d3;
+  cursor: pointer;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  padding: 0.55rem 0.8rem;
+}
+
+.intro-skip:hover,
+.intro-skip:focus-visible {
+  background: #efe7d3;
+  color: #2b2823;
+}
+
+.intro-skip--quiet { color: #9c9482; }
+
+@media (max-width: 640px) {
+  .intro-actions { bottom: 1rem; right: 1rem; }
 }
 
 /* ── Title screen ────────────────────────────────────────────────────────────
@@ -284,70 +398,6 @@ p {
   margin-top: 0.5rem;
   text-decoration: underline;
 }
-
-.intro-stage {
-  align-items: end;
-  border-bottom: 2px solid var(--foreground);
-  display: grid;
-  gap: 4rem;
-  grid-template-columns: 7rem 7rem 9rem;
-  height: 15rem;
-  justify-content: center;
-  margin: 1rem 0 2rem;
-  max-width: 48rem;
-  width: 100%;
-}
-
-.intro-avatar,
-.intro-glyphs,
-.intro-door {
-  align-items: center;
-  border: 2px solid var(--foreground);
-  display: flex;
-  font-size: 0.68rem;
-  justify-content: center;
-}
-
-.intro-avatar {
-  height: 6rem;
-}
-
-.intro-glyphs {
-  align-self: center;
-  border-style: dashed;
-  height: 4rem;
-  opacity: 0.35;
-}
-
-.intro-door {
-  height: 11rem;
-  transform-origin: right center;
-}
-
-.intro-screen[data-stage="APPROACH"] .intro-avatar {
-  transform: translateX(2rem);
-}
-
-.intro-screen[data-stage="GLYPH_REVEAL"] .intro-glyphs,
-.intro-screen[data-stage="EDWARD_FORMATION"] .intro-glyphs,
-.intro-screen[data-stage="DOOR_UNLOCK"] .intro-glyphs,
-.intro-screen[data-stage="DOOR_OPEN"] .intro-glyphs {
-  opacity: 1;
-}
-
-.intro-screen[data-stage="DOOR_UNLOCK"] .intro-door,
-.intro-screen[data-stage="DOOR_OPEN"] .intro-door {
-  border-style: dashed;
-}
-
-.intro-actions {
-  display: flex;
-  gap: 0.75rem;
-}
-
-/* ── World mode ──────────────────────────────────────────────────────────────
-   The world is the only surface that uses the pixel palette and the bitmap /
-   mono type systems. Index, dialogs and documents keep the editorial look. */
 
 .world-screen {
   --world-sky: #e9e0c8;
