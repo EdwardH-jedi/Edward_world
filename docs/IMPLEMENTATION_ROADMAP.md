@@ -455,18 +455,37 @@ overrode the real scene — 64 stale lines removed.
 
 ## Phase 9 — World polish / TOMODACHI
 
-**Status:** TODO
+**Status:** DONE
 
 **Scope.** Final world-life pass — ambient animation, signs, props, small
 details, NPC positioning, transitions, TOMODACHI dialogue and easter eggs.
 TOMODACHI stays a small NPC. Do not overload the world.
 
 **Acceptance criteria.**
-- [ ] Improvements are additive; nothing approved is regressed.
-- [ ] TOMODACHI has a few lines with light state; still incidental.
-- [ ] No measurable frame-time regression in the world.
+- [x] Additive only. No approved art, geometry or interaction was changed.
+- [x] TOMODACHI has five conversations that progress as you keep stopping, and
+      keeps its last word rather than running out. Lines are capped at three
+      per conversation and 72 characters each, tested, so it stays a small NPC
+      and never pitches the portfolio.
+- [x] It wanders near the house, closing the deviation recorded in Phase 1.
+      The drift is visual only — the interaction range is still measured from
+      where it lives, so the prompt can never slide out from under someone
+      standing next to it.
+- [x] The wander rides the world's existing ambient frame, so it costs nothing
+      new: no extra timer, no extra loop.
 
-**Validation result.** _(pending)_ · **Commit.** _(pending)_
+**Validation result.**
+
+Gates: lint, typecheck, **103 tests (13 files)**, production build — all pass.
+
+Browser: walked to TOMODACHI, watched it drift back and forth across eight
+distinct positions, and held four conversations in a row — each one different,
+in order.
+
+Deliberately **not** done: no new props, signs or ambient layers. The world
+reads as a place already, and the brief asks not to overload it.
+
+**Commit.** `<phase-9>`
 
 ---
 

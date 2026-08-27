@@ -11,6 +11,7 @@ import {
   type HorizontalDirection,
 } from "@/lib/game/movement";
 import { getGroundYForFootprint, PIXEL_UNIT } from "@/lib/game/terrain";
+import { getTomodachiLines, getWanderOffset } from "@/lib/game/tomodachi";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
@@ -56,6 +57,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     position: { ...initialPlayer.position },
   }));
   const [moving, setMoving] = useState(false);
+  const [tomodachiVisits, setTomodachiVisits] = useState(0);
   const [viewportWidth, setViewportWidth] = useState(0);
   const viewportRef = useRef<HTMLDivElement>(null);
   const pressedKeys = useRef(new Set<string>());
@@ -157,12 +159,24 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     function handleInteraction(event: KeyboardEvent) {
       if (disabled || event.key.toLowerCase() !== "e" || !nearbyObject) return;
       event.preventDefault();
+
+      // TOMODACHI has more than one thing to say, and remembers roughly how
+      // often you have stopped. Everything else dispatches as authored.
+      if (nearbyObject.kind === "npc" && nearbyObject.interaction.type === "TALK") {
+        onInteraction({
+          ...nearbyObject.interaction,
+          lines: getTomodachiLines(tomodachiVisits),
+        });
+        setTomodachiVisits((visits) => visits + 1);
+        return;
+      }
+
       onInteraction(nearbyObject.interaction);
     }
 
     window.addEventListener("keydown", handleInteraction);
     return () => window.removeEventListener("keydown", handleInteraction);
-  }, [disabled, nearbyObject, onInteraction]);
+  }, [disabled, nearbyObject, onInteraction, tomodachiVisits]);
 
   const cameraX = getCameraX({
     playerX: player.position.x,
@@ -204,6 +218,9 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
           {worldObjects.map((object) => {
             const art = getObjectArt(object);
             const isNearby = nearbyObject?.id === object.id;
+            // Only TOMODACHI drifts, and only visually.
+            const drift =
+              object.kind === "npc" ? getWanderOffset(ambientFrame) : 0;
 
             return (
               <div
@@ -213,7 +230,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
                 key={object.id}
                 style={{
                   height: object.size.height,
-                  left: object.position.x,
+                  left: object.position.x + drift,
                   top: object.position.y,
                   width: object.size.width,
                 }}

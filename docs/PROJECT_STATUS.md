@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-27 · after Phase 8
+**Last updated:** 2026-08-27 · after Phase 9
 
 ---
 
@@ -20,7 +20,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 6 | Index mode final pass | **DONE** |
 | 7 | Title screen | **DONE** |
 | 8 | Six-second intro | **DONE** |
-| 9 | World polish / TOMODACHI | TODO |
+| 9 | World polish / TOMODACHI | **DONE** |
 | 10 | Release pass | TODO |
 
 ## What works today
@@ -33,7 +33,8 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   EDWARD, lock into the carved slots, and the door opens into the world.
   Skippable at every stage.
 - **Main world** — side-view pixel town, six buildings, terraced terrain,
-  stone path, stream and footbridge, town cluster, AFL oval, TOMODACHI. Smooth
+  stone path, stream and footbridge, town cluster, AFL oval, and TOMODACHI,
+  who wanders near the house and has five conversations in him. Smooth
   A/D + arrow movement, terrain-following, camera follow, proximity prompts,
   ambient animation on a shared frame counter.
 - **SportsGang location** — the only project location with a full experience.
@@ -83,7 +84,7 @@ All green as of Phase 6:
 ```
 npm run lint        eslint . --max-warnings 0
 npm run typecheck   tsc --noEmit
-npm test            12 files, 100 tests
+npm test            13 files, 103 tests
 npm run build       production build
 ```
 
