@@ -260,7 +260,7 @@ p {
 
 /* Every canvas in the project is nearest-neighbour scaled art. */
 .world-track canvas,
-.sg-experience canvas {
+.loc-experience canvas {
   display: block;
   image-rendering: pixelated;
 }
@@ -351,14 +351,14 @@ p {
    A place inside Edward's World: same palette, same pixel unit, same two type
    systems. The court surface is the one accent this location gets. */
 
-.sg-experience {
-  --sg-sky: #e9e0c8;
-  --sg-char: #2b2823;
-  --sg-cream: #efe7d3;
-  --sg-muted: #9c9482;
-  --sg-orange: #c98a52;
-  --sg-court: #a97f52;
-  --sg-court-dark: #8e6a44;
+.loc-experience {
+  --loc-sky: #e9e0c8;
+  --loc-char: #2b2823;
+  --loc-cream: #efe7d3;
+  --loc-muted: #9c9482;
+  --loc-orange: #c98a52;
+  --loc-court: #a97f52;
+  --loc-court-dark: #8e6a44;
 
   background: #221f1a;
   bottom: 0;
@@ -371,22 +371,22 @@ p {
   z-index: 10;
 }
 
-.sg-experience:focus-visible {
+.loc-experience:focus-visible {
   outline: none;
 }
 
-.sg-backdrop {
+.loc-backdrop {
   inset: 0;
   position: absolute;
 }
 
-.sg-backdrop__canvas {
+.loc-backdrop__canvas {
   height: 100%;
   object-fit: cover;
   width: 100%;
 }
 
-.sg-backdrop--courtside {
+.loc-backdrop--courtside {
   opacity: 0;
 }
 
@@ -399,32 +399,32 @@ p {
      whenever the viewport is taller than the art's 16:9. Positioning the box
      bottom would leave the players hovering above the surface, so the offset
      backs out the surface band's own height instead. */
-  --sg-court-width: min(92vw, 900px);
-  --sg-court-surface: 22%;
+  --loc-court-width: min(92vw, 900px);
+  --loc-court-surface: 22%;
 
   aspect-ratio: 900 / 340;
-  bottom: calc(28.9% - var(--sg-court-width) * 0.0831);
-  left: calc(50% - var(--sg-court-width) / 2);
+  bottom: calc(28.9% - var(--loc-court-width) * 0.0831);
+  left: calc(50% - var(--loc-court-width) / 2);
   opacity: 0;
   pointer-events: none;
   position: absolute;
   transform-origin: 0 0;
-  width: var(--sg-court-width);
+  width: var(--loc-court-width);
   z-index: 3;
 }
 
-.sg-experience[data-stage="SEARCHING"] .sg-court,
-.sg-experience[data-stage="MATCH_FOUND"] .sg-court,
-.sg-experience[data-stage="COURT_TRANSITION"] .sg-court,
-.sg-experience[data-stage="MEET"] .sg-court,
-.sg-experience[data-stage="PLAY"] .sg-court,
-.sg-experience[data-stage="RESULT"] .sg-court,
-.sg-experience[data-stage="COMPLETE"] .sg-court {
+.loc-experience[data-stage="SEARCHING"] .sg-court,
+.loc-experience[data-stage="MATCH_FOUND"] .sg-court,
+.loc-experience[data-stage="COURT_TRANSITION"] .sg-court,
+.loc-experience[data-stage="MEET"] .sg-court,
+.loc-experience[data-stage="PLAY"] .sg-court,
+.loc-experience[data-stage="RESULT"] .sg-court,
+.loc-experience[data-stage="COMPLETE"] .sg-court {
   opacity: 1;
 }
 
 .sg-court__surface {
-  background: var(--sg-court);
+  background: var(--loc-court);
   border-top: 2px solid #c2955f;
   bottom: 0;
   height: 22%;
@@ -444,7 +444,7 @@ p {
 }
 
 .sg-court__surface::after {
-  background: var(--sg-court-dark);
+  background: var(--loc-court-dark);
   bottom: 0;
   content: "";
   height: 22%;
@@ -454,7 +454,7 @@ p {
 }
 
 .sg-court__line {
-  background: var(--sg-cream);
+  background: var(--loc-cream);
   bottom: 22%;
   height: 34%;
   position: absolute;
@@ -477,7 +477,7 @@ p {
 }
 
 .sg-court__net-tape {
-  background: var(--sg-cream);
+  background: var(--loc-cream);
   height: 12%;
   left: -45%;
   position: absolute;
@@ -506,7 +506,7 @@ p {
 
 .sg-court__ball {
   aspect-ratio: 1;
-  background: var(--sg-orange);
+  background: var(--loc-orange);
   bottom: 23%;
   box-shadow: inset -2px -2px 0 #a96e3d;
   left: 16%;
@@ -530,18 +530,18 @@ p {
   z-index: 2;
 }
 
-.sg-experience[data-stage="PHONE"] .sg-phone,
-.sg-experience[data-stage="SPORT_SELECT"] .sg-phone,
-.sg-experience[data-stage="SEARCHING"] .sg-phone,
-.sg-experience[data-stage="MATCH_FOUND"] .sg-phone,
-.sg-experience[data-stage="COURT_TRANSITION"] .sg-phone {
+.loc-experience[data-stage="PHONE"] .sg-phone,
+.loc-experience[data-stage="SPORT_SELECT"] .sg-phone,
+.loc-experience[data-stage="SEARCHING"] .sg-phone,
+.loc-experience[data-stage="MATCH_FOUND"] .sg-phone,
+.loc-experience[data-stage="COURT_TRANSITION"] .sg-phone {
   opacity: 1;
   visibility: visible;
 }
 
 .sg-phone__chassis {
   background: #3a362f;
-  border: 4px solid var(--sg-char);
+  border: 4px solid var(--loc-char);
   box-shadow: 8px 8px 0 rgb(24 22 18 / 45%);
   display: flex;
   flex-direction: column;
@@ -575,7 +575,7 @@ p {
 }
 
 .sg-phone__brand {
-  color: var(--sg-orange);
+  color: var(--loc-orange);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
   font-size: 0.68rem;
   letter-spacing: 0.1em;
@@ -585,7 +585,7 @@ p {
 .sg-phone__hint,
 .sg-phone__label,
 .sg-phone__status {
-  color: var(--sg-muted);
+  color: var(--loc-muted);
   font-size: 0.58rem;
   letter-spacing: 0.18em;
   margin: 0;
@@ -593,7 +593,7 @@ p {
 }
 
 .sg-phone__status {
-  color: var(--sg-cream);
+  color: var(--loc-cream);
 }
 
 .sg-phone__panel {
@@ -615,7 +615,7 @@ p {
   align-items: center;
   background: transparent;
   border: 1px solid #57534a;
-  color: var(--sg-muted);
+  color: var(--loc-muted);
   display: flex;
   font-size: 0.64rem;
   justify-content: space-between;
@@ -625,8 +625,8 @@ p {
 }
 
 .sg-phone__sport[data-playable] {
-  background: var(--sg-orange);
-  border-color: var(--sg-orange);
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
   color: #241f18;
 }
 
@@ -648,7 +648,7 @@ p {
 }
 
 .sg-phone__sweep {
-  background: linear-gradient(90deg, transparent, var(--sg-orange), transparent);
+  background: linear-gradient(90deg, transparent, var(--loc-orange), transparent);
   height: 100%;
   position: absolute;
   width: 60%;
@@ -662,20 +662,20 @@ p {
 }
 
 .sg-phone__player {
-  color: var(--sg-cream);
+  color: var(--loc-cream);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
   font-size: 0.6rem;
   letter-spacing: 0.06em;
 }
 
 .sg-phone__vs {
-  color: var(--sg-muted);
+  color: var(--loc-muted);
   font-size: 0.52rem;
   letter-spacing: 0.2em;
 }
 
 .sg-phone__accept {
-  background: var(--sg-orange);
+  background: var(--loc-orange);
   border: 0;
   color: #241f18;
   font-size: 0.62rem;
@@ -722,8 +722,8 @@ p {
 .sg-court__finish {
   background: repeating-linear-gradient(
     180deg,
-    var(--sg-cream) 0 4px,
-    var(--sg-char) 4px 8px
+    var(--loc-cream) 0 4px,
+    var(--loc-char) 4px 8px
   );
   bottom: 0;
   left: 88%;
@@ -761,7 +761,7 @@ p {
 }
 
 .sg-court__hoop::before {
-  background: var(--sg-char);
+  background: var(--loc-char);
   bottom: 0;
   content: "";
   position: absolute;
@@ -771,8 +771,8 @@ p {
 }
 
 .sg-court__backboard {
-  background: var(--sg-cream);
-  border: 2px solid var(--sg-char);
+  background: var(--loc-cream);
+  border: 2px solid var(--loc-char);
   height: 34%;
   position: absolute;
   right: 0;
@@ -781,7 +781,7 @@ p {
 }
 
 .sg-court__ring {
-  background: var(--sg-orange);
+  background: var(--loc-orange);
   height: 4px;
   left: 0;
   position: absolute;
@@ -791,7 +791,7 @@ p {
 
 /* Stands on the surface, like everything else that is on the ground. */
 .sg-court__flag {
-  background: var(--sg-cream);
+  background: var(--loc-cream);
   bottom: 22%;
   height: 26%;
   left: 86%;
@@ -800,7 +800,7 @@ p {
 }
 
 .sg-court__flag-cloth {
-  background: var(--sg-orange);
+  background: var(--loc-orange);
   height: 34%;
   left: 2px;
   position: absolute;
@@ -819,14 +819,14 @@ p {
    here lands where it would inside the court itself. */
 
 .sg-play {
-  --sg-court-width: min(92vw, 900px);
+  --loc-court-width: min(92vw, 900px);
 
   aspect-ratio: 900 / 340;
-  bottom: calc(28.9% - var(--sg-court-width) * 0.0831);
-  left: calc(50% - var(--sg-court-width) / 2);
+  bottom: calc(28.9% - var(--loc-court-width) * 0.0831);
+  left: calc(50% - var(--loc-court-width) / 2);
   pointer-events: none;
   position: absolute;
-  width: var(--sg-court-width);
+  width: var(--loc-court-width);
   z-index: 4;
 }
 
@@ -838,12 +838,12 @@ p {
 }
 
 .sg-play__ball--tennis {
-  background: var(--sg-orange);
+  background: var(--loc-orange);
   box-shadow: inset -2px -2px 0 #a96e3d;
 }
 
 .sg-play__ball--golf {
-  background: var(--sg-glow, #f7f1e2);
+  background: var(--loc-glow, #f7f1e2);
   box-shadow: inset -2px -2px 0 #c4baa3;
   width: 1.1%;
 }
@@ -855,7 +855,7 @@ p {
 }
 
 .sg-play__readout {
-  color: var(--sg-char);
+  color: var(--loc-char);
   font-size: 0.6rem;
   letter-spacing: 0.12em;
   margin: 0;
@@ -866,7 +866,7 @@ p {
 }
 
 .sg-play__verdict {
-  color: var(--sg-cream);
+  color: var(--loc-cream);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
   font-size: 1.1rem;
   left: 50%;
@@ -878,7 +878,7 @@ p {
   transform: translateX(-50%);
 }
 
-.sg-play__verdict[data-verdict="PERFECT"] { color: var(--sg-orange); }
+.sg-play__verdict[data-verdict="PERFECT"] { color: var(--loc-orange); }
 .sg-play__verdict[data-verdict="MISS"] { color: #b9ada0; }
 
 .sg-play__runner {
@@ -894,7 +894,7 @@ p {
 }
 
 .sg-play__runner span {
-  color: var(--sg-cream);
+  color: var(--loc-cream);
   display: block;
   font-size: 0.5rem;
   letter-spacing: 0.14em;
@@ -902,7 +902,7 @@ p {
 }
 
 .sg-play__runner--pacer { opacity: 0.75; }
-.sg-play__runner--player[data-pushing] span { color: var(--sg-orange); }
+.sg-play__runner--player[data-pushing] span { color: var(--loc-orange); }
 
 /* ── Play HUD ────────────────────────────────────────────────────────────── */
 
@@ -922,7 +922,7 @@ p {
 }
 
 .sg-play__prompt {
-  color: var(--sg-cream);
+  color: var(--loc-cream);
   font-size: 0.68rem;
   letter-spacing: 0.2em;
   margin: 0;
@@ -930,7 +930,7 @@ p {
 }
 
 .sg-play__tally {
-  color: var(--sg-muted);
+  color: var(--loc-muted);
   display: flex;
   font-size: 0.52rem;
   justify-content: space-between;
@@ -947,7 +947,7 @@ p {
 }
 
 .sg-play__action {
-  background: var(--sg-orange);
+  background: var(--loc-orange);
   border: 0;
   color: #241f18;
   font-family: var(--font-mono), ui-monospace, monospace;
@@ -962,7 +962,7 @@ p {
 .sg-play__action--quiet {
   background: transparent;
   border: 1px solid #57534a;
-  color: var(--sg-cream);
+  color: var(--loc-cream);
 }
 
 .sg-play__pair {
@@ -980,7 +980,7 @@ p {
 
 .sg-meter__label,
 .sg-gauge__label {
-  color: var(--sg-muted);
+  color: var(--loc-muted);
   font-size: 0.5rem;
   letter-spacing: 0.18em;
   margin: 0 0 0.3rem;
@@ -1002,7 +1002,7 @@ p {
 
 .sg-meter__fill,
 .sg-gauge__fill {
-  background: var(--sg-orange);
+  background: var(--loc-orange);
   height: 100%;
   left: 0;
   position: absolute;
@@ -1021,7 +1021,7 @@ p {
 }
 
 .sg-meter__centre {
-  background: var(--sg-cream);
+  background: var(--loc-cream);
   bottom: 0;
   left: 50%;
   position: absolute;
@@ -1030,7 +1030,7 @@ p {
 }
 
 .sg-meter__marker {
-  background: var(--sg-cream);
+  background: var(--loc-cream);
   bottom: 0;
   position: absolute;
   top: 0;
@@ -1043,10 +1043,10 @@ p {
 
 /* ── HUD ──────────────────────────────────────────────────────────────────── */
 
-.sg-exit {
+.loc-exit {
   background: rgb(43 40 35 / 88%);
   border: 1px solid #57534a;
-  color: var(--sg-cream);
+  color: var(--loc-cream);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.6rem;
   left: 1rem;
@@ -1057,12 +1057,12 @@ p {
   z-index: 6;
 }
 
-.sg-exit:hover {
-  background: var(--sg-cream);
-  color: var(--sg-char);
+.loc-exit:hover {
+  background: var(--loc-cream);
+  color: var(--loc-char);
 }
 
-.sg-announcer {
+.loc-announcer {
   clip-path: inset(50%);
   height: 1px;
   margin: 0;
@@ -1072,9 +1072,9 @@ p {
   width: 1px;
 }
 
-.sg-caption {
-  background: var(--sg-char);
-  color: var(--sg-cream);
+.loc-caption {
+  background: var(--loc-char);
+  color: var(--loc-cream);
   font-size: 0.66rem;
   left: 50%;
   letter-spacing: 0.3em;
@@ -1087,14 +1087,14 @@ p {
   z-index: 5;
 }
 
-.sg-caption--title {
+.loc-caption--title {
   font-family: var(--font-bitmap), var(--font-mono), monospace;
   font-size: 1.4rem;
   letter-spacing: 0.12em;
   padding: 0.6rem 1rem 0.6rem 1.3rem;
 }
 
-.sg-beat {
+.loc-beat {
   align-items: center;
   display: flex;
   flex-direction: column;
@@ -1106,19 +1106,19 @@ p {
   z-index: 5;
 }
 
-.sg-beat__text {
-  background: var(--sg-char);
-  color: var(--sg-cream);
+.loc-beat__text {
+  background: var(--loc-char);
+  color: var(--loc-cream);
   font-size: 0.66rem;
   letter-spacing: 0.24em;
   margin: 0;
   padding: 0.4rem 0.8rem 0.4rem 1.05rem;
 }
 
-.sg-button {
+.loc-button {
   background: rgb(43 40 35 / 90%);
   border: 1px solid #57534a;
-  color: var(--sg-cream);
+  color: var(--loc-cream);
   cursor: pointer;
   display: inline-block;
   font-family: var(--font-mono), ui-monospace, monospace;
@@ -1128,20 +1128,20 @@ p {
   text-decoration: none;
 }
 
-.sg-button:hover {
-  background: var(--sg-cream);
-  color: var(--sg-char);
+.loc-button:hover {
+  background: var(--loc-cream);
+  color: var(--loc-char);
 }
 
-.sg-button--primary {
-  background: var(--sg-orange);
-  border-color: var(--sg-orange);
+.loc-button--primary {
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
   color: #241f18;
 }
 
-.sg-button--quiet {
+.loc-button--quiet {
   background: transparent;
-  color: var(--sg-muted);
+  color: var(--loc-muted);
 }
 
 /* ── Result and summary ───────────────────────────────────────────────────── */
@@ -1159,7 +1159,7 @@ p {
 }
 
 .sg-result__heading {
-  color: var(--sg-muted);
+  color: var(--loc-muted);
   font-size: 0.6rem;
   letter-spacing: 0.28em;
   margin: 0 0 0.7rem;
@@ -1167,7 +1167,7 @@ p {
 
 .sg-result__score {
   align-items: center;
-  color: var(--sg-cream);
+  color: var(--loc-cream);
   display: flex;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
   font-size: 0.72rem;
@@ -1177,7 +1177,7 @@ p {
 }
 
 .sg-result__numbers {
-  color: var(--sg-orange);
+  color: var(--loc-orange);
   font-size: 1.25rem;
 }
 
@@ -1186,13 +1186,13 @@ p {
 }
 
 .sg-result__note {
-  color: var(--sg-muted);
+  color: var(--loc-muted);
   font-size: 0.55rem;
   letter-spacing: 0.18em;
   margin: 0.8rem 0 0;
 }
 
-.sg-summary {
+.loc-summary {
   background: rgb(34 31 26 / 95%);
   border: 1px solid #57534a;
   bottom: 0;
@@ -1207,31 +1207,31 @@ p {
   z-index: 5;
 }
 
-.sg-summary__wordmark {
-  color: var(--sg-cream);
+.loc-summary__wordmark {
+  color: var(--loc-cream);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
   font-size: 1.1rem;
   letter-spacing: 0.08em;
   margin: 0;
 }
 
-.sg-summary__role {
-  color: var(--sg-orange);
+.loc-summary__role {
+  color: var(--loc-orange);
   font-size: 0.6rem;
   letter-spacing: 0.24em;
   margin: 0.5rem 0 0;
 }
 
-.sg-summary__descriptor {
-  color: var(--sg-cream);
+.loc-summary__descriptor {
+  color: var(--loc-cream);
   font-family: var(--font-archivo), Arial, sans-serif;
   font-size: 0.92rem;
   line-height: 1.55;
   margin: 0.9rem 0 0;
 }
 
-.sg-summary__flow {
-  color: var(--sg-muted);
+.loc-summary__flow {
+  color: var(--loc-muted);
   display: flex;
   flex-wrap: wrap;
   font-size: 0.58rem;
@@ -1242,12 +1242,12 @@ p {
   padding: 0;
 }
 
-.sg-summary__flow li + li::before {
-  color: var(--sg-orange);
+.loc-summary__flow li + li::before {
+  color: var(--loc-orange);
   content: "→ ";
 }
 
-.sg-summary__stack {
+.loc-summary__stack {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
@@ -1256,15 +1256,15 @@ p {
   padding: 0;
 }
 
-.sg-summary__stack li {
+.loc-summary__stack li {
   border: 1px solid #57534a;
-  color: var(--sg-muted);
+  color: var(--loc-muted);
   font-size: 0.55rem;
   letter-spacing: 0.12em;
   padding: 0.25rem 0.45rem;
 }
 
-.sg-summary__actions {
+.loc-summary__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -1279,11 +1279,11 @@ p {
     width: 190px;
   }
 
-  .sg-caption--title {
+  .loc-caption--title {
     font-size: 1rem;
   }
 
-  .sg-summary {
+  .loc-summary {
     max-height: 68vh;
     padding: 1.2rem 1.1rem 1.4rem;
   }

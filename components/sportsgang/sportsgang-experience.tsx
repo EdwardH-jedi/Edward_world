@@ -1,7 +1,6 @@
 "use client";
 
 import type { Timeline } from "animejs";
-import Link from "next/link";
 import {
   useCallback,
   useEffect,
@@ -10,11 +9,11 @@ import {
   useRef,
   useState,
 } from "react";
+import { ProjectSummary } from "@/components/locations/project-summary";
 import { MINIGAMES } from "@/components/sportsgang/minigames";
 import { PHONE_STAGES, PixelPhone } from "@/components/sportsgang/pixel-phone";
 import { SportVenue } from "@/components/sportsgang/sport-venue";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
-import { getProjectById } from "@/data/projects";
 import type { SportResult } from "@/lib/game/minigames/types";
 import {
   getSportsgangStageDuration,
@@ -87,8 +86,6 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
 
   const projectionRef = useRef<CourtProjection | null>(null);
   const expansionRef = useRef<Timeline | null>(null);
-
-  const project = getProjectById("sportsgang");
 
   /* ── Stage machine ──────────────────────────────────────────────────────
      Driven by setTimeout, never by an animation callback. anime.js runs on
@@ -276,27 +273,27 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
   return (
     <section
       aria-label="SportsGang"
-      className="sg-experience"
+      className="loc-experience"
       data-stage={stage}
       ref={rootRef}
       tabIndex={-1}
     >
-      <div className="sg-backdrop sg-backdrop--venue" ref={venueRef}>
+      <div className="loc-backdrop loc-backdrop--venue" ref={venueRef}>
         <PixelCanvas
           artHeight={VENUE_ART_SIZE.height}
           artWidth={VENUE_ART_SIZE.width}
-          className="sg-backdrop__canvas"
+          className="loc-backdrop__canvas"
           draw={drawVenue}
           fill
           frame={0}
           unit={PIXEL_UNIT}
         />
       </div>
-      <div className="sg-backdrop sg-backdrop--courtside" ref={courtsideRef}>
+      <div className="loc-backdrop loc-backdrop--courtside" ref={courtsideRef}>
         <PixelCanvas
           artHeight={VENUE_ART_SIZE.height}
           artWidth={VENUE_ART_SIZE.width}
-          className="sg-backdrop__canvas"
+          className="loc-backdrop__canvas"
           draw={drawCourtside}
           fill
           frame={0}
@@ -329,23 +326,23 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
         sweepRef={sweepRef}
       />
 
-      <button className="sg-exit" onClick={onExit} type="button">
+      <button className="loc-exit" onClick={onExit} type="button">
         ESC · BACK TO WORLD
       </button>
 
-      <p aria-live="polite" className="sg-announcer">
+      <p aria-live="polite" className="loc-announcer">
         {STAGE_CAPTIONS[stage]}
       </p>
 
       {stage === "ENTER" ? (
-        <p className="sg-caption sg-caption--title">SPORTSGANG</p>
+        <p className="loc-caption loc-caption--title">SPORTSGANG</p>
       ) : null}
 
       {stage === "MEET" ? (
-        <div className="sg-beat">
-          <p className="sg-beat__text">PLAYER 02 IS READY · {activeSport}</p>
+        <div className="loc-beat">
+          <p className="loc-beat__text">PLAYER 02 IS READY · {activeSport}</p>
           <button
-            className="sg-button sg-button--primary"
+            className="loc-button loc-button--primary"
             onClick={advance}
             ref={readyRef}
             type="button"
@@ -375,52 +372,16 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
         </div>
       ) : null}
 
-      {stage === "COMPLETE" && project ? (
-        <div className="sg-summary">
-          <p className="sg-summary__wordmark">SPORTSGANG</p>
-          <p className="sg-summary__role">PEER SPORTS COMPETITION</p>
-          <p className="sg-summary__descriptor">{project.shortDescriptor}</p>
-
-          <ol className="sg-summary__flow">
-            {PRODUCT_FLOW.map((step) => (
-              <li key={step}>{step}</li>
-            ))}
-          </ol>
-
-          {project.techStack ? (
-            <ul className="sg-summary__stack">
-              {project.techStack.map((entry) => (
-                <li key={entry}>{entry}</li>
-              ))}
-            </ul>
-          ) : null}
-
-          <div className="sg-summary__actions">
-            <Link
-              className="sg-button sg-button--primary"
-              href={project.caseStudyUrl}
-              ref={completeRef}
-            >
-              VIEW CASE STUDY
-            </Link>
-            {project.githubUrl ? (
-              <a
-                className="sg-button"
-                href={project.githubUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                GITHUB
-              </a>
-            ) : null}
-            <button className="sg-button" onClick={onExit} type="button">
-              BACK TO WORLD
-            </button>
-            <button className="sg-button sg-button--quiet" onClick={replay} type="button">
-              REPLAY
-            </button>
-          </div>
-        </div>
+      {stage === "COMPLETE" ? (
+        <ProjectSummary
+          firstActionRef={completeRef}
+          flow={PRODUCT_FLOW}
+          onExit={onExit}
+          onReplay={replay}
+          projectId="sportsgang"
+          role="PEER SPORTS COMPETITION"
+          wordmark="SPORTSGANG"
+        />
       ) : null}
     </section>
   );
