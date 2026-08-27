@@ -1,5 +1,31 @@
 import type { Metadata, Viewport } from "next";
+import { Archivo, IBM_Plex_Mono, Silkscreen } from "next/font/google";
 import "./globals.css";
+
+/**
+ * Two deliberate type systems, per the approved design direction: a bitmap face
+ * for anything inside the game world, a grotesk for portfolio UI, and a mono
+ * for metadata and machine-ish labels.
+ */
+const archivo = Archivo({
+  subsets: ["latin"],
+  variable: "--font-archivo",
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+const silkscreen = Silkscreen({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-bitmap",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -45,7 +71,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html
+      className={`${archivo.variable} ${plexMono.variable} ${silkscreen.variable}`}
+      lang="en"
+    >
       <body>{children}</body>
     </html>
   );

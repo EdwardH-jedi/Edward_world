@@ -29,8 +29,40 @@ TITLE
 - WORLD / INDEX is always available. INDEX and interaction panels share a modal primitive with initial focus, a focus trap, Escape handling, and focus restoration.
 - Reduced-motion preference shortens anime.js animation durations and automatic intro-stage waits to a single millisecond while preserving the state sequence.
 
+## Pixel art layer
+
+`lib/pixel/` holds the world's art. It is pure and browser-free apart from the
+canvas binding, so it is unit-testable and safe to import anywhere:
+
+- `palette.ts` — the approved colour tokens. Nothing outside this file names a colour.
+- `raster.ts` — the `Raster` primitive (`draw(x, y, w, h, colour)` in **art pixels**) plus shared helpers: sprites, hills, roof pitches, windows, sign-band dashes, trees, lamps, smoke, and deterministic `scatter` noise.
+- `buildings.ts` — one routine per structure, drawn bottom-anchored on a transparent background in its own local space.
+- `characters.ts` — Edward's four-frame walk cycle and TOMODACHI, on the approved 12x16 grid.
+- `backdrop.ts` — sky, hills, terrain, path, stream, oval and town props as one full-width layer.
+
+`lib/game/terrain.ts` is the pure ground profile. It is a stepped function on
+purpose: constant-height terraces keep everything standing on it aligned to the
+pixel grid, which is what enforces "no sub-pixel positions, ever".
+
+Rendering is a hybrid on purpose. `components/world/pixel-canvas.tsx` renders one
+routine per canvas, and `MainWorld` places those canvases *inside* the existing
+`world-object` divs. The DOM structure, the `data-object-id` hooks, the label
+text and the interaction dispatch are all unchanged — canvases are decorative
+and `aria-hidden`, and the charcoal label chips carry the accessible names.
+
+Scale is fixed: `PIXEL_UNIT` CSS pixels per art pixel, and every position and
+size in `data/world.ts` is a whole multiple of it. `tests/world-art.test.ts`
+fails if any art routine stops matching its object's world footprint.
+
 ## Visual implementation seam
 
-Replace placeholder DOM inside `IntroSequence` and `MainWorld` with asset-backed presentational components while preserving their props, typed records, state transitions, and interaction dispatch. World objects expose stable `data-object-id` hooks matching their typed IDs. Add tunable motion presets to the existing motion layer rather than coupling anime.js timelines to portfolio data or game rules.
+`MainWorld` is done. `IntroSequence` still holds placeholder DOM: replace it with
+asset-backed presentational components while preserving its props, typed records,
+state transitions, and interaction dispatch. World objects expose stable
+`data-object-id` hooks matching their typed IDs. Add tunable motion presets to the
+existing motion layer rather than coupling anime.js timelines to portfolio data or
+game rules. Ambient world animation runs off a single shared frame counter
+(`lib/motion/use-ambient-frame.ts`), which freezes for reduced motion and whenever
+the world is not the active surface.
 
 The root `index.html` and `scenes.js` files are the approved concept-board reference, not production entry points. They are intentionally versioned without being imported by the Next.js application. The generated `design/support.js` runtime is local-only and ignored.

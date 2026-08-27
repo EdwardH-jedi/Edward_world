@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { InteractionPrompt } from "@/components/world/interaction-prompt";
+import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { initialPlayer, WORLD_CONFIG, worldObjects } from "@/data/world";
 import { findNearestInteractable, getInteractionPrompt } from "@/lib/game/interactions";
 import {
@@ -8,7 +10,19 @@ import {
   movePlayerX,
   type HorizontalDirection,
 } from "@/lib/game/movement";
-import type { InteractionAction, Player } from "@/types/world";
+import { getGroundYForFootprint, PIXEL_UNIT } from "@/lib/game/terrain";
+import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
+import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
+import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
+import {
+  drawEdward,
+  drawTomodachi,
+  EDWARD_ART_SIZE,
+  getWalkFrame,
+  TOMODACHI_ART_SIZE,
+} from "@/lib/pixel/characters";
+import type { Player, WorldObject } from "@/types/world";
+import type { InteractionAction } from "@/types/world";
 
 interface MainWorldProps {
   disabled?: boolean;
@@ -17,6 +31,11 @@ interface MainWorldProps {
 
 const MOVEMENT_KEYS = new Set(["a", "d", "arrowleft", "arrowright"]);
 
+const TOMODACHI_ART: BuildingArt = {
+  size: TOMODACHI_ART_SIZE,
+  draw: drawTomodachi,
+};
+
 function getDirection(keys: ReadonlySet<string>): HorizontalDirection {
   const left = keys.has("a") || keys.has("arrowleft");
   const right = keys.has("d") || keys.has("arrowright");
@@ -24,14 +43,23 @@ function getDirection(keys: ReadonlySet<string>): HorizontalDirection {
   return left ? -1 : 1;
 }
 
+/** Resolves the art routine and grid size for any world object. */
+function getObjectArt(object: WorldObject): BuildingArt {
+  if (object.kind === "building") return buildingArt[object.id];
+  if (object.kind === "npc") return TOMODACHI_ART;
+  return signpostArt;
+}
+
 export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   const [player, setPlayer] = useState<Player>(() => ({
     ...initialPlayer,
     position: { ...initialPlayer.position },
   }));
+  const [moving, setMoving] = useState(false);
   const [viewportWidth, setViewportWidth] = useState(0);
   const viewportRef = useRef<HTMLDivElement>(null);
   const pressedKeys = useRef(new Set<string>());
+  const ambientFrame = useAmbientFrame(!disabled);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -84,22 +112,33 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
       const deltaSeconds = Math.min((time - lastTime) / 1_000, 0.05);
       lastTime = time;
 
+      // Same value bails out of a re-render, so this is safe every frame.
+      setMoving((current) => (current === (direction !== 0) ? current : direction !== 0));
+
       if (direction !== 0) {
-        setPlayer((current) => ({
-          ...current,
-          facing: direction < 0 ? "left" : "right",
-          position: {
-            ...current.position,
-            x: movePlayerX({
-              currentX: current.position.x,
-              direction,
-              deltaSeconds,
-              speed: current.speed,
-              worldWidth: WORLD_CONFIG.width,
-              playerWidth: current.size.width,
-            }),
-          },
-        }));
+        setPlayer((current) => {
+          const nextX = movePlayerX({
+            currentX: current.position.x,
+            direction,
+            deltaSeconds,
+            speed: current.speed,
+            worldWidth: WORLD_CONFIG.width,
+            playerWidth: current.size.width,
+          });
+
+          return {
+            ...current,
+            facing: direction < 0 ? "left" : "right",
+            position: {
+              x: nextX,
+              // Follow the terraced ground so Edward walks down the hill
+              // instead of floating off the end of it.
+              y:
+                getGroundYForFootprint(nextX, current.size.width) -
+                current.size.height,
+            },
+          };
+        });
       }
 
       animationFrame = requestAnimationFrame(update);
@@ -132,6 +171,8 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     worldWidth: WORLD_CONFIG.width,
   });
 
+  const walkFrame = getWalkFrame(player.position.x, PIXEL_UNIT, moving);
+
   return (
     <main className="world-screen">
       <div className="world-instructions">
@@ -152,11 +193,53 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
             width: WORLD_CONFIG.width,
           }}
         >
+          <PixelCanvas
+            artHeight={BACKDROP_ART_SIZE.height}
+            artWidth={BACKDROP_ART_SIZE.width}
+            className="world-backdrop"
+            draw={drawBackdrop}
+            frame={ambientFrame}
+            unit={PIXEL_UNIT}
+          />
+          {worldObjects.map((object) => {
+            const art = getObjectArt(object);
+            const isNearby = nearbyObject?.id === object.id;
+
+            return (
+              <div
+                className={`world-object world-object--${object.kind}`}
+                data-nearby={isNearby || undefined}
+                data-object-id={object.id}
+                key={object.id}
+                style={{
+                  height: object.size.height,
+                  left: object.position.x,
+                  top: object.position.y,
+                  width: object.size.width,
+                }}
+              >
+                <PixelCanvas
+                  artHeight={art.size.height}
+                  artWidth={art.size.width}
+                  draw={art.draw}
+                  frame={ambientFrame}
+                  unit={PIXEL_UNIT}
+                />
+                <span className="world-object__label">{object.label}</span>
+                {isNearby ? (
+                  <InteractionPrompt
+                    text={getInteractionPrompt(object.interaction)}
+                  />
+                ) : null}
+              </div>
+            );
+          })}
           <div
-            aria-label="Edward player placeholder"
+            aria-label="Edward"
             className="world-player"
             data-facing={player.facing}
             data-object-id={player.id}
+            data-moving={moving || undefined}
             style={{
               height: player.size.height,
               left: player.position.x,
@@ -164,25 +247,15 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
               width: player.size.width,
             }}
           >
-            E
+            <PixelCanvas
+              artHeight={EDWARD_ART_SIZE.height}
+              artWidth={EDWARD_ART_SIZE.width}
+              draw={drawEdward}
+              flipX={player.facing === "left"}
+              frame={walkFrame}
+              unit={PIXEL_UNIT}
+            />
           </div>
-          {worldObjects.map((object) => (
-            <div
-              className={`world-object world-object--${object.kind}`}
-              data-nearby={nearbyObject?.id === object.id || undefined}
-              data-object-id={object.id}
-              key={object.id}
-              style={{
-                height: object.size.height,
-                left: object.position.x,
-                top: object.position.y,
-                width: object.size.width,
-              }}
-            >
-              <span>{object.label}</span>
-            </div>
-          ))}
-          <div className="world-ground" style={{ top: WORLD_CONFIG.groundY }} />
         </div>
       </div>
       <div aria-live="polite" className="interaction-status">

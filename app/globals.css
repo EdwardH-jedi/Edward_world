@@ -194,7 +194,18 @@ p {
   gap: 0.75rem;
 }
 
+/* ── World mode ──────────────────────────────────────────────────────────────
+   The world is the only surface that uses the pixel palette and the bitmap /
+   mono type systems. Index, dialogs and documents keep the editorial look. */
+
 .world-screen {
+  --world-sky: #e9e0c8;
+  --world-char: #2b2823;
+  --world-cream: #efe7d3;
+  --world-orange: #c98a52;
+  --world-muted: #9c9482;
+
+  background: #221f1a;
   display: grid;
   grid-template-rows: auto 1fr auto;
   height: 100dvh;
@@ -204,21 +215,40 @@ p {
 
 .world-instructions {
   align-items: baseline;
+  color: var(--world-cream);
   display: flex;
+  font-family: var(--font-mono), ui-monospace, monospace;
   gap: 1rem;
   padding: 0 1rem 0.75rem;
 }
 
+.world-instructions strong {
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
 .world-instructions span {
-  color: var(--muted);
-  font-size: 0.85rem;
+  color: var(--world-muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .world-viewport {
-  background: #e4e1d8;
-  border-block: 1px solid var(--line);
+  /* The world is authored at a fixed height with a deliberate 72/28 split of
+     sky to land. Letting the viewport grow past it would just add dead sky, so
+     it is capped to the world and centred; the dark frame around it reads as
+     the cartridge the world is running on. */
+  align-self: center;
+  background: var(--world-sky);
+  border-block: 1px solid #3a362c;
+  height: min(100%, 552px);
   overflow: hidden;
   position: relative;
+  width: 100%;
 }
 
 .world-track {
@@ -228,87 +258,92 @@ p {
   will-change: transform;
 }
 
-.world-ground {
-  background: #cfcbc0;
-  border-top: 2px solid var(--foreground);
-  bottom: 0;
-  left: 0;
+/* Every canvas in the project is nearest-neighbour scaled art. */
+.world-track canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.world-backdrop {
+  inset: 0;
   position: absolute;
-  width: 100%;
   z-index: 0;
 }
 
 .world-object,
 .world-player {
-  align-items: center;
-  display: flex;
-  justify-content: center;
   position: absolute;
 }
 
 .world-object {
-  background: var(--surface);
-  border: 2px solid var(--foreground);
   z-index: 1;
 }
 
-.world-object span {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-align: center;
-  text-transform: uppercase;
-}
-
-.world-object--npc {
-  background: #cdd8fa;
-  border-radius: 50% 50% 0 0;
-}
-
-.world-object--npc span,
-.world-object--sign span {
-  left: 50%;
-  position: absolute;
-  top: -1.6rem;
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
-
-.world-object--sign {
-  background: #fbdfb9;
-}
-
-.world-object[data-nearby="true"] {
-  box-shadow: 0 0 0 5px var(--focus);
-}
-
 .world-player {
-  background: var(--foreground);
-  color: var(--surface);
-  font-weight: 700;
   z-index: 3;
 }
 
-.world-player[data-facing="left"] {
-  border-left: 8px solid var(--accent);
+/* The signage posts carry the real labels, so the label chips are both the
+   approved world callout and the object's accessible name. */
+.world-object__label {
+  background: var(--world-char);
+  color: var(--world-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  left: 50%;
+  letter-spacing: 0.1em;
+  padding: 0.25rem 0.45rem;
+  position: absolute;
+  text-transform: uppercase;
+  top: -1.7rem;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 2;
 }
 
-.world-player[data-facing="right"] {
-  border-right: 8px solid var(--accent);
+.world-object--npc .world-object__label {
+  background: rgb(43 40 35 / 78%);
+  color: #c9bc9c;
+}
+
+.world-object__prompt {
+  background: var(--world-orange);
+  color: #241f18;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  font-weight: 500;
+  left: 50%;
+  letter-spacing: 0.12em;
+  padding: 0.25rem 0.45rem;
+  position: absolute;
+  top: -3.3rem;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 2;
+}
+
+/* Proximity reads as the label waking up, not as a border slapped on the art. */
+.world-object[data-nearby="true"] .world-object__label {
+  background: var(--world-cream);
+  color: var(--world-char);
 }
 
 .interaction-status {
   align-items: center;
-  background: var(--foreground);
-  color: var(--surface);
+  background: var(--world-char);
+  color: var(--world-cream);
   display: flex;
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
   justify-content: center;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
   min-height: 3.25rem;
   padding: 0.75rem 1rem;
   text-transform: uppercase;
+}
+
+.interaction-status span {
+  color: var(--world-muted);
 }
 
 .overlay-backdrop {
