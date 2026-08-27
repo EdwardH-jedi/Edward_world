@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-27 · after Phase 9
+**Last updated:** 2026-08-27 · after Phase 10 — all phases complete
 
 ---
 
@@ -21,7 +21,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 7 | Title screen | **DONE** |
 | 8 | Six-second intro | **DONE** |
 | 9 | World polish / TOMODACHI | **DONE** |
-| 10 | Release pass | TODO |
+| 10 | Release pass | **DONE** |
 
 ## What works today
 
@@ -75,7 +75,10 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 
 ## What is still placeholder
 
+Content, not code:
+
 - `/resume` and `/case-studies/*` — placeholder bodies (D2, D4).
+- The League of Legends rank in Edward's House — a typed `null` hook (D3).
 
 ## Quality gates
 
@@ -95,7 +98,9 @@ npm install
 npm run dev     # http://localhost:3000
 ```
 
-Entering a location is keyboard-only today: walk with `A`/`D` and press `E`.
+Walk with `A`/`D` or the on-screen controls, and press `E` or tap the status
+bar to enter what you are standing next to. Everything works without a
+keyboard, and everything professional is also one click away in INDEX.
 
 ## Resuming work
 

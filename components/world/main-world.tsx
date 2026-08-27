@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { InteractionPrompt } from "@/components/world/interaction-prompt";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { initialPlayer, WORLD_CONFIG, worldObjects } from "@/data/world";
@@ -155,28 +155,39 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     [player],
   );
 
+  const openNearby = useCallback(() => {
+    if (disabled || !nearbyObject) return;
+
+    // TOMODACHI has more than one thing to say, and remembers roughly how
+    // often you have stopped. Everything else dispatches as authored.
+    if (nearbyObject.kind === "npc" && nearbyObject.interaction.type === "TALK") {
+      onInteraction({
+        ...nearbyObject.interaction,
+        lines: getTomodachiLines(tomodachiVisits),
+      });
+      setTomodachiVisits((visits) => visits + 1);
+      return;
+    }
+
+    onInteraction(nearbyObject.interaction);
+  }, [disabled, nearbyObject, onInteraction, tomodachiVisits]);
+
   useEffect(() => {
     function handleInteraction(event: KeyboardEvent) {
-      if (disabled || event.key.toLowerCase() !== "e" || !nearbyObject) return;
+      if (event.key.toLowerCase() !== "e" || !nearbyObject || disabled) return;
       event.preventDefault();
-
-      // TOMODACHI has more than one thing to say, and remembers roughly how
-      // often you have stopped. Everything else dispatches as authored.
-      if (nearbyObject.kind === "npc" && nearbyObject.interaction.type === "TALK") {
-        onInteraction({
-          ...nearbyObject.interaction,
-          lines: getTomodachiLines(tomodachiVisits),
-        });
-        setTomodachiVisits((visits) => visits + 1);
-        return;
-      }
-
-      onInteraction(nearbyObject.interaction);
+      openNearby();
     }
 
     window.addEventListener("keydown", handleInteraction);
     return () => window.removeEventListener("keydown", handleInteraction);
-  }, [disabled, nearbyObject, onInteraction, tomodachiVisits]);
+  }, [disabled, nearbyObject, openNearby]);
+
+  /** Pointer controls, so the world is reachable without a keyboard. */
+  const holdDirection = useCallback((key: "a" | "d", held: boolean) => {
+    if (held) pressedKeys.current.add(key);
+    else pressedKeys.current.delete(key);
+  }, []);
 
   const cameraX = getCameraX({
     playerX: player.position.x,
@@ -275,14 +286,47 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
           </div>
         </div>
       </div>
-      <div aria-live="polite" className="interaction-status">
-        {nearbyObject ? (
-          <span>
-            {nearbyObject.label} · {getInteractionPrompt(nearbyObject.interaction)}
-          </span>
-        ) : (
-          <span>Move near an object to interact</span>
-        )}
+      <div className="world-controls">
+        <div className="world-touch">
+          <button
+            aria-label="Walk left"
+            className="world-touch__button"
+            onPointerCancel={() => holdDirection("a", false)}
+            onPointerDown={() => holdDirection("a", true)}
+            onPointerLeave={() => holdDirection("a", false)}
+            onPointerUp={() => holdDirection("a", false)}
+            type="button"
+          >
+            <span aria-hidden="true">←</span>
+          </button>
+          <button
+            aria-label="Walk right"
+            className="world-touch__button"
+            onPointerCancel={() => holdDirection("d", false)}
+            onPointerDown={() => holdDirection("d", true)}
+            onPointerLeave={() => holdDirection("d", false)}
+            onPointerUp={() => holdDirection("d", false)}
+            type="button"
+          >
+            <span aria-hidden="true">→</span>
+          </button>
+        </div>
+
+        <button
+          aria-live="polite"
+          className="interaction-status"
+          disabled={!nearbyObject}
+          onClick={openNearby}
+          type="button"
+        >
+          {nearbyObject ? (
+            <span>
+              {nearbyObject.label} · {getInteractionPrompt(nearbyObject.interaction)}
+            </span>
+          ) : (
+            <span>Move near an object to interact</span>
+          )}
+        </button>
       </div>
     </main>
   );

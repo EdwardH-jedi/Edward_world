@@ -530,6 +530,33 @@ p {
   color: var(--world-char);
 }
 
+.world-controls {
+  align-items: stretch;
+  display: flex;
+}
+
+.world-touch {
+  display: flex;
+}
+
+.world-touch__button {
+  background: var(--loc-char);
+  border: 0;
+  border-right: 1px solid #3a362c;
+  color: var(--loc-cream);
+  cursor: pointer;
+  font-size: 1rem;
+  min-width: 4rem;
+  padding: 0 1rem;
+  touch-action: none;
+  user-select: none;
+}
+
+.world-touch__button:active {
+  background: var(--loc-cream);
+  color: var(--loc-char);
+}
+
 .interaction-status {
   align-items: center;
   background: var(--world-char);

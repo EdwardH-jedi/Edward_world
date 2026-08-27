@@ -491,7 +491,7 @@ reads as a place already, and the brief asks not to overload it.
 
 ## Phase 10 — Release pass
 
-**Status:** TODO
+**Status:** DONE
 
 **Scope.** Full production pass: desktop, mobile, keyboard, touch, reduced
 motion, accessibility, focus behaviour, responsive layout, animation cleanup,
@@ -499,23 +499,53 @@ clipping, pixel rendering, performance, console errors, broken links,
 metadata/SEO, 404, production build.
 
 **Acceptance criteria.**
-- [ ] Every route and every location checked in a real browser at desktop and
-      mobile sizes.
-- [ ] No console errors anywhere.
-- [ ] All links resolve; metadata and 404 correct.
-- [ ] Keyboard-only traversal of the whole product is possible.
+- [x] Every route and every location checked in a real browser at 1440x900 and
+      390x844.
+- [x] No console errors or warnings anywhere.
+- [x] All links resolve; metadata, robots, manifest and 404 correct.
+- [x] Keyboard-only traversal of the whole product is possible — **and now
+      pointer-only traversal too**.
 
-**Validation result.** _(pending)_ · **Commit.** _(pending)_
+**Validation result.**
+
+Gates: lint, typecheck, **103 tests (13 files)**, production build — all pass.
+
+| Check | Result |
+|---|---|
+| Routes | `/`, `/resume`, four case studies, `/robots.txt`, `/manifest.webmanifest` all 200; unknown path 404s with the right body. |
+| Metadata | Titles template correctly (`Wardrobe \| Edward's World`), descriptions and Open Graph present, `lang="en"`, theme colour set. |
+| External links | All six resolve 200: four project repos, the GitHub profile, LinkedIn. |
+| Desktop | Title, index, world and all five locations mount, each with a visible exit; Escape returns to the world every time. |
+| Mobile 390x844 | No horizontal document scroll on any screen. (The world track is deliberately wider than the viewport inside a clipped container.) |
+| Accessibility | Landmarks and `aria-label`s present, a polite live region per surface, **every canvas `aria-hidden`**, no image without alt, focus moves to the right control on each beat and is restored on exit. |
+| Reduced motion | **Browser-verified at last.** World ambient motion freezes completely; the intro collapses to an instant cut; SportsGang dwells ~810ms per stage instead of 1ms — the documented divergence, working. |
+| Performance | A full backdrop repaint costs **0.4ms**. Frame time measured a flat 33.3ms with a p95 of 33.7ms — and stayed identical with every app timer stopped, so that is the display presenting at 30Hz, not the app. |
+| Console | Clean on every surface. |
+
+**The one real gap closed here:** entering a building was keyboard-only, so the
+locations laid out correctly on a phone but could not be reached on one. The
+world now has pointer walk controls and the status bar doubles as the tap
+target for whatever is in reach — verified by moving 345px and opening Edward's
+House without touching the keyboard.
+
+**Commit.** `<phase-10>`
 
 ---
 
 ## Known gaps carried forward
 
-- **Touch entry into buildings.** Entering a location is keyboard-only (`E`);
-  the world has no touch affordance for interaction. Locations lay out
-  correctly on mobile but are unreachable there. Fix in Phase 10 at the latest.
-- **Reduced motion is not browser-verified.** The stage machines are
-  unit-tested and the choreography is guarded by `prefersReducedMotion()`, but
-  the media query cannot be emulated with the available tooling. Verify
-  manually in Phase 10.
-- **Case studies and resume are placeholder routes** (D2, D4).
+Both of the gaps recorded earlier were closed in Phase 10: the world is now
+reachable by pointer, and reduced motion was verified in a browser.
+
+What remains is content, not code:
+
+- **Case study bodies** are placeholder routes (D4). The four `/case-studies/*`
+  pages render the canonical descriptor and a GitHub link, and are ready for
+  real write-ups.
+- **The resume page** is a placeholder (D2). `data/personal.ts` already holds
+  the verified biography a real resume page would be built from, but a resume
+  is an identity document and wants Edward's sign-off before it ships as fact.
+- **The League of Legends rank** is a typed `null` hook (D3), and the room says
+  so rather than inventing a tier.
+
+Everything else in the roadmap is done.
