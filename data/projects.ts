@@ -10,6 +10,14 @@ export const projects = [
     githubUrl: "https://github.com/EdwardH-jedi/SportsGang",
     caseStudyUrl: "/case-studies/sportsgang",
     worldBuildingId: "sportsgang",
+    // Verified against the repository itself, not inferred.
+    techStack: [
+      "React Native / Expo",
+      "FastAPI",
+      "PostgreSQL",
+      "Redis",
+      "Docker",
+    ],
   },
   {
     id: "afl-predict",
@@ -43,6 +51,8 @@ export const projects = [
   },
 ] as const satisfies readonly PortfolioProject[];
 
-export function getProjectById(id: PortfolioProject["id"]) {
+export function getProjectById(
+  id: PortfolioProject["id"],
+): PortfolioProject | undefined {
   return projects.find((project) => project.id === id);
 }

@@ -259,7 +259,8 @@ p {
 }
 
 /* Every canvas in the project is nearest-neighbour scaled art. */
-.world-track canvas {
+.world-track canvas,
+.sg-experience canvas {
   display: block;
   image-rendering: pixelated;
 }
@@ -344,6 +345,600 @@ p {
 
 .interaction-status span {
   color: var(--world-muted);
+}
+
+/* ── SportsGang location ─────────────────────────────────────────────────────
+   A place inside Edward's World: same palette, same pixel unit, same two type
+   systems. The court surface is the one accent this location gets. */
+
+.sg-experience {
+  --sg-sky: #e9e0c8;
+  --sg-char: #2b2823;
+  --sg-cream: #efe7d3;
+  --sg-muted: #9c9482;
+  --sg-orange: #c98a52;
+  --sg-court: #a97f52;
+  --sg-court-dark: #8e6a44;
+
+  background: #221f1a;
+  bottom: 0;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  left: 0;
+  overflow: hidden;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 10;
+}
+
+.sg-experience:focus-visible {
+  outline: none;
+}
+
+.sg-backdrop {
+  inset: 0;
+  position: absolute;
+}
+
+.sg-backdrop__canvas {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.sg-backdrop--courtside {
+  opacity: 0;
+}
+
+/* ── The court ────────────────────────────────────────────────────────────── */
+
+.sg-court {
+  /* Anchored by its playing surface, not by its box.
+     The backdrop is object-fit: cover, so its ground line sits at a fixed
+     fraction of the viewport height (28.9%, where the art's horizon falls)
+     whenever the viewport is taller than the art's 16:9. Positioning the box
+     bottom would leave the players hovering above the surface, so the offset
+     backs out the surface band's own height instead. */
+  --sg-court-width: min(92vw, 900px);
+  --sg-court-surface: 22%;
+
+  aspect-ratio: 900 / 340;
+  bottom: calc(28.9% - var(--sg-court-width) * 0.0831);
+  left: calc(50% - var(--sg-court-width) / 2);
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transform-origin: 0 0;
+  width: var(--sg-court-width);
+  z-index: 3;
+}
+
+.sg-experience[data-stage="SEARCHING"] .sg-court,
+.sg-experience[data-stage="MATCH_FOUND"] .sg-court,
+.sg-experience[data-stage="COURT_TRANSITION"] .sg-court,
+.sg-experience[data-stage="MEET"] .sg-court,
+.sg-experience[data-stage="RALLY"] .sg-court,
+.sg-experience[data-stage="RESULT"] .sg-court,
+.sg-experience[data-stage="COMPLETE"] .sg-court {
+  opacity: 1;
+}
+
+.sg-court__surface {
+  background: var(--sg-court);
+  border-top: 2px solid #c2955f;
+  bottom: 0;
+  height: 22%;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.sg-court__surface::after {
+  background: var(--sg-court-dark);
+  bottom: 0;
+  content: "";
+  height: 22%;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.sg-court__line {
+  background: var(--sg-cream);
+  bottom: 22%;
+  height: 34%;
+  position: absolute;
+  width: 0.5%;
+}
+
+.sg-court__line--near { left: 6%; }
+.sg-court__line--service-near { left: 28%; opacity: 0.6; }
+.sg-court__line--centre { left: 50%; opacity: 0.35; }
+.sg-court__line--service-far { left: 72%; opacity: 0.6; }
+.sg-court__line--far { left: 94%; }
+
+.sg-court__net {
+  background: rgb(43 40 35 / 78%);
+  bottom: 22%;
+  height: 20%;
+  left: 49.6%;
+  position: absolute;
+  width: 0.9%;
+}
+
+.sg-court__net-tape {
+  background: var(--sg-cream);
+  height: 12%;
+  left: -45%;
+  position: absolute;
+  right: -45%;
+  top: 0;
+}
+
+.sg-court__player {
+  bottom: 22%;
+  height: 20%;
+  position: absolute;
+}
+
+.sg-court__player canvas {
+  height: 100%;
+  width: auto;
+}
+
+/* Centring lives on the inner box so anime.js owns the outer transform alone. */
+.sg-court__player > * {
+  transform: translateX(-50%);
+}
+
+.sg-court__player--near { left: 16%; }
+.sg-court__player--far { left: 84%; }
+
+.sg-court__ball {
+  aspect-ratio: 1;
+  background: var(--sg-orange);
+  bottom: 23%;
+  box-shadow: inset -2px -2px 0 #a96e3d;
+  left: 16%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 1.5%;
+}
+
+/* ── The phone ────────────────────────────────────────────────────────────── */
+
+.sg-phone {
+  height: 380px;
+  left: 50%;
+  margin-left: -110px;
+  margin-top: -196px;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  visibility: hidden;
+  width: 220px;
+  z-index: 2;
+}
+
+.sg-experience[data-stage="PHONE"] .sg-phone,
+.sg-experience[data-stage="SPORT_SELECT"] .sg-phone,
+.sg-experience[data-stage="SEARCHING"] .sg-phone,
+.sg-experience[data-stage="MATCH_FOUND"] .sg-phone,
+.sg-experience[data-stage="COURT_TRANSITION"] .sg-phone {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sg-phone__chassis {
+  background: #3a362f;
+  border: 4px solid var(--sg-char);
+  box-shadow: 8px 8px 0 rgb(24 22 18 / 45%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 12px 10px;
+}
+
+.sg-phone__speaker {
+  background: #57534a;
+  height: 4px;
+  margin: 2px auto 0;
+  width: 44px;
+}
+
+.sg-phone__screen {
+  background: #1e1b17;
+  border: 2px solid #57534a;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 10px;
+}
+
+.sg-phone__home {
+  background: #57534a;
+  height: 6px;
+  margin: 0 auto;
+  width: 54px;
+}
+
+.sg-phone__brand {
+  color: var(--sg-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+.sg-phone__hint,
+.sg-phone__label,
+.sg-phone__status {
+  color: var(--sg-muted);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  margin: 0;
+  text-align: center;
+}
+
+.sg-phone__status {
+  color: var(--sg-cream);
+}
+
+.sg-phone__panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sg-phone__sports {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sg-phone__sport {
+  align-items: center;
+  background: transparent;
+  border: 1px solid #57534a;
+  color: var(--sg-muted);
+  display: flex;
+  font-size: 0.64rem;
+  justify-content: space-between;
+  letter-spacing: 0.14em;
+  padding: 7px 8px;
+  width: 100%;
+}
+
+.sg-phone__sport[data-playable] {
+  background: var(--sg-orange);
+  border-color: var(--sg-orange);
+  color: #241f18;
+}
+
+.sg-phone__sport:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.sg-phone__soon {
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+}
+
+.sg-phone__sweep-track {
+  background: #2b2823;
+  height: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.sg-phone__sweep {
+  background: linear-gradient(90deg, transparent, var(--sg-orange), transparent);
+  height: 100%;
+  position: absolute;
+  width: 60%;
+}
+
+.sg-phone__versus {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+}
+
+.sg-phone__player {
+  color: var(--sg-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+}
+
+.sg-phone__vs {
+  color: var(--sg-muted);
+  font-size: 0.52rem;
+  letter-spacing: 0.2em;
+}
+
+.sg-phone__accept {
+  background: var(--sg-orange);
+  border: 0;
+  color: #241f18;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  padding: 8px;
+}
+
+/* The court preview slot. Empty on purpose — the real court is transformed
+   into this box, so anything drawn here would sit behind it. */
+.sg-phone__slot {
+  aspect-ratio: 900 / 340;
+  background: #14110d;
+  border: 1px solid #3a362f;
+  margin-top: auto;
+  opacity: 0;
+  width: 100%;
+}
+
+.sg-phone__slot[data-visible] {
+  opacity: 1;
+}
+
+/* ── HUD ──────────────────────────────────────────────────────────────────── */
+
+.sg-exit {
+  background: rgb(43 40 35 / 88%);
+  border: 1px solid #57534a;
+  color: var(--sg-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6rem;
+  left: 1rem;
+  letter-spacing: 0.16em;
+  padding: 0.45rem 0.6rem;
+  position: absolute;
+  top: 1rem;
+  z-index: 6;
+}
+
+.sg-exit:hover {
+  background: var(--sg-cream);
+  color: var(--sg-char);
+}
+
+.sg-announcer {
+  clip-path: inset(50%);
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.sg-caption {
+  background: var(--sg-char);
+  color: var(--sg-cream);
+  font-size: 0.66rem;
+  left: 50%;
+  letter-spacing: 0.3em;
+  margin: 0;
+  padding: 0.4rem 0.8rem 0.4rem 1.1rem;
+  position: absolute;
+  top: 14%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 5;
+}
+
+.sg-caption--title {
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 1.4rem;
+  letter-spacing: 0.12em;
+  padding: 0.6rem 1rem 0.6rem 1.3rem;
+}
+
+.sg-beat {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 16%;
+  z-index: 5;
+}
+
+.sg-beat__text {
+  background: var(--sg-char);
+  color: var(--sg-cream);
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  margin: 0;
+  padding: 0.4rem 0.8rem 0.4rem 1.05rem;
+}
+
+.sg-button {
+  background: rgb(43 40 35 / 90%);
+  border: 1px solid #57534a;
+  color: var(--sg-cream);
+  cursor: pointer;
+  display: inline-block;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  padding: 0.55rem 0.85rem;
+  text-decoration: none;
+}
+
+.sg-button:hover {
+  background: var(--sg-cream);
+  color: var(--sg-char);
+}
+
+.sg-button--primary {
+  background: var(--sg-orange);
+  border-color: var(--sg-orange);
+  color: #241f18;
+}
+
+.sg-button--quiet {
+  background: transparent;
+  color: var(--sg-muted);
+}
+
+/* ── Result and summary ───────────────────────────────────────────────────── */
+
+.sg-result {
+  background: rgb(34 31 26 / 92%);
+  border: 1px solid #57534a;
+  left: 50%;
+  padding: 1.1rem 1.6rem;
+  position: absolute;
+  text-align: center;
+  top: 12%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.sg-result__heading {
+  color: var(--sg-muted);
+  font-size: 0.6rem;
+  letter-spacing: 0.28em;
+  margin: 0 0 0.7rem;
+}
+
+.sg-result__score {
+  align-items: center;
+  color: var(--sg-cream);
+  display: flex;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.72rem;
+  gap: 1.1rem;
+  justify-content: center;
+  margin: 0;
+}
+
+.sg-result__numbers {
+  color: var(--sg-orange);
+  font-size: 1.25rem;
+}
+
+.sg-result__note {
+  color: var(--sg-muted);
+  font-size: 0.55rem;
+  letter-spacing: 0.18em;
+  margin: 0.8rem 0 0;
+}
+
+.sg-summary {
+  background: rgb(34 31 26 / 95%);
+  border: 1px solid #57534a;
+  bottom: 0;
+  left: 50%;
+  max-height: 78vh;
+  max-width: 40rem;
+  overflow: auto;
+  padding: 1.6rem 1.8rem 1.8rem;
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(94vw, 40rem);
+  z-index: 5;
+}
+
+.sg-summary__wordmark {
+  color: var(--sg-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.sg-summary__role {
+  color: var(--sg-orange);
+  font-size: 0.6rem;
+  letter-spacing: 0.24em;
+  margin: 0.5rem 0 0;
+}
+
+.sg-summary__descriptor {
+  color: var(--sg-cream);
+  font-family: var(--font-archivo), Arial, sans-serif;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0.9rem 0 0;
+}
+
+.sg-summary__flow {
+  color: var(--sg-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.58rem;
+  gap: 0.35rem 0.55rem;
+  letter-spacing: 0.16em;
+  list-style: none;
+  margin: 1.1rem 0 0;
+  padding: 0;
+}
+
+.sg-summary__flow li + li::before {
+  color: var(--sg-orange);
+  content: "→ ";
+}
+
+.sg-summary__stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+}
+
+.sg-summary__stack li {
+  border: 1px solid #57534a;
+  color: var(--sg-muted);
+  font-size: 0.55rem;
+  letter-spacing: 0.12em;
+  padding: 0.25rem 0.45rem;
+}
+
+.sg-summary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.3rem;
+}
+
+@media (max-width: 640px) {
+  .sg-phone {
+    height: 330px;
+    margin-left: -95px;
+    margin-top: -178px;
+    width: 190px;
+  }
+
+  .sg-caption--title {
+    font-size: 1rem;
+  }
+
+  .sg-summary {
+    max-height: 68vh;
+    padding: 1.2rem 1.1rem 1.4rem;
+  }
+
+  .sg-result {
+    padding: 0.9rem 1.1rem;
+  }
+
+  .sg-result__score {
+    font-size: 0.6rem;
+    gap: 0.6rem;
+  }
 }
 
 .overlay-backdrop {

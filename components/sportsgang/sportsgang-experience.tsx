@@ -1,0 +1,467 @@
+"use client";
+
+import type { Timeline } from "animejs";
+import Link from "next/link";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { PHONE_STAGES, PixelPhone } from "@/components/sportsgang/pixel-phone";
+import { TennisCourt } from "@/components/sportsgang/tennis-court";
+import { PixelCanvas } from "@/components/world/pixel-canvas";
+import { getProjectById } from "@/data/projects";
+import {
+  getSportsgangStageDuration,
+  isTimedSportsgangStage,
+  nextSportsgangStage,
+  RALLY_EXCHANGES,
+  SPORTSGANG_STAGE_TIMINGS,
+} from "@/lib/game/sportsgang-machine";
+import { PIXEL_UNIT } from "@/lib/game/terrain";
+import {
+  applyCourtProjection,
+  measureCourtProjection,
+  playBallRally,
+  playCourtExpansion,
+  playPhoneRaise,
+  playResultReveal,
+  playSearchSweep,
+  resetChoreographyStyles,
+  settleCourtExpansion,
+  type CourtProjection,
+} from "@/lib/motion/sportsgang-choreography";
+import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
+import {
+  drawCourtside,
+  drawVenue,
+  VENUE_ART_SIZE,
+  type PlayerFrame,
+} from "@/lib/pixel/sportsgang";
+import type { SportsgangSport, SportsgangStage } from "@/types/sportsgang";
+
+interface SportsgangExperienceProps {
+  onExit: () => void;
+}
+
+/** Captions announced to assistive technology as the sequence progresses. */
+const STAGE_CAPTIONS: Readonly<Record<SportsgangStage, string>> = {
+  ENTER: "Arriving at SportsGang",
+  PHONE: "Opening the SportsGang app",
+  SPORT_SELECT: "Choose a sport",
+  SEARCHING: "Finding someone nearby",
+  MATCH_FOUND: "Match found: Edward versus Player 02",
+  COURT_TRANSITION: "Heading to the court",
+  MEET: "Player 02 has arrived",
+  RALLY: "The match is under way",
+  RESULT: "Match complete. Edward 3, Player 02 2",
+  COMPLETE: "SportsGang project summary",
+};
+
+/** The product's own loop, as the brief states it. Scene copy, not project data. */
+const PRODUCT_FLOW = ["DISCOVER", "MATCH", "PLAY", "RESULT", "RANK"] as const;
+
+const FINAL_SCORE = { edward: 3, opponent: 2 } as const;
+
+function getRallyFrames(beat: number): {
+  edward: PlayerFrame;
+  opponent: PlayerFrame;
+} {
+  const exchange = Math.floor(beat / 4);
+  const step = beat % 4;
+  const edwardHits = exchange % 2 === 0;
+
+  const hitter: PlayerFrame = step === 0 ? "contact" : "ready";
+  const receiver: PlayerFrame = step >= 2 ? "back" : "ready";
+
+  return edwardHits
+    ? { edward: hitter, opponent: receiver }
+    : { edward: receiver, opponent: hitter };
+}
+
+export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
+  const [stage, setStage] = useState<SportsgangStage>("ENTER");
+  const [sport, setSport] = useState<SportsgangSport | null>(null);
+  const [rallyBeat, setRallyBeat] = useState(0);
+  const reducedMotion = useReducedMotion();
+
+  const rootRef = useRef<HTMLDivElement>(null);
+  const phoneRef = useRef<HTMLDivElement>(null);
+  const slotRef = useRef<HTMLDivElement>(null);
+  const sweepRef = useRef<HTMLDivElement>(null);
+  const courtRef = useRef<HTMLDivElement>(null);
+  const ballRef = useRef<HTMLDivElement>(null);
+  const edwardRef = useRef<HTMLDivElement>(null);
+  const opponentRef = useRef<HTMLDivElement>(null);
+  const venueRef = useRef<HTMLDivElement>(null);
+  const courtsideRef = useRef<HTMLDivElement>(null);
+  const scoreRef = useRef<HTMLParagraphElement>(null);
+  const rankNoteRef = useRef<HTMLParagraphElement>(null);
+  const primaryRef = useRef<HTMLButtonElement>(null);
+  const readyRef = useRef<HTMLButtonElement>(null);
+  const completeRef = useRef<HTMLAnchorElement>(null);
+
+  const projectionRef = useRef<CourtProjection | null>(null);
+  const expansionRef = useRef<Timeline | null>(null);
+
+  const project = getProjectById("sportsgang");
+
+  /* ── Stage machine ──────────────────────────────────────────────────────
+     Driven by setTimeout, never by an animation callback. anime.js runs on
+     requestAnimationFrame, which browsers throttle in background tabs; a
+     sequence that waited on a timeline would stall there. */
+  useEffect(() => {
+    if (!isTimedSportsgangStage(stage)) return;
+
+    const timeout = window.setTimeout(
+      () => setStage((current) => nextSportsgangStage(current)),
+      getSportsgangStageDuration(stage, reducedMotion),
+    );
+    return () => window.clearTimeout(timeout);
+  }, [reducedMotion, stage]);
+
+  /* ── Court projection ───────────────────────────────────────────────────
+     While the phone is the interface the real court is parked inside the
+     phone's slot by an inverse transform. This effect is the single authority
+     on that transform for every stage except the expansion itself, which the
+     timeline owns. */
+  useLayoutEffect(() => {
+    const court = courtRef.current;
+    if (!court) return;
+    if (stage === "COURT_TRANSITION") return;
+
+    const slot = slotRef.current;
+    if (!PHONE_STAGES.has(stage) || !slot) {
+      projectionRef.current = null;
+      applyCourtProjection(court, null);
+      return;
+    }
+
+    const update = () => {
+      const projection = measureCourtProjection(slot, court);
+      projectionRef.current = projection;
+      applyCourtProjection(court, projection);
+    };
+
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [stage]);
+
+  /* ── Choreography ───────────────────────────────────────────────────────
+     One timeline per stage, reverted on the way out so a replay starts from
+     CSS rest state rather than the last frame of the previous run. */
+  useEffect(() => {
+    let timeline: Timeline | null = null;
+
+    if (stage === "PHONE" && phoneRef.current) {
+      timeline = playPhoneRaise(
+        phoneRef.current,
+        getSportsgangStageDuration("PHONE", reducedMotion),
+      );
+    }
+
+    if (stage === "SEARCHING" && sweepRef.current) {
+      timeline = playSearchSweep(
+        sweepRef.current,
+        getSportsgangStageDuration("SEARCHING", reducedMotion),
+      );
+    }
+
+    if (stage === "RALLY" && ballRef.current && edwardRef.current && opponentRef.current) {
+      timeline = playBallRally({
+        ball: ballRef.current,
+        edward: edwardRef.current,
+        opponent: opponentRef.current,
+        exchanges: RALLY_EXCHANGES,
+        duration: SPORTSGANG_STAGE_TIMINGS.RALLY,
+      });
+    }
+
+    if (stage === "RESULT" && scoreRef.current && rankNoteRef.current) {
+      timeline = playResultReveal(
+        scoreRef.current,
+        rankNoteRef.current,
+        SPORTSGANG_STAGE_TIMINGS.RESULT,
+      );
+    }
+
+    return () => {
+      timeline?.revert();
+    };
+  }, [reducedMotion, stage]);
+
+  /* The expansion is held separately: reverting it would undo the very
+     transform that leaves the court at full size. It is only paused. */
+  useEffect(() => {
+    if (stage !== "COURT_TRANSITION") return;
+    const court = courtRef.current;
+    const phone = phoneRef.current;
+    const venue = venueRef.current;
+    const courtside = courtsideRef.current;
+    if (!court || !phone || !venue || !courtside) return;
+
+    expansionRef.current = playCourtExpansion({
+      court,
+      phone,
+      venue,
+      courtside,
+      projection: projectionRef.current,
+      duration: getSportsgangStageDuration("COURT_TRANSITION", reducedMotion),
+    });
+
+    const timeline = expansionRef.current;
+    return () => {
+      timeline?.pause();
+      settleCourtExpansion({ court, phone, venue, courtside });
+    };
+  }, [reducedMotion, stage]);
+
+  useEffect(
+    () => () => {
+      expansionRef.current?.revert();
+    },
+    [],
+  );
+
+  /* ── Rally beats ────────────────────────────────────────────────────────
+     Player poses are React state so the sprite frames stay declarative; they
+     share the machine's timings with the ball, so the two stay in step. */
+  useEffect(() => {
+    if (stage !== "RALLY") return;
+
+    const step = SPORTSGANG_STAGE_TIMINGS.RALLY / (RALLY_EXCHANGES * 4);
+    let beat = 0;
+    const interval = window.setInterval(() => {
+      beat += 1;
+      setRallyBeat(beat);
+    }, step);
+
+    // Reset on the way out rather than on the way in, so entering RALLY never
+    // needs a synchronous state write inside an effect.
+    return () => {
+      window.clearInterval(interval);
+      setRallyBeat(0);
+    };
+  }, [stage]);
+
+  /* ── Exit, focus and keyboard ───────────────────────────────────────────── */
+  useEffect(() => {
+    const previousFocus = document.activeElement as HTMLElement | null;
+    rootRef.current?.focus();
+    return () => previousFocus?.focus();
+  }, []);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      onExit();
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onExit]);
+
+  // Move focus to whatever the visitor is being asked to do next.
+  useEffect(() => {
+    if (stage === "SPORT_SELECT" || stage === "MATCH_FOUND") {
+      primaryRef.current?.focus();
+    } else if (stage === "MEET") {
+      readyRef.current?.focus();
+    } else if (stage === "COMPLETE") {
+      completeRef.current?.focus();
+    }
+  }, [stage]);
+
+  const advance = useCallback(
+    () => setStage((current) => nextSportsgangStage(current)),
+    [],
+  );
+
+  const chooseSport = useCallback(
+    (choice: SportsgangSport) => {
+      setSport(choice);
+      advance();
+    },
+    [advance],
+  );
+
+  const replay = useCallback(() => {
+    expansionRef.current?.revert();
+    expansionRef.current = null;
+    projectionRef.current = null;
+    resetChoreographyStyles([
+      phoneRef.current,
+      courtRef.current,
+      venueRef.current,
+      courtsideRef.current,
+      ballRef.current,
+      edwardRef.current,
+      opponentRef.current,
+      sweepRef.current,
+    ]);
+    setSport(null);
+    setRallyBeat(0);
+    setStage("ENTER");
+  }, []);
+
+  const frames = useMemo(() => {
+    if (stage === "MEET") return { edward: "greet" as const, opponent: "greet" as const };
+    if (stage === "RALLY") return getRallyFrames(rallyBeat);
+    return { edward: "idle" as const, opponent: "idle" as const };
+  }, [rallyBeat, stage]);
+
+  const showCourtPlayers = ["MEET", "RALLY", "RESULT", "COMPLETE"].includes(stage);
+  const showBall = stage === "RALLY" || stage === "RESULT";
+
+  return (
+    <section
+      aria-label="SportsGang"
+      className="sg-experience"
+      data-stage={stage}
+      ref={rootRef}
+      tabIndex={-1}
+    >
+      <div className="sg-backdrop sg-backdrop--venue" ref={venueRef}>
+        <PixelCanvas
+          artHeight={VENUE_ART_SIZE.height}
+          artWidth={VENUE_ART_SIZE.width}
+          className="sg-backdrop__canvas"
+          draw={drawVenue}
+          fill
+          frame={0}
+          unit={PIXEL_UNIT}
+        />
+      </div>
+      <div className="sg-backdrop sg-backdrop--courtside" ref={courtsideRef}>
+        <PixelCanvas
+          artHeight={VENUE_ART_SIZE.height}
+          artWidth={VENUE_ART_SIZE.width}
+          className="sg-backdrop__canvas"
+          draw={drawCourtside}
+          fill
+          frame={0}
+          unit={PIXEL_UNIT}
+        />
+      </div>
+
+      <TennisCourt
+        ballRef={ballRef}
+        courtRef={courtRef}
+        edwardFrame={frames.edward}
+        edwardRef={edwardRef}
+        opponentFrame={frames.opponent}
+        opponentRef={opponentRef}
+        showBall={showBall}
+        showPlayers={showCourtPlayers}
+      />
+
+      <PixelPhone
+        onAccept={advance}
+        onChooseSport={chooseSport}
+        phoneRef={phoneRef}
+        primaryRef={primaryRef}
+        slotRef={slotRef}
+        sport={sport}
+        stage={stage}
+        sweepRef={sweepRef}
+      />
+
+      <button className="sg-exit" onClick={onExit} type="button">
+        ESC · BACK TO WORLD
+      </button>
+
+      <p aria-live="polite" className="sg-announcer">
+        {STAGE_CAPTIONS[stage]}
+      </p>
+
+      {stage === "ENTER" ? (
+        <p className="sg-caption sg-caption--title">SPORTSGANG</p>
+      ) : null}
+
+      {stage === "MEET" ? (
+        <div className="sg-beat">
+          <p className="sg-beat__text">PLAYER 02 IS READY</p>
+          <button
+            className="sg-button sg-button--primary"
+            onClick={advance}
+            ref={readyRef}
+            type="button"
+          >
+            [ NOD AND START ]
+          </button>
+        </div>
+      ) : null}
+
+      {stage === "RALLY" ? <p className="sg-caption">MATCH IN PROGRESS</p> : null}
+
+      {stage === "RESULT" ? (
+        <div className="sg-result">
+          <p className="sg-result__heading">MATCH COMPLETE</p>
+          <p className="sg-result__score" ref={scoreRef}>
+            <span>EDWARD</span>
+            <span className="sg-result__numbers">
+              {FINAL_SCORE.edward} : {FINAL_SCORE.opponent}
+            </span>
+            <span>PLAYER 02</span>
+          </p>
+          <p className="sg-result__note" ref={rankNoteRef}>
+            RESULT RECORDED · COUNTS TOWARDS RANKING
+          </p>
+        </div>
+      ) : null}
+
+      {stage === "COMPLETE" && project ? (
+        <div className="sg-summary">
+          <p className="sg-summary__wordmark">SPORTSGANG</p>
+          <p className="sg-summary__role">PEER SPORTS COMPETITION</p>
+          <p className="sg-summary__descriptor">{project.shortDescriptor}</p>
+
+          <ol className="sg-summary__flow">
+            {PRODUCT_FLOW.map((step) => (
+              <li key={step}>{step}</li>
+            ))}
+          </ol>
+
+          {project.techStack ? (
+            <ul className="sg-summary__stack">
+              {project.techStack.map((entry) => (
+                <li key={entry}>{entry}</li>
+              ))}
+            </ul>
+          ) : null}
+
+          <div className="sg-summary__actions">
+            <Link
+              className="sg-button sg-button--primary"
+              href={project.caseStudyUrl}
+              ref={completeRef}
+            >
+              VIEW CASE STUDY
+            </Link>
+            {project.githubUrl ? (
+              <a
+                className="sg-button"
+                href={project.githubUrl}
+                rel="noreferrer"
+                target="_blank"
+              >
+                GITHUB
+              </a>
+            ) : null}
+            <button className="sg-button" onClick={onExit} type="button">
+              BACK TO WORLD
+            </button>
+            <button className="sg-button sg-button--quiet" onClick={replay} type="button">
+              REPLAY
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </section>
+  );
+}

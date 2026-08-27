@@ -54,6 +54,40 @@ Scale is fixed: `PIXEL_UNIT` CSS pixels per art pixel, and every position and
 size in `data/world.ts` is a whole multiple of it. `tests/world-art.test.ts`
 fails if any art routine stops matching its object's world footprint.
 
+## Project location experiences
+
+`data/projects.ts` stays the single source of project truth, including the real
+`techStack`. A project opens a full location experience instead of a summary
+dialog purely by being listed in `EXPERIENCE_PROJECTS` in
+`components/portfolio-experience.tsx`; everything else keeps the dialog. The
+experience renders as a fixed layer over a still-mounted `MainWorld`, which is
+passed `disabled` so the world freezes and keeps the player's position for the
+return trip. Opening INDEX or WORLD leaves the experience.
+
+SportsGang is the first one:
+
+- `types/sportsgang.ts` — the linear stage list, split into stages that advance
+  on a timer and stages that wait for the visitor.
+- `lib/game/sportsgang-machine.ts` — pure transitions and all timings. Reduced
+  motion shortens each dwell to a readable floor rather than collapsing it to
+  1ms as `getIntroStageDuration` does: these durations are reading time, not
+  motion.
+- `lib/motion/sportsgang-choreography.ts` — anime.js timelines, and nothing
+  else. No function here advances state.
+- `lib/pixel/sportsgang.ts` — the venue and courtside backdrops plus the two
+  players, on the same grid and palette as the world.
+- `components/sportsgang/*` — the stage host, the pixel phone, and the court.
+
+Two rules make the sequence robust:
+
+1. **Timers drive state; animation never does.** anime.js runs on
+   `requestAnimationFrame`, which browsers throttle hard in background tabs, so
+   a stage that waited on a timeline's completion would stall. Stages advance on
+   `setTimeout`; choreography is fired and forgotten.
+2. **End states are pinned, not tweened into.** `settleCourtExpansion` sets the
+   post-transition state explicitly when the stage leaves, so a timeline still
+   mid-flight cannot strand the phone half-faded.
+
 ## Visual implementation seam
 
 `MainWorld` is done. `IntroSequence` still holds placeholder DOM: replace it with

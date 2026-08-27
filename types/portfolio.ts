@@ -26,4 +26,10 @@ export interface PortfolioProject {
   githubUrl?: string;
   caseStudyUrl: string;
   worldBuildingId: WorldBuildingId;
+  /**
+   * The project's real, shipped stack. Canonical: any surface that shows a
+   * stack reads it from here rather than restating it. Optional because it is
+   * only filled in for projects whose stack has actually been verified.
+   */
+  techStack?: readonly string[];
 }
