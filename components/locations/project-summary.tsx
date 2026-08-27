@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 import { getProjectById } from "@/data/projects";
 import type { PortfolioProjectId } from "@/types/portfolio";
 
@@ -19,6 +19,8 @@ interface ProjectSummaryProps {
   onExit: () => void;
   onReplay: () => void;
   replayLabel?: string;
+  /** Location-specific content, shown between the stack and the actions. */
+  children?: ReactNode;
 }
 
 /**
@@ -37,6 +39,7 @@ export function ProjectSummary({
   onExit,
   onReplay,
   replayLabel = "REPLAY",
+  children,
 }: ProjectSummaryProps) {
   const project = getProjectById(projectId);
   if (!project) return null;
@@ -60,6 +63,8 @@ export function ProjectSummary({
           ))}
         </ul>
       ) : null}
+
+      {children}
 
       <div className="loc-summary__actions">
         <Link

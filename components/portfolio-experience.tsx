@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { IntroSequence } from "@/components/intro/intro-sequence";
+import { AflExperience } from "@/components/afl/afl-experience";
 import { PortfolioIndex } from "@/components/index/portfolio-index";
 import { SportsgangExperience } from "@/components/sportsgang/sportsgang-experience";
 import { WardrobeExperience } from "@/components/wardrobe/wardrobe-experience";
@@ -16,7 +17,11 @@ import type { InteractionAction } from "@/types/world";
  * Everything not listed here keeps the existing dialog behaviour, so adding
  * the next one is a single entry rather than a change to this component.
  */
-const EXPERIENCE_PROJECTS = new Set<PortfolioProjectId>(["sportsgang", "wardrobe"]);
+const EXPERIENCE_PROJECTS = new Set<PortfolioProjectId>([
+  "sportsgang",
+  "wardrobe",
+  "afl-predict",
+]);
 
 export function PortfolioExperience() {
   const [experience, setExperience] = useState<"intro" | "world">("intro");
@@ -81,6 +86,9 @@ export function PortfolioExperience() {
       ) : null}
       {activeProjectExperience === "wardrobe" ? (
         <WardrobeExperience onExit={closeProjectExperience} />
+      ) : null}
+      {activeProjectExperience === "afl-predict" ? (
+        <AflExperience onExit={closeProjectExperience} />
       ) : null}
       {indexOpen ? <PortfolioIndex onClose={closeIndex} /> : null}
       {activeInteraction ? (

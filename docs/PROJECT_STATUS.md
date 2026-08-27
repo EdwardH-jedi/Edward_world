@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-27 · after Phase 2
+**Last updated:** 2026-08-27 · after Phase 3
 
 ---
 
@@ -14,7 +14,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 0 | Baseline commits + roadmap | **DONE** |
 | 1 | SportsGang complete experience | **DONE** |
 | 2 | Wardrobe | **DONE** |
-| 3 | AFL Lab | TODO |
+| 3 | AFL Lab | **DONE** |
 | 4 | Soonpermario arcade | TODO |
 | 5 | Edward's House | TODO |
 | 6 | Index mode final pass | TODO |
@@ -45,6 +45,10 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   dress the mannequin, save the look. The look is genuinely written to this
   browser and greets you on your next visit — the product's local-first
   philosophy enacted rather than described.
+- **AFL Lab location** — a research lab, not a tipping service. Pick a winner,
+  run the model, and a rack of CRTs lights up stage by stage showing what each
+  step actually computed from a seeded demonstration round — including
+  calibration visibly pulling an overconfident number back towards even.
 - **Index mode** — editorial overlay listing the four projects, resume and
   GitHub. Reachable at any time.
 - **Routes** — `/`, `/resume`, `/case-studies/[slug]` ×4, `/manifest.webmanifest`,
@@ -54,18 +58,18 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 
 - Intro sequence (`components/intro/intro-sequence.tsx`) — placeholder DOM.
 - Title screen — plain text, not the approved composition.
-- AFL Lab, Arcade, Edward's House — summary dialogs only.
+- Arcade, Edward's House — summary dialogs only.
 - `/resume` and `/case-studies/*` — placeholder bodies (D2, D4).
 - Contact in Index — "details coming soon" (D1).
 
 ## Quality gates
 
-All green as of Phase 2:
+All green as of Phase 3:
 
 ```
 npm run lint        eslint . --max-warnings 0
 npm run typecheck   tsc --noEmit
-npm test            10 files, 73 tests
+npm test            11 files, 84 tests
 npm run build       production build
 ```
 

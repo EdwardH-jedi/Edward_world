@@ -135,6 +135,21 @@ The interior is DOM and CSS rather than canvas: every garment is a real control
 that can be clicked, tabbed to and read out, and there is no cover-fitted
 backdrop to align against.
 
+## AFL Lab
+
+A prediction lab has to show numbers, and inventing them would be a lie about a
+project whose own repository says *paper-trading research, no live betting*.
+`lib/game/afl-pipeline.ts` resolves that: the fixture is demonstration data —
+seeded, no real clubs, no real results — and every figure downstream is
+genuinely computed from it. Features are differences you can check by eye,
+two small models blend into an ensemble, and calibration is temperature
+scaling, so the visitor watches an overconfident raw number get pulled back
+towards even. That is the part worth understanding.
+
+The lab reports agreement between the visitor's pick and the model's, and
+nothing else: one run over demonstration data cannot support a claim about
+accuracy, and the repository publishes none for this to borrow.
+
 ## Visual implementation seam
 
 `MainWorld` is done. `IntroSequence` still holds placeholder DOM: replace it with

@@ -207,7 +207,7 @@ was previously `undefined`.
 
 ## Phase 3 — AFL Lab
 
-**Status:** TODO
+**Status:** DONE
 
 **Scope.** An interactive prediction *research* lab. The visitor picks a winner
 first, then runs the pipeline: `MATCH DATA → FEATURES → MODELS → CALIBRATION →
@@ -215,15 +215,36 @@ PREDICTION → EVALUATION`, visualised with pixel CRTs and data movement. The
 user's pick is compared with the model's pick.
 
 **Acceptance criteria.**
-- [ ] `WHO WINS?` → pick → `RUN MODEL` → pipeline animates → picks compared.
-- [ ] Teams are neutral/demo labels. No real AFL fixtures, results, accuracy
-      figures or model metrics.
-- [ ] Framed as paper-trading research, never a live service (see the AFL
-      framing constraint above).
-- [ ] The pipeline stages explain how the project works.
-- [ ] Ends in the shared project-context state.
+- [x] `WHO WINS?` → pick → `RUN MODEL` → the rack lights stage by stage →
+      picks compared. `RUN MODEL` is disabled until a side is chosen.
+- [x] Teams are `TEAM A` / `TEAM B`. No real clubs, fixtures or results.
+- [x] Framed as paper-trading research; the summary states plainly that it is
+      not a tipping service, not a forecast, and claims no accuracy.
+- [x] Each stage shows what it actually computed, so the pipeline explains
+      itself — most of all calibration, where the raw number is visibly pulled
+      back towards even.
+- [x] Ends in the shared project-context state.
 
-**Validation result.** _(pending)_ · **Commit.** _(pending)_
+**Validation result.**
+
+Gates: lint, typecheck, **84 tests (11 files)**, production build — all pass.
+
+Browser: walked in, picked a side, ran the model. All six CRTs progressed
+`1 → 6`; every panel showed figures traceable from the demonstration round:
+form diff `+3.6` → ensemble `+0.694` → **raw `66.7%` calibrated to `59.0%`,
+"PULLED TOWARDS EVEN"** → `TEAM A 59.0% / TEAM B 41.0%`. Picking the other
+side correctly reported disagreement. Console clean.
+
+The pipeline is unit-tested for determinism by seed, feature symmetry (swapping
+the sides flips every sign), calibration always shrinking confidence towards
+even, probabilities staying probabilities across 300 seeds, and the evaluation
+copy never containing a verdict word.
+
+Defect found by looking: at `RESULT` the console and the project summary were
+both anchored to the bottom and overlapped. `ProjectSummary` now accepts
+children, so the outcome lives inside it and the console steps aside.
+
+**Commit.** `<phase-3>`
 
 ---
 
