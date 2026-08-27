@@ -7,6 +7,7 @@ import {
   isTimedIntroStage,
   nextIntroStage,
 } from "@/lib/game/intro-machine";
+import { TitleScreen } from "@/components/title/title-screen";
 import { animateElement, motionPresets } from "@/lib/motion/animate-element";
 import type { IntroStage } from "@/types/intro";
 
@@ -20,17 +21,6 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const glyphRef = useRef<HTMLDivElement>(null);
   const doorRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleEnter(event: KeyboardEvent) {
-      if (event.key === "Enter" && stage === "TITLE") {
-        setStage("APPROACH");
-      }
-    }
-
-    window.addEventListener("keydown", handleEnter);
-    return () => window.removeEventListener("keydown", handleEnter);
-  }, [stage]);
 
   useEffect(() => {
     if (!isTimedIntroStage(stage)) return;
@@ -78,17 +68,7 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
 
   if (stage === "TITLE") {
     return (
-      <main className="title-screen">
-        <p className="eyebrow">Interactive developer portfolio</p>
-        <h1>Edward&apos;s World</h1>
-        <p>Use a keyboard to enter the placeholder world.</p>
-        <button className="primary-button" onClick={() => setStage("APPROACH")} type="button">
-          Press Enter
-        </button>
-        <button className="text-button" onClick={onOpenIndex} type="button">
-          Skip to Index
-        </button>
-      </main>
+      <TitleScreen onEnter={() => setStage("APPROACH")} onOpenIndex={onOpenIndex} />
     );
   }
 

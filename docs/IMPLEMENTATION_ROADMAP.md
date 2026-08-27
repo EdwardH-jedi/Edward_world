@@ -380,18 +380,35 @@ selectors behind, now removed.
 
 ## Phase 7 — Title screen
 
-**Status:** TODO
+**Status:** DONE
 
 **Scope.** `WELCOME TO / EDWARD HWANG'S WORLD`, `[ PRESS ENTER ]`,
 `SKIP TO INDEX →`, over the existing world as visual context. Enter-key
 activation plus clickable/touch controls. Restrained — not elaborate.
 
 **Acceptance criteria.**
-- [ ] Enter activates; the buttons are real focusable controls.
-- [ ] World art is the backdrop, matching the approved board composition.
-- [ ] Works on touch; reduced motion respected.
+- [x] `Enter` starts the world; `[ PRESS ENTER ]` and `SKIP TO INDEX →` are
+      real focusable buttons, so pointer and touch work too. Enter is ignored
+      while a button has focus, so it activates that button instead.
+- [x] The backdrop is the **actual world** — the same `drawBackdrop` and the
+      same building art the player walks through a moment later, not a separate
+      illustration.
+- [x] The blink is a CSS loop and is disabled under `prefers-reduced-motion`.
 
-**Validation result.** _(pending)_ · **Commit.** _(pending)_
+**Validation result.**
+
+Gates: lint, typecheck, 99 tests, production build — all pass.
+
+Browser: the composition matches the approved board — `WELCOME TO` in spaced
+mono, the wordmark in bitmap, `SYDNEY, AU — 2026`, the world behind with
+Edward's House and the Wardrobe, and `SKIP TO INDEX →` in the corner. `Enter`
+moved the sequence to `APPROACH`.
+
+Defect found by looking: `[ PRESS ENTER ]` was charcoal on dark earth and
+almost invisible mid-blink. It is cream with a shadow now, and the blink floor
+was raised from 0.25 to 0.45.
+
+**Commit.** `<phase-7>`
 
 ---
 

@@ -109,7 +109,6 @@ p {
   text-transform: uppercase;
 }
 
-.title-screen,
 .intro-screen {
   align-items: center;
   display: flex;
@@ -120,14 +119,156 @@ p {
   text-align: center;
 }
 
-.title-screen h1,
 .intro-screen h1 {
   font-size: clamp(2.5rem, 8vw, 6rem);
   margin-bottom: 1rem;
 }
 
-.title-screen p:not(.eyebrow) {
-  color: var(--muted);
+/* ── Title screen ────────────────────────────────────────────────────────────
+   A game waiting for Start, composed like a poster. The world behind it is the
+   real world — the same backdrop and the same building art the player walks
+   through a moment later. */
+
+.title-screen {
+  background: #e9e0c8;
+  height: 100dvh;
+  overflow: hidden;
+  position: relative;
+}
+
+.title-scene {
+  inset: 0;
+  position: absolute;
+}
+
+.title-track {
+  bottom: 0;
+  height: 472px;
+  left: 0;
+  position: absolute;
+  width: 3840px;
+}
+
+.title-backdrop { inset: 0; position: absolute; }
+
+.title-building { position: absolute; }
+
+.title-track canvas {
+  display: block;
+  image-rendering: pixelated;
+}
+
+/* A wash so the type stays readable over whatever the world is doing. */
+.title-screen::after {
+  background: linear-gradient(
+    180deg,
+    rgb(233 224 200 / 82%) 0%,
+    rgb(233 224 200 / 40%) 46%,
+    rgb(233 224 200 / 0%) 68%
+  );
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.title-copy {
+  left: 50%;
+  position: absolute;
+  text-align: center;
+  top: 16%;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.title-welcome {
+  color: #57473a;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.62em;
+  margin: 0;
+  text-indent: 0.62em;
+}
+
+.title-wordmark {
+  color: #2b2823;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: clamp(1.6rem, 4.6vw, 3rem);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
+  margin: 1rem 0 0;
+}
+
+.title-place {
+  color: #7e7763;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
+  margin: 1.1rem 0 0;
+}
+
+/* Sits low, over the dark earth, so cream type reads against it. */
+.title-enter {
+  animation: title-blink 1.4s step-end infinite;
+  background: transparent;
+  border: 0;
+  bottom: 9%;
+  color: #f7f1e2;
+  cursor: pointer;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 1rem;
+  left: 50%;
+  letter-spacing: 0.14em;
+  padding: 0.8rem 1.2rem;
+  position: absolute;
+  text-shadow: 0 2px 0 rgb(34 27 21 / 75%);
+  transform: translateX(-50%);
+  z-index: 3;
+}
+
+.title-enter:hover,
+.title-enter:focus-visible {
+  animation: none;
+  background: #f7f1e2;
+  color: #2b2823;
+  text-shadow: none;
+}
+
+@keyframes title-blink {
+  0%, 60% { opacity: 1; }
+  65%, 100% { opacity: 0.45; }
+}
+
+.title-skip {
+  background: rgb(43 40 35 / 88%);
+  border: 0;
+  bottom: 1.6rem;
+  color: #efe7d3;
+  cursor: pointer;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  padding: 0.6rem 0.9rem;
+  position: absolute;
+  right: 1.6rem;
+  z-index: 3;
+}
+
+.title-skip:hover,
+.title-skip:focus-visible {
+  background: #efe7d3;
+  color: #2b2823;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title-enter { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .title-copy { top: 12%; }
+  .title-welcome { font-size: 0.6rem; letter-spacing: 0.4em; }
+  .title-skip { bottom: 1rem; right: 1rem; }
 }
 
 .primary-button {
