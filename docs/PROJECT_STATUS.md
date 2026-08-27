@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-27 · after Phase 5
+**Last updated:** 2026-08-27 · after Phase 6
 
 ---
 
@@ -17,7 +17,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 3 | AFL Lab | **DONE** |
 | 4 | Soonpermario arcade | **DONE** |
 | 5 | Edward's House | **DONE** |
-| 6 | Index mode final pass | TODO |
+| 6 | Index mode final pass | **DONE** |
 | 7 | Title screen | TODO |
 | 8 | Six-second intro | TODO |
 | 9 | World polish / TOMODACHI | TODO |
@@ -57,8 +57,11 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   them: the map from Jeju to Sydney, the desk, the computer, the resume, the
   clothes rail, the gaming PC. Every line is verified biography; the one thing
   that is not known says so.
-- **Index mode** — editorial overlay listing the four projects, resume and
-  GitHub. Reachable at any time.
+- **Index mode** — the recruiter's fast path, reachable at any time. Warm
+  off-white and charcoal, an editorial numbered grid: four projects with their
+  role, descriptor, verified stack, case study and GitHub, then Resume, GitHub,
+  LinkedIn, Contact and an About section. Everything professional is here
+  without entering the world.
 - **Routes** — `/`, `/resume`, `/case-studies/[slug]` ×4, `/manifest.webmanifest`,
   `/robots.txt`, 404.
 
@@ -67,11 +70,10 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 - Intro sequence (`components/intro/intro-sequence.tsx`) — placeholder DOM.
 - Title screen — plain text, not the approved composition.
 - `/resume` and `/case-studies/*` — placeholder bodies (D2, D4).
-- Contact in Index — "details coming soon" (D1).
 
 ## Quality gates
 
-All green as of Phase 5:
+All green as of Phase 6:
 
 ```
 npm run lint        eslint . --max-warnings 0

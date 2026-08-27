@@ -59,7 +59,7 @@ Carry these forward until resolved. None of them block implementation.
 
 | # | Decision | Current handling |
 |---|---|---|
-| D1 | Public contact surface | Using the email + LinkedIn published in the soonpermario README. Swap if a different contact surface is preferred. |
+| D1 | Public contact surface | **Resolved for now.** Using the email + LinkedIn published in the soonpermario README, surfaced in the Index and in Edward's House. Swap if a different contact surface is preferred. |
 | D2 | Resume content | `/resume` is a placeholder. Structure can be built from the verified biography above, but a resume is an identity document and needs sign-off before it ships as fact. |
 | D3 | League of Legends rank (Phase 5) | Build a data hook and an explicit placeholder only. Never display a number that was not supplied. |
 | D4 | Case study bodies | `/case-studies/[slug]` are placeholder routes. Real write-ups are Edward's to author. |
@@ -343,7 +343,7 @@ centred stage now, so the room holds its shape at any width.
 
 ## Phase 6 — Index mode final pass
 
-**Status:** TODO
+**Status:** DONE
 
 **Scope.** Finish the recruiter fast path. One interaction must expose:
 SportsGang, AFL Predict, Wardrobe, Soonpermario, About, Resume, GitHub,
@@ -351,12 +351,30 @@ Contact. Stays clean, contemporary, editorial — never pixel-game UI. Every
 project must be understandable without playing the world.
 
 **Acceptance criteria.**
-- [ ] All eight destinations reachable in one interaction.
-- [ ] Contact resolved (D1) with the source noted.
-- [ ] Each project readable — descriptor, stack, links — without the world.
-- [ ] Editorial styling preserved; no pixel/game styling leaks in.
+- [x] All eight destinations in one interaction: the four projects (each with a
+      case study and a GitHub link), Resume, GitHub, LinkedIn and Contact.
+      About is a section in the same panel.
+- [x] Contact resolved (D1) — email and LinkedIn as published in the
+      soonpermario README, plus the GitHub profile.
+- [x] Each project readable without entering the world: name, the role the
+      world gives it, the canonical descriptor, the verified stack, both links.
+- [x] Editorial throughout — warm off-white, charcoal, numbered grid, grotesk
+      headings with mono metadata. No pixel or game styling anywhere in it.
 
-**Validation result.** _(pending)_ · **Commit.** _(pending)_
+**Validation result.**
+
+Gates: lint, typecheck, 99 tests, production build — all pass.
+
+Browser: opened the index from the world control and confirmed all twelve links
+resolve to the right places, all four projects carry their verified stack, and
+the panel keeps the dialog's focus trap and Escape handling.
+
+Two fixes: the panel drew a heavy orange focus ring around itself because it
+takes focus programmatically — that ring belongs on controls a keyboard moves
+between, not on a container. And the old index stylesheet left three orphaned
+selectors behind, now removed.
+
+**Commit.** `<phase-6>`
 
 ---
 
