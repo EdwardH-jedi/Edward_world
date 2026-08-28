@@ -95,6 +95,19 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
     return () => cancelAnimationFrame(animationFrame);
   }, [reduced, stage]);
 
+  // Escape leaves the ritual at any point in it, which is what the board
+  // asks for — not only once the gate is asking a question.
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      onComplete();
+    }
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [onComplete]);
+
   // The ritual's one interactive beat. Rebinding per keystroke is cheap and
   // keeps the handler reading from the gate it is actually answering.
   useEffect(() => {
@@ -103,14 +116,14 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
 
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onComplete();
+      // A focused button owns Enter and Space — and only those. Letting it
+      // swallow everything would mean one stray Tab left the gate dead.
+      if (
+        document.activeElement instanceof HTMLButtonElement &&
+        (event.key === "Enter" || event.key === " ")
+      ) {
         return;
       }
-
-      // A focused button owns its own Space and Enter.
-      if (document.activeElement instanceof HTMLButtonElement) return;
       if (!consumesKey(event.key)) return;
       event.preventDefault();
 

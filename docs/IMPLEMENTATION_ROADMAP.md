@@ -63,7 +63,7 @@ Carry these forward until resolved. None of them block implementation.
 | D2 | Resume content | `/resume` is a placeholder. Structure can be built from the verified biography above, but a resume is an identity document and needs sign-off before it ships as fact. |
 | D3 | League of Legends rank (Phase 5) | Build a data hook and an explicit placeholder only. Never display a number that was not supplied. |
 | D4 | Case study bodies | `/case-studies/[slug]` are placeholder routes. Real write-ups are Edward's to author. |
-| D5 | Where `ESC` leaves the name gate | The board pairs "ESC or SKIP TO INDEX exits the ritual", but those are two destinations here. **Resolved:** `ESC` and `SKIP GATE` leave the ritual for the world; `SKIP TO INDEX` goes to the index. Both are on screen throughout. Change if Edward reads it the other way. |
+| D5 | Where `ESC` leaves the ritual | The board pairs "ESC or SKIP TO INDEX exits the ritual at any time", but those are two destinations here. **Resolved:** `ESC` and `SKIP GATE` leave the ritual for the world; `SKIP TO INDEX` goes to the index. Both are on screen throughout, and `ESC` is bound at **every** intro beat — not only while the gate is asking — which is what "at any time" says. Change if Edward reads it the other way. |
 
 ---
 
@@ -582,8 +582,9 @@ which returned *identical copy: True*. Nothing outside the intro was touched.
       a success toast.
 - [x] The assembled name stays on screen while typing: the gate tests
       presence, not memory.
-- [x] `ESC` / `SKIP GATE` and `SKIP TO INDEX` are on screen at every stage
-      (D5).
+- [x] `ESC` / `SKIP GATE` and `SKIP TO INDEX` are on screen at every stage,
+      and `ESC` is bound at every beat of the intro rather than only at the
+      gate (D5).
 - [x] Reduced motion collapses the six scripted beats but leaves the gate
       waiting, because a gate is interaction, not motion.
 
@@ -627,7 +628,7 @@ transitions to full opacity before the cut. Under a forced
 `prefers-reduced-motion` the six scripted beats collapsed straight to `TYPING`,
 which correctly kept waiting. Console clean on every frame.
 
-Three defects found by looking, none visible in source:
+Five defects found by looking, none visible in source:
 
 - `[ PRESS ENTER ]` sat exactly on the seam between the stone path and the
   soil, unreadable. The soil band starts at 87% of the frame, so the call to
@@ -640,6 +641,16 @@ Three defects found by looking, none visible in source:
   the near layer far enough to carry both framing canopy trees out of shot.
   The board draws its F2 frame at 60 — the crown just entering the right edge —
   so that is what the pan lands on.
+- **One `Tab` press killed the gate.** The keydown handler yielded to any
+  focused button before deciding whether the key was one the gate takes, so
+  tabbing to `SKIP` left every letter and backspace silently swallowed, with
+  no feedback, until the visitor clicked away. A button owns `Enter` and
+  `Space` and nothing else; the guard says so now. Verified by focusing
+  `.intro-skip` and typing into it: the letter lands, backspace lifts it out,
+  and a space is still left to the button.
+- `ESC` was bound only during the gate, but the board says the ritual can be
+  left "at any time" and the `SKIP INTRO` button is already on screen at every
+  beat. `ESC` from the middle of the camera pan now lands in the world (D5).
 
 One non-defect worth recording, since it cost time: the bloom's computed
 opacity stayed at `0` through an entire `UNLOCK` beat. It was not the app. A
