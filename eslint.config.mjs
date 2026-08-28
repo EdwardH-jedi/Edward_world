@@ -7,6 +7,9 @@ export default defineConfig([
   ...nextTypescript,
   globalIgnores([
     ".next/**",
+    // Agent worktrees hold whole copies of this repo; linting them reports
+    // thousands of problems from a checkout that is not the one being edited.
+    ".claude/**",
     ".remember/**",
     "out/**",
     "build/**",

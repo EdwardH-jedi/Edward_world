@@ -7,38 +7,47 @@ import { LINES } from "@/lib/pixel/monolith";
  * component never has to decide anything:
  *
  *   - thirteen carved sockets, one per letter, gaps where the spaces are
- *   - each correct keystroke sets a lit letter into stone
- *   - a wrong key flashes the socket dark and types nothing
+ *   - each correct letter sets a lit letter into stone
+ *   - a wrong letter flashes the socket dark and sets nothing
  *   - backspace lifts the last letter back out
- *   - case-insensitive; spaces auto-skip, so nobody has to type them
- *   - anything that is not a letter is ignored outright — Shift, Tab, arrows
- *     and function keys are not mistakes, they are simply not letters
+ *   - case-insensitive; spaces are free, so nobody has to type them and
+ *     stray leading or trailing whitespace cannot fail the gate
+ *   - anything that is not a letter is ignored outright — digits, punctuation
+ *     and the keys a keyboard sends for itself are not mistakes
  *
- * Pure: no React, no DOM, no timers. The wrong-key flash is recorded as data
- * (`missAt` plus a monotonic `misses`) so the view can key an animation off it
- * without any timing living in here.
+ * Modelled as a **text reducer** rather than a keystroke machine: the whole
+ * typed string goes in, the matched prefix comes out. That is what lets one
+ * code path serve a physical keyboard, a phone's native keyboard, a swipe
+ * keyboard and an IME — none of which emit a clean key per letter — and it
+ * makes pasting the name work without a special case.
+ *
+ * Pure: no React, no DOM, no timers. The wrong-letter flash is recorded as
+ * data (`missAt` plus a monotonic `misses`) so the view can key an animation
+ * off it without any timing living in here.
  */
 
 /** The name, letters only, in the order the sockets take them. */
 export const NAME_LETTERS = LINES.join("");
 
-/** How the name is written, with its spaces. */
+/** How the name is written, with its spaces. The canonical value to match. */
 export const NAME_TEXT = LINES.join(" ");
 
 export const SOCKET_COUNT = NAME_LETTERS.length;
 
 export interface NameGateState {
+  /** What the visitor has actually typed, and what the input should show. */
+  readonly text: string;
   /** How many sockets are filled. */
   readonly typed: number;
-  /** Socket the last wrong key hit, for the flash. Cleared by the next event. */
+  /** Socket the last wrong letter hit, for the flash. Cleared by the next edit. */
   readonly missAt: number | null;
-  /** Monotonic count of wrong keys, so a repeat miss still reads as new. */
+  /** Monotonic count of wrong letters, so a repeat miss still reads as new. */
   readonly misses: number;
   readonly solved: boolean;
 }
 
 export function createNameGateState(): NameGateState {
-  return { typed: 0, missAt: null, misses: 0, solved: false };
+  return { text: "", typed: 0, missAt: null, misses: 0, solved: false };
 }
 
 /** Which word a socket belongs to, counting from zero. */
@@ -77,59 +86,74 @@ export function getMonumentResponse(typed: number): MonumentResponse {
   };
 }
 
-/** A single key, as the gate sees it. */
-export type GateKey = string;
-
-function isLetter(key: GateKey) {
-  return key.length === 1 && /[a-z]/i.test(key);
+function isLetter(ch: string) {
+  return /[a-z]/i.test(ch);
 }
 
 /**
- * Whether the gate takes this key at all.
+ * Reads a typed string against the name.
  *
- * The view calls this before `preventDefault`, so a space cannot scroll the
- * page out from under the ritual and a stray quote cannot open a browser's
- * find-as-you-type — while Tab, the arrows and the shortcuts keep working.
+ * Walks it letter by letter, ignoring spaces and anything that is not a
+ * letter, and stops at the first letter that is not the one the stone is
+ * waiting for. Returns how much was accepted, the text worth keeping, and
+ * where the refusal happened.
  */
-export function consumesKey(key: GateKey) {
-  return key === "Backspace" || key === " " || key === "Spacebar" || isLetter(key);
+export function readTypedText(raw: string) {
+  let accepted = 0;
+  let kept = "";
+  for (const ch of raw) {
+    if (ch === " ") {
+      kept += ch;
+      continue;
+    }
+    if (!isLetter(ch)) continue;
+    if (accepted >= SOCKET_COUNT || ch.toUpperCase() !== NAME_LETTERS[accepted]) {
+      return { accepted, kept, rejectedAt: accepted };
+    }
+    accepted += 1;
+    kept += ch;
+  }
+  return { accepted, kept, rejectedAt: null as number | null };
 }
 
 /**
- * Applies one key.
+ * Applies whatever the visitor has typed so far.
  *
- * Returns the same object when nothing happened, so a caller can skip a render
- * on keys the gate ignores.
+ * Only the matched prefix is kept, so a wrong letter simply never lands — the
+ * text the input shows and the letters in the stone can never disagree.
+ * Returns the same object when nothing changed, so a caller can skip a render.
  */
-export function pressKey(state: NameGateState, key: GateKey): NameGateState {
+export function applyText(state: NameGateState, raw: string): NameGateState {
   if (state.solved) return state;
 
-  if (key === "Backspace") {
-    if (state.typed === 0) {
-      return state.missAt === null ? state : { ...state, missAt: null };
-    }
-    // Lifting a letter back out steps across a word gap without comment.
-    return { ...state, typed: state.typed - 1, missAt: null };
+  const { accepted, kept, rejectedAt } = readTypedText(raw);
+  const missed = rejectedAt !== null;
+
+  if (!missed && kept === state.text && accepted === state.typed) {
+    return state.missAt === null ? state : { ...state, missAt: null };
   }
 
-  // Spaces are already in the stone; pressing one is a silent no-op.
-  if (key === " " || key === "Spacebar") return state;
-
-  // Not a letter at all: not a mistake, just not input.
-  if (!isLetter(key)) return state;
-
-  const expected = NAME_LETTERS[state.typed];
-  if (key.toUpperCase() !== expected) {
-    return { ...state, missAt: state.typed, misses: state.misses + 1 };
-  }
-
-  const typed = state.typed + 1;
-  return { typed, missAt: null, misses: state.misses, solved: typed >= SOCKET_COUNT };
+  return {
+    text: kept,
+    typed: accepted,
+    missAt: missed ? rejectedAt : null,
+    misses: missed ? state.misses + 1 : state.misses,
+    solved: accepted >= SOCKET_COUNT,
+  };
 }
 
-/** Types a whole string, for tests and for anything that pastes. */
-export function pressAll(state: NameGateState, keys: string): NameGateState {
-  let next = state;
-  for (const key of keys) next = pressKey(next, key);
-  return next;
+/**
+ * Applies a single key, for the bridge that catches typing when the input has
+ * lost focus. Everything still goes through the one reducer.
+ */
+export function pressKey(state: NameGateState, key: string): NameGateState {
+  if (state.solved) return state;
+  if (key === "Backspace") return applyText(state, state.text.slice(0, -1));
+  if (key !== " " && !(key.length === 1 && isLetter(key))) return state;
+  return applyText(state, state.text + key);
+}
+
+/** Whether the gate takes this key at all — the bridge uses it to decide. */
+export function consumesKey(key: string) {
+  return key === "Backspace" || key === " " || (key.length === 1 && isLetter(key));
 }

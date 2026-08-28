@@ -142,6 +142,52 @@ p {
   width: 100%;
 }
 
+/* The inscription slab's tap target: a real text input, sitting exactly over
+   the carved sockets. It shows nothing of itself — no box, no radius, no
+   caret, transparent text — because the letters it accepts are drawn into the
+   stone behind it. Its job is to be tappable, so a phone raises its own
+   keyboard, and to be a real form control for assistive technology.
+
+   16px is a floor, not a preference: anything smaller makes iOS zoom the page
+   on focus, which would throw the whole scene off centre. */
+.intro-inscription {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  caret-color: transparent;
+  color: transparent;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 16px;
+  height: 14%;
+  left: 28%;
+  outline: none;
+  padding: 0;
+  position: absolute;
+  text-align: center;
+  top: 82%;
+  width: 44%;
+  z-index: 3;
+}
+
+.intro-inscription::selection { background: transparent; }
+
+/* On a phone the whole frame is small, so 14% of it is a target too fine for
+   a fingertip. The slab keeps its drawn size; only what is tappable grows. */
+@media (max-width: 640px), (pointer: coarse) {
+  .intro-inscription {
+    height: 22%;
+    top: 76%;
+    width: 56%;
+    left: 22%;
+  }
+}
+
+/* Never a browser focus ring — the board is explicit about that. A keyboard
+   visitor still needs to see where they are, so the stone warms instead. */
+.intro-inscription:focus-visible {
+  box-shadow: 0 0 0 2px rgb(243 227 178 / 45%);
+}
+
 /* The light the proven name lets out, carrying the ritual into the world. */
 .intro-bloom {
   background: radial-gradient(
@@ -192,8 +238,15 @@ p {
   .intro-bloom { transition: none; }
 }
 
-@media (max-width: 640px) {
-  .intro-actions { bottom: 0.6rem; right: 0.6rem; }
+/* On a phone the enlarged tap target reaches the bottom-right corner, where
+   the skip controls used to sit — and a button over the slab means a finger
+   aiming at the inscription leaves the intro instead. They move above it. */
+@media (max-width: 640px), (pointer: coarse) {
+  .intro-actions {
+    bottom: auto;
+    right: 0.6rem;
+    top: 0.6rem;
+  }
 }
 
 /* ── Title screen ────────────────────────────────────────────────────────────

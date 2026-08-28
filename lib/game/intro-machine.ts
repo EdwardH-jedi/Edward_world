@@ -17,8 +17,11 @@ import {
 export const INTRO_STAGE_TIMINGS: Readonly<Record<TimedIntroStage, number>> = {
   PAN: 1_800,
   SHRINE: 900,
-  SELECTION: 1_400,
-  NAME: 1_200,
+  // Thirteen letters have to leave the stone one at a time and be seen doing
+  // it. Any quicker and the extraction reads as a wave rather than a choice.
+  SELECTION: 2_600,
+  // The hero beat. Held long enough to read three words, not just glimpse them.
+  NAME: 1_800,
   ASK: 1_100,
   UNLOCK: 1_600,
 };

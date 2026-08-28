@@ -131,6 +131,11 @@ export function drawMonolith(
   frame: number,
   phase: MonolithPhase,
   typed = 0,
+  /**
+   * How many of the thirteen have pulled free, as a float — the fractional
+   * part is the one currently in flight. Only phase 4 reads it.
+   */
+  lifted = SEL.length,
 ) {
   const x0 = cx - 21;
   const top = groundY - 82;
@@ -207,12 +212,14 @@ export function drawMonolith(
     const y = faceY + row * 6;
     const chosen = SEL.indexOf(index);
 
-    // Once a letter has left, its socket stays.
-    if (chosen >= 0 && (phase >= 5 || (phase === 4 && chosen < 7))) {
+    // Once a letter has left, its socket stays — the recess is what makes the
+    // extraction read as taken from the stone rather than drawn on top of it.
+    if (chosen >= 0 && (phase >= 5 || (phase === 4 && chosen < Math.floor(lifted)))) {
       draw(x - 1, y - 1, 6, 6, R.socket);
       draw(x - 1, y + 4, 6, 1, R.light);
       continue;
     }
+    // Still in its carving, but chosen: lit, and waiting its turn.
     if (chosen >= 0 && phase === 4) {
       draw(x - 1, y - 1, 6, 6, "rgba(243,227,178,0.22)");
       g4(draw, x, y, ch, frame % 4 < 3 ? R.warm : R.glow);
@@ -240,9 +247,13 @@ export function drawMonolith(
     draw(cx - 1, groundY - 34, 2, 22, `rgba(243,227,178,${0.2 + steps * 0.15})`);
   }
 
-  // Letters in flight, halfway to the name.
+  // Letters in flight. Each one is its own journey from its carving to the
+  // place the assembled name will hold it, so the first are already airborne
+  // while the last still glow in their sockets.
   if (phase === 4) {
-    for (let n = 0; n < 7; n += 1) {
+    for (let n = 0; n < SEL.length; n += 1) {
+      const travel = Math.min(1, Math.max(0, lifted - n));
+      if (travel <= 0) continue;
       const index = SEL[n];
       const col = index % 7;
       const row = (index / 7) | 0;
@@ -252,8 +263,8 @@ export function drawMonolith(
       const bob = (frame + n) % 4 < 2 ? 0 : 1;
       g4(
         draw,
-        Math.round(sx + (target.x - sx) * 0.5),
-        Math.round(sy + (target.y - sy) * 0.5) + bob,
+        Math.round(sx + (target.x - sx) * travel),
+        Math.round(sy + (target.y - sy) * travel) + bob,
         letterAt(index),
         R.warm,
       );
@@ -431,6 +442,7 @@ export function drawShrine(
   phase: MonolithPhase,
   typed = 0,
   missAt: number | null = null,
+  lifted = SEL.length,
 ) {
   const W = SHRINE_ART_SIZE.width;
   const groundY = 100;
@@ -477,7 +489,7 @@ export function drawShrine(
   lamp(draw, 28, 98);
   draw(27, 80, 6, 4, "rgba(243,227,178,0.18)");
 
-  drawMonolith(draw, cx, groundY, frame, phase, typed);
+  drawMonolith(draw, cx, groundY, frame, phase, typed, lifted);
 
   if (phase === 8) tinyAvatar(draw, cx - 3, 91, true);
   else tinyAvatar(draw, 44, 92);

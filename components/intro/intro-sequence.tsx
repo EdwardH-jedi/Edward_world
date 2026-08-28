@@ -5,7 +5,6 @@ import { TitleScreen } from "@/components/title/title-screen";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import {
   getIntroStageDuration,
-  getPanOffset,
   INTRO_STAGE_TIMINGS,
   isShrineStage,
   isTimedIntroStage,
@@ -14,13 +13,16 @@ import {
   PAN_OFFSET,
 } from "@/lib/game/intro-machine";
 import {
+  applyText,
   consumesKey,
   createNameGateState,
   NAME_TEXT,
   pressKey,
   SOCKET_COUNT,
+  type NameGateState,
 } from "@/lib/game/name-gate";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
+import { driveValue } from "@/lib/motion/intro-choreography";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import {
@@ -38,11 +40,11 @@ interface IntroSequenceProps {
 }
 
 /**
- * How long a wrong key leaves its socket dark.
+ * How long a wrong letter leaves its socket dark.
  *
- * The gate itself records only *that* a key missed and where; the duration of
- * the flash is presentation, so it lives here rather than in the state module
- * or in the art's frame counter.
+ * The gate records only *that* a letter missed and where; the duration of the
+ * flash is presentation, so it lives here rather than in the state module or
+ * in the art's frame counter.
  */
 const MISS_FLASH_MS = 260;
 
@@ -55,9 +57,11 @@ interface MissFlash {
 export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
   const [stage, setStage] = useState<IntroStage>("TITLE");
   const [panOffset, setPanOffset] = useState(0);
+  const [lifted, setLifted] = useState(0);
   const [gate, setGate] = useState(createNameGateState);
   const [flash, setFlash] = useState<MissFlash | null>(null);
   const bloomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const reduced = useReducedMotion();
   const frame = useAmbientFrame(stage !== "TITLE");
@@ -75,28 +79,89 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
     return () => window.clearTimeout(timeout);
   }, [onComplete, reduced, stage]);
 
-  // The camera east. Its own loop rather than a tween, because the offset is
-  // an argument to the art routine and not a style on an element.
+  // The camera east. Under reduced motion there is no travel to animate: the
+  // camera is simply already there, which the render below reads straight off.
   useEffect(() => {
-    // Under reduced motion there is no travel to animate: the camera is
-    // simply already there, which the render below reads straight off.
     if (stage !== "PAN" || reduced) return;
-
-    const start = performance.now();
-    let animationFrame = 0;
-
-    function step(now: number) {
-      const progress = (now - start) / INTRO_STAGE_TIMINGS.PAN;
-      setPanOffset(getPanOffset(progress));
-      if (progress < 1) animationFrame = requestAnimationFrame(step);
-    }
-
-    animationFrame = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(animationFrame);
+    const pan = driveValue(setPanOffset, {
+      to: PAN_OFFSET,
+      duration: INTRO_STAGE_TIMINGS.PAN,
+      ease: "inOutSine",
+    });
+    return () => pan.cancel();
   }, [reduced, stage]);
 
-  // Escape leaves the ritual at any point in it, which is what the board
-  // asks for — not only once the gate is asking a question.
+  // The letters leaving the stone, one after another.
+  useEffect(() => {
+    if (stage !== "SELECTION" || reduced) return;
+    const selection = driveValue(setLifted, {
+      to: SOCKET_COUNT,
+      duration: INTRO_STAGE_TIMINGS.SELECTION,
+      ease: "inOutQuad",
+    });
+    return () => selection.cancel();
+  }, [reduced, stage]);
+
+  /**
+   * Everything the gate accepts lands here, from the input and from the
+   * keyboard bridge alike, so the two can never disagree.
+   */
+  const commit = useCallback(
+    (previous: NameGateState, next: NameGateState) => {
+      if (next === previous) return;
+      setGate(next);
+
+      // The input is uncontrolled on purpose: a refused letter has to be taken
+      // back out of the DOM even when React sees no state change.
+      const input = inputRef.current;
+      if (input && input.value !== next.text) input.value = next.text;
+
+      if (next.misses > previous.misses && next.missAt !== null) {
+        setFlash({ socket: next.missAt, misses: next.misses });
+      }
+      // The door is the completion, so proving the name advances the frame.
+      if (next.solved) setStage("UNLOCK");
+    },
+    [],
+  );
+
+  const handleInput = useCallback(
+    (event: React.FormEvent<HTMLInputElement>) => {
+      commit(gate, applyText(gate, event.currentTarget.value));
+    },
+    [commit, gate],
+  );
+
+  // Desktop visitors should be able to type the moment the stone asks.
+  useEffect(() => {
+    if (stage !== "TYPING") return;
+    inputRef.current?.focus({ preventScroll: true });
+  }, [stage]);
+
+  /**
+   * Typing that misses the input — because focus moved to a skip button, or
+   * anywhere else — is caught and replayed through the same reducer, and pulls
+   * focus back. Losing the keyboard mid-ritual then heals on the next letter
+   * rather than leaving a gate that silently ignores everything.
+   */
+  useEffect(() => {
+    if (stage !== "TYPING") return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.target === inputRef.current) return;
+      if (event.metaKey || event.ctrlKey || event.altKey || event.isComposing) return;
+      if (!consumesKey(event.key)) return;
+      event.preventDefault();
+      inputRef.current?.focus({ preventScroll: true });
+      commit(gate, pressKey(gate, event.key));
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [commit, gate, stage]);
+
+  // Escape leaves the ritual at any point in it, which is what the board asks
+  // for — not only once the gate is asking a question.
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
@@ -107,40 +172,6 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
     window.addEventListener("keydown", handleEscape);
     return () => window.removeEventListener("keydown", handleEscape);
   }, [onComplete]);
-
-  // The ritual's one interactive beat. Rebinding per keystroke is cheap and
-  // keeps the handler reading from the gate it is actually answering.
-  useEffect(() => {
-    if (stage !== "TYPING") return;
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.metaKey || event.ctrlKey || event.altKey) return;
-
-      // A focused button owns Enter and Space — and only those. Letting it
-      // swallow everything would mean one stray Tab left the gate dead.
-      if (
-        document.activeElement instanceof HTMLButtonElement &&
-        (event.key === "Enter" || event.key === " ")
-      ) {
-        return;
-      }
-      if (!consumesKey(event.key)) return;
-      event.preventDefault();
-
-      const next = pressKey(gate, event.key);
-      if (next === gate) return;
-
-      setGate(next);
-      if (next.misses > gate.misses && next.missAt !== null) {
-        setFlash({ socket: next.missAt, misses: next.misses });
-      }
-      // The door is the completion, so proving the name advances the frame.
-      if (next.solved) setStage("UNLOCK");
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [gate, onComplete, stage]);
 
   useEffect(() => {
     if (!flash) return;
@@ -176,13 +207,14 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
   const phase = shrineStage ? MONOLITH_PHASE[shrineStage] : null;
   const typed = gate.typed;
   const missAt = flash?.socket ?? null;
+  const liftedCount = reduced ? SOCKET_COUNT : lifted;
 
   const drawClearing = useCallback<ArtRoutine>(
     (raster, f) => {
       if (phase === null) return;
-      drawShrine(raster, f, phase, typed, missAt);
+      drawShrine(raster, f, phase, typed, missAt, liftedCount);
     },
-    [missAt, phase, typed],
+    [liftedCount, missAt, phase, typed],
   );
 
   if (stage === "TITLE") {
@@ -190,6 +222,7 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
   }
 
   const panning = stage === "PAN";
+  const asking = stage === "TYPING";
 
   return (
     <main className="intro-screen" data-stage={stage}>
@@ -215,11 +248,36 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
             unit={PIXEL_UNIT}
           />
         )}
+
+        {/*
+          The inscription slab's tap target, and a real text input — so a phone
+          raises its own keyboard on a tap, and a screen reader is told what is
+          being asked. It carries no visible chrome of its own: the letters the
+          visitor types appear in the carved sockets behind it, which is the
+          whole point of a slab rather than a form field.
+        */}
+        {asking ? (
+          <input
+            aria-label={`Type the name to enter: ${NAME_TEXT}`}
+            autoCapitalize="characters"
+            autoComplete="off"
+            autoCorrect="off"
+            className="intro-inscription"
+            defaultValue=""
+            enterKeyHint="go"
+            inputMode="text"
+            onInput={handleInput}
+            ref={inputRef}
+            spellCheck={false}
+            type="text"
+          />
+        ) : null}
+
         <div className="intro-bloom" ref={bloomRef} />
 
         <div className="intro-actions">
           <button className="intro-skip" onClick={onComplete} type="button">
-            {stage === "TYPING" ? "SKIP GATE (ESC) →" : "SKIP INTRO →"}
+            {asking ? "SKIP GATE (ESC) →" : "SKIP INTRO →"}
           </button>
           <button
             className="intro-skip intro-skip--quiet"
@@ -232,7 +290,7 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
       </div>
 
       <p aria-live="polite" className="loc-announcer">
-        {stage === "TYPING"
+        {asking
           ? `Type the name to enter: ${NAME_TEXT}. ${typed} of ${SOCKET_COUNT} letters set.`
           : stage === "UNLOCK"
             ? "The name is proven. The stone opens."

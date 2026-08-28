@@ -31,8 +31,10 @@ describe("intro state machine", () => {
   it("leaves the typing gate off the clock — it waits for a person", () => {
     expect(isTimedIntroStage("TYPING")).toBe(false);
     // Which is why V4 budgets only the part the world performs by itself.
-    // The old fixed six-second total is superseded, deliberately.
-    expect(INTRO_SCRIPTED_MS).toBe(8_000);
+    // The old fixed six-second total is superseded, deliberately — and the
+    // budget grew again when the extraction became thirteen separate journeys
+    // and the hero beat was held long enough to read.
+    expect(INTRO_SCRIPTED_MS).toBe(9_800);
   });
 
   it("collapses automatic stage waits when reduced motion is requested", () => {
@@ -86,5 +88,45 @@ describe("the camera east", () => {
     expect(getPanOffset(0.5)).toBe(Math.round(PAN_OFFSET / 2));
     // ...and the first quarter covers less ground than the middle one.
     expect(getPanOffset(0.25)).toBeLessThan(getPanOffset(0.5) - getPanOffset(0.25));
+  });
+});
+
+describe("transition safety", () => {
+  it("only ever advances by one, so nothing can be skipped", () => {
+    for (const stage of INTRO_STAGES) {
+      const next = nextIntroStage(stage);
+      const from = INTRO_STAGES.indexOf(stage);
+      const to = INTRO_STAGES.indexOf(next);
+      expect(to - from, stage).toBeLessThanOrEqual(1);
+      expect(to, stage).toBeGreaterThanOrEqual(from);
+    }
+  });
+
+  it("is idempotent at the end: WORLD cannot advance past itself", () => {
+    let stage: (typeof INTRO_STAGES)[number] = "WORLD";
+    for (let i = 0; i < 5; i += 1) stage = nextIntroStage(stage);
+    expect(stage).toBe("WORLD");
+  });
+
+  it("walks the whole storyboard in order, one beat at a time", () => {
+    const walked: string[] = ["TITLE"];
+    let stage: (typeof INTRO_STAGES)[number] = "TITLE";
+    while (stage !== "WORLD") {
+      stage = nextIntroStage(stage);
+      walked.push(stage);
+    }
+    expect(walked).toEqual([...INTRO_STAGES]);
+  });
+
+  it("gives the gate no timer at all, so nothing can advance it but a person", () => {
+    // Every other beat has a duration; TYPING deliberately has none, which is
+    // what stops an aggressive keypress or a stray timer from opening the door.
+    for (const stage of INTRO_STAGES) {
+      if (stage === "TITLE" || stage === "TYPING" || stage === "WORLD") {
+        expect(isTimedIntroStage(stage), stage).toBe(false);
+      } else {
+        expect(isTimedIntroStage(stage), stage).toBe(true);
+      }
+    }
   });
 });
