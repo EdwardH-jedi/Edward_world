@@ -96,11 +96,14 @@ export function AflExperience({ onExit }: AflExperienceProps) {
   }, [phase]);
 
   useEffect(() => {
-    if (consoleRef.current) {
-      animateElement(consoleRef.current, motionPresets.screenSwap, {
-        duration: 240,
-      });
-    }
+    if (!consoleRef.current) return;
+
+    const animation = animateElement(consoleRef.current, motionPresets.screenSwap, {
+      duration: 240,
+    });
+    return () => {
+      animation.revert();
+    };
   }, [phase]);
 
   const startRun = useCallback(() => {

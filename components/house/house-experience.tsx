@@ -115,10 +115,15 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
   });
 
   useEffect(() => {
-    if (open && cardRef.current) {
-      animateElement(cardRef.current, motionPresets.screenSwap, { duration: 220 });
-      openRef.current?.focus();
-    }
+    if (!open || !cardRef.current) return;
+
+    const animation = animateElement(cardRef.current, motionPresets.screenSwap, {
+      duration: 220,
+    });
+    openRef.current?.focus();
+    return () => {
+      animation.revert();
+    };
   }, [open]);
 
   const close = useCallback(() => setOpenId(null), []);

@@ -26,7 +26,6 @@ import { prefersReducedMotion } from "@/lib/motion/animate-element";
 import {
   applyScreenProjection,
   measureScreenProjection,
-  type CourtProjection,
 } from "@/lib/motion/sportsgang-choreography";
 import { useGameLoop } from "@/lib/motion/use-game-loop";
 import { drawEdward, EDWARD_ART_SIZE, getWalkFrame } from "@/lib/pixel/characters";
@@ -62,9 +61,10 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
   const playRef = useRef<HTMLButtonElement>(null);
   const gameRef = useRef(game);
   const expansionRef = useRef<Timeline | null>(null);
-  const projectionRef = useRef<CourtProjection | null>(null);
 
-  const { consume, bind } = useMinigameInput(true);
+  const { consume, bind } = useMinigameInput(phase !== "DONE", {
+    captureActionKeys: phase === "PLAYING",
+  });
 
   const nearCabinet = Math.abs(edwardX - CABINET_X) < APPROACH_RANGE;
 
@@ -108,10 +108,14 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
     const next = advancePlatformer(gameRef.current, consume(), delta);
     gameRef.current = next;
     setGame(next);
-    if (next.phase === "FINISHED" || next.phase === "FAILED") {
-      window.setTimeout(() => setPhase("DONE"), 900);
-    }
   });
+
+  useEffect(() => {
+    if (game.phase !== "FINISHED" && game.phase !== "FAILED") return;
+
+    const timeout = window.setTimeout(() => setPhase("DONE"), 900);
+    return () => window.clearTimeout(timeout);
+  }, [game.phase]);
 
   const startPlaying = useCallback(() => {
     const screen = screenRef.current;
@@ -124,7 +128,6 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
     // The cabinet's display becomes the game: measure the little screen, park
     // the real one inside it, then let it grow out.
     const projection = measureScreenProjection(slot, screen);
-    projectionRef.current = projection;
     applyScreenProjection(screen, projection);
 
     if (prefersReducedMotion() || !projection) {

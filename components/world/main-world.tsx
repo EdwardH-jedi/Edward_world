@@ -199,7 +199,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   const walkFrame = getWalkFrame(player.position.x, PIXEL_UNIT, moving);
 
   return (
-    <main className="world-screen">
+    <main className="world-screen" inert={disabled || undefined}>
       <div className="world-instructions">
         <strong>Explore</strong>
         <span>A / D or ← / → to move · E to interact</span>

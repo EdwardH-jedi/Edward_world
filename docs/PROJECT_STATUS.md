@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-27 · after Phase 10 — all phases complete
+**Last updated:** 2026-08-28 · post-implementation QA pass — all phases complete
 
 ---
 
@@ -82,7 +82,7 @@ Content, not code:
 
 ## Quality gates
 
-All green as of Phase 6:
+All green after the 2026-08-28 QA pass:
 
 ```
 npm run lint        eslint . --max-warnings 0

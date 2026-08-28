@@ -96,9 +96,14 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
   }, [state.step]);
 
   useEffect(() => {
-    if (panelRef.current) {
-      animateElement(panelRef.current, motionPresets.screenSwap, { duration: 260 });
-    }
+    if (!panelRef.current) return;
+
+    const animation = animateElement(panelRef.current, motionPresets.screenSwap, {
+      duration: 260,
+    });
+    return () => {
+      animation.revert();
+    };
   }, [state.step]);
 
   const inspected = state.inspecting ? getGarment(state.inspecting) : undefined;

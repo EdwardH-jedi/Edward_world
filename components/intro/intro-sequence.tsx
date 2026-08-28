@@ -1,6 +1,5 @@
 "use client";
 
-import type { Timeline } from "animejs";
 import { createTimeline, utils } from "animejs";
 import { useEffect, useRef, useState } from "react";
 import { TitleScreen } from "@/components/title/title-screen";
@@ -41,13 +40,11 @@ const WORD_TO = 0.70;
 export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
   const [stage, setStage] = useState<IntroStage>("TITLE");
 
-  const stageRef = useRef<HTMLDivElement>(null);
   const edwardRef = useRef<HTMLDivElement>(null);
   const glyphRefs = useRef<(HTMLDivElement | null)[]>([]);
   const slotRefs = useRef<(HTMLDivElement | null)[]>([]);
   const doorRef = useRef<HTMLDivElement>(null);
   const bloomRef = useRef<HTMLDivElement>(null);
-  const timelineRef = useRef<Timeline | null>(null);
 
   // Stage progression is on timers, never on an animation callback.
   useEffect(() => {
@@ -170,7 +167,6 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
       }
     }
 
-    timelineRef.current = timeline;
     return () => {
       // Paused, never reverted. Every beat here hands its end state to the
       // next one — reverting would wipe the creatures back to invisible the
@@ -192,7 +188,7 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
 
   return (
     <main className="intro-screen" data-stage={stage}>
-      <div className="intro-stage" ref={stageRef}>
+      <div className="intro-stage">
         <PixelCanvas
           artHeight={INTRO_ART_SIZE.height}
           artWidth={INTRO_ART_SIZE.width}

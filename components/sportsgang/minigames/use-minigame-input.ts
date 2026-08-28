@@ -11,6 +11,16 @@ const UP_KEYS = new Set(["arrowup", "w"]);
 const DOWN_KEYS = new Set(["arrowdown", "s"]);
 const LEFT_KEYS = new Set(["arrowleft", "a"]);
 const RIGHT_KEYS = new Set(["arrowright", "d"]);
+const INTERACTIVE_TARGETS =
+  'a[href], button, input, select, textarea, [contenteditable="true"]';
+
+function isUnboundInteractiveTarget(target: EventTarget | null) {
+  if (!(target instanceof Element)) return false;
+  return (
+    target.closest(INTERACTIVE_TARGETS) !== null &&
+    target.closest("[data-minigame-control]") === null
+  );
+}
 
 /**
  * Collects keyboard and pointer input into the neutral shape the simulations
@@ -20,7 +30,10 @@ const RIGHT_KEYS = new Set(["arrowright", "d"]);
  * the loop consumes them, so a tap between two frames is never dropped and
  * never counted twice.
  */
-export function useMinigameInput(active: boolean) {
+export function useMinigameInput(
+  active: boolean,
+  { captureActionKeys = true }: { captureActionKeys?: boolean } = {},
+) {
   const held = useRef({
     action: false,
     up: false,
@@ -57,12 +70,14 @@ export function useMinigameInput(active: boolean) {
         left: false,
         right: false,
       };
+      edges.current = { pressed: false, released: false };
       return;
     }
 
     function onKeyDown(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
-      if (ACTION_KEYS.has(key)) {
+      if (captureActionKeys && ACTION_KEYS.has(key)) {
+        if (isUnboundInteractiveTarget(event.target)) return;
         event.preventDefault();
         // Auto-repeat must not read as a fresh press.
         if (!event.repeat) press("action");
@@ -83,7 +98,7 @@ export function useMinigameInput(active: boolean) {
 
     function onKeyUp(event: KeyboardEvent) {
       const key = event.key.toLowerCase();
-      if (ACTION_KEYS.has(key)) release("action");
+      if (captureActionKeys && ACTION_KEYS.has(key)) release("action");
       else if (UP_KEYS.has(key)) release("up");
       else if (DOWN_KEYS.has(key)) release("down");
       else if (LEFT_KEYS.has(key)) release("left");
@@ -108,8 +123,9 @@ export function useMinigameInput(active: boolean) {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
       window.removeEventListener("blur", clear);
+      clear();
     };
-  }, [active, press, release]);
+  }, [active, captureActionKeys, press, release]);
 
   /** Snapshot for one tick; clears the edge flags. */
   const consume = useCallback((): MinigameInput => {
@@ -130,6 +146,7 @@ export function useMinigameInput(active: boolean) {
   /** Props for an on-screen control, so touch has a real path in. */
   const bind = useCallback(
     (channel: Channel) => ({
+      "data-minigame-control": channel,
       onPointerDown: (event: React.PointerEvent) => {
         event.preventDefault();
         event.currentTarget.setPointerCapture?.(event.pointerId);

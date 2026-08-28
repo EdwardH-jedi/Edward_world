@@ -12,9 +12,14 @@ export function InteractionPrompt({ text }: { text: string }) {
   const promptRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
-    if (promptRef.current) {
-      animateElement(promptRef.current, motionPresets.enter, { duration: 220 });
-    }
+    if (!promptRef.current) return;
+
+    const animation = animateElement(promptRef.current, motionPresets.enter, {
+      duration: 220,
+    });
+    return () => {
+      animation.revert();
+    };
   }, [text]);
 
   return (
