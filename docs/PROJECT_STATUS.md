@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-28 · post-implementation QA pass — all phases complete
+**Last updated:** 2026-08-28 · Phase 11, the design's V4 intro revision — complete
 
 ---
 
@@ -18,20 +18,29 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 4 | Soonpermario arcade | **DONE** |
 | 5 | Edward's House | **DONE** |
 | 6 | Index mode final pass | **DONE** |
-| 7 | Title screen | **DONE** |
-| 8 | Six-second intro | **DONE** |
+| 7 | Title screen | **DONE** — superseded by 11 |
+| 8 | Six-second intro | **DONE** — superseded by 11 |
 | 9 | World polish / TOMODACHI | **DONE** |
 | 10 | Release pass | **DONE** |
+| 11 | V4 intro: the approach and the name gate | **DONE** |
 
 ## What works today
 
-- **Title screen** — the approved composition over the real world: the same
-  backdrop and building art the player is about to walk through. `Enter`, click
-  or tap to start; `SKIP TO INDEX →` for anyone who would rather read.
-- **Opening ritual** — six seconds exactly: Edward approaches a sealed door in
-  a dark clearing, six original glyph creatures emerge and assemble into
-  EDWARD, lock into the carved slots, and the door opens into the world.
-  Skippable at every stage.
+- **Title screen** — pixel Sydney at dusk with the monument still off-screen:
+  harbour, bridge, terraces, canopy trees, first stars, drifting motes, and one
+  faint warm glow past the right treeline. `Enter`, click or tap to start;
+  `SKIP TO INDEX →` for anyone who would rather read.
+- **Opening ritual** — the design's V4 eight-frame storyboard. `ENTER` pans the
+  camera east to the shrine clearing; the name's letters pull free of a
+  seventy-letter carved face and assemble into SOON HYUN HWANG; an inscription
+  slab surfaces and asks the visitor to type it. Thirteen carved sockets, no
+  input box. A wrong key flashes its socket and types nothing, backspace lifts
+  a letter out, spaces auto-skip, case is ignored. The monument answers as you
+  go — channels every third letter, the apex ring at halfway, the braziers on
+  the final word — and completion is a door, not a toast. The assembled name
+  stays on screen the whole time: the gate tests presence, not memory. `ESC` or
+  `SKIP GATE` leaves for the world and `SKIP TO INDEX` for the index, at any
+  moment.
 - **Main world** — side-view pixel town, six buildings, terraced terrain,
   stone path, stream and footbridge, town cluster, AFL oval, and TOMODACHI,
   who wanders near the house and has five conversations in him. Smooth
@@ -87,7 +96,7 @@ All green after the 2026-08-28 QA pass:
 ```
 npm run lint        eslint . --max-warnings 0
 npm run typecheck   tsc --noEmit
-npm test            13 files, 103 tests
+npm test            14 files, 127 tests
 npm run build       production build
 ```
 

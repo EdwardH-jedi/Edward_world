@@ -63,6 +63,7 @@ Carry these forward until resolved. None of them block implementation.
 | D2 | Resume content | `/resume` is a placeholder. Structure can be built from the verified biography above, but a resume is an identity document and needs sign-off before it ships as fact. |
 | D3 | League of Legends rank (Phase 5) | Build a data hook and an explicit placeholder only. Never display a number that was not supplied. |
 | D4 | Case study bodies | `/case-studies/[slug]` are placeholder routes. Real write-ups are Edward's to author. |
+| D5 | Where `ESC` leaves the name gate | The board pairs "ESC or SKIP TO INDEX exits the ritual", but those are two destinations here. **Resolved:** `ESC` and `SKIP GATE` leave the ritual for the world; `SKIP TO INDEX` goes to the index. Both are on screen throughout. Change if Edward reads it the other way. |
 
 ---
 
@@ -380,7 +381,9 @@ selectors behind, now removed.
 
 ## Phase 7 — Title screen
 
-**Status:** DONE
+**Status:** DONE — **superseded by Phase 11.** The screen below shipped and
+worked; the design's V4 revision then moved the title off the world backdrop
+and onto the dusk approach scene. Kept here for the record.
 
 **Scope.** `WELCOME TO / EDWARD HWANG'S WORLD`, `[ PRESS ENTER ]`,
 `SKIP TO INDEX →`, over the existing world as visual context. Enter-key
@@ -414,7 +417,10 @@ was raised from 0.25 to 0.45.
 
 ## Phase 8 — Six-second intro
 
-**Status:** DONE
+**Status:** DONE — **superseded by Phase 11.** The glyph-creature ritual below
+shipped and worked; the design's V4 revision replaced it with the approach and
+the name gate. Its six-second budget is deliberately not carried forward — see
+Phase 11. Kept here for the record.
 
 **Scope.** The approved opening ritual, only once the world and project
 experiences work. `Edward approaches → stops → glyph creatures emerge →
@@ -529,6 +535,120 @@ target for whatever is in reach — verified by moving 345px and opening Edward'
 House without touching the keyboard.
 
 **Commit.** `007a6bf`
+
+---
+
+## Phase 11 — V4 intro revision: the approach and the name gate
+
+**Status:** DONE
+
+**Scope.** The design project's newest board, headed *"4A — INTRO REVISION —
+V4 · CAMERA SHIFT + TYPING GATE — TITLE + INTRO ONLY · WORLD & INDEX
+UNCHANGED"*. Two changes to the shipped intro. The title screen no longer shows
+the monument: the visitor meets a richer pixel Sydney first, and `ENTER` pans
+the camera east to the shrine clearing. And after the letters assemble into
+`SOON HYUN HWANG`, the world asks the visitor to type it — a carved inscription
+slab, not a form.
+
+The board's "WORLD & INDEX UNCHANGED" claim was checked rather than trusted:
+its V1 section copy was extracted and diffed against the shipped `index.html`,
+which returned *identical copy: True*. Nothing outside the intro was touched.
+
+**The eight-frame storyboard**, one stage each, `types/intro.ts`:
+
+| Frame | Stage | Monolith phase |
+|---|---|---|
+| F1 | `TITLE` | — (monument off-screen) |
+| F2 | `PAN` | — (distant crown entering) |
+| F3 | `SHRINE` | 3 · dormant |
+| F4 | `SELECTION` | 4 · letters pulling free |
+| F5 | `NAME` | 5 · assembled, sockets behind |
+| F6 | `ASK` | 6 · the inscription slab surfaces |
+| F7 | `TYPING` | 7 · the monument answers |
+| F8 | `UNLOCK` | 8 · seam, doorway, bloom |
+
+**Acceptance criteria.**
+- [x] The title screen shows no monument — only the faint warm glow past the
+      right treeline that the scene draws at camera offset zero.
+- [x] `ENTER` pans east with parallax at 0.25 / 0.55 / 1.0, ending on the
+      offset the board's own F2 frame is drawn at.
+- [x] Thirteen carved sockets, one per letter, gaps for the spaces. No input
+      box, no border-radius, no focus ring.
+- [x] A wrong key flashes its socket dark and types nothing; backspace lifts
+      the last letter back out; case is ignored; spaces auto-skip; keys that
+      are not letters are ignored rather than counted as mistakes.
+- [x] Channels brighten every third letter, the apex ring wakes at halfway,
+      the braziers catch on the final word, and completion is a door — never
+      a success toast.
+- [x] The assembled name stays on screen while typing: the gate tests
+      presence, not memory.
+- [x] `ESC` / `SKIP GATE` and `SKIP TO INDEX` are on screen at every stage
+      (D5).
+- [x] Reduced motion collapses the six scripted beats but leaves the gate
+      waiting, because a gate is interaction, not motion.
+
+**Architecture.** `lib/game/name-gate.ts` is pure — no React, no DOM, no
+timers — so the component decides nothing. It records *that* a key missed and
+*where* (`missAt` plus a monotonic `misses`), and the view owns how long the
+flash lasts. The monument's response is derived from the name (`APEX_AT`,
+`BRAZIER_AT`) rather than hardcoded, so the thresholds cannot drift from the
+letters. `lib/pixel/opening.ts` keeps its own palette: the opening is a
+different time of day and a different place from the world.
+
+**Deliberate departures from the design source**, each because a static board
+cannot express what its own copy asks for:
+
+1. The miss flash is held by the view for 260ms. The source gates it on
+   `frame % 2`, and `frame` is the 450ms ambient tick — a wrong key could show
+   no feedback at all, or blink forever if the visitor stopped typing.
+2. The tablet cursor draws on even parity instead of odd, so a frozen
+   reduced-motion frame still shows where the next letter lands.
+3. The phase-7 channel brightens with the letters typed. The board's copy
+   asks for "every third correct letter: monument channels brighten one step";
+   its code, having no live gate, draws a constant. The constant is now the
+   floor rather than the whole behaviour.
+
+One latent bug in the design source was resolved rather than copied:
+`flowers(..., P.blue2)` names a palette entry that `opening.js` does not
+define, which on a canvas silently reuses the previous fill. The port passes
+`P.water`, the nearest defined colour.
+
+**Validation result.**
+
+Gates: lint, typecheck, **127 tests (14 files)**, production build — all pass.
+
+Browser, at 1440x900. The title screen reads as intended: harbour, bridge,
+terraces, canopy trees, first stars, drifting motes, Edward on the path, no
+monument. Walked the whole sequence and drove the gate by dispatched keystroke:
+`s o o` set three letters, `x` typed nothing, backspace dropped back to two,
+`Tab`/`ArrowLeft`/`F5`/`1` were ignored, and `ON HYUN HWANG` — spaces included —
+finished the name and advanced to `UNLOCK`, then into the world. The bloom
+transitions to full opacity before the cut. Under a forced
+`prefers-reduced-motion` the six scripted beats collapsed straight to `TYPING`,
+which correctly kept waiting. Console clean on every frame.
+
+Three defects found by looking, none visible in source:
+
+- `[ PRESS ENTER ]` sat exactly on the seam between the stone path and the
+  soil, unreadable. The soil band starts at 87% of the frame, so the call to
+  action was moved onto it and the position checked by measurement rather than
+  by eye.
+- The intro's `SKIP` controls were positioned against the screen while the
+  scene is a letterboxed 16:9 frame, so they floated in the black margin below
+  it. They live inside the frame now, where the title's always did.
+- The pan had been given an invented distance of 150 art pixels, which slid
+  the near layer far enough to carry both framing canopy trees out of shot.
+  The board draws its F2 frame at 60 — the crown just entering the right edge —
+  so that is what the pan lands on.
+
+One non-defect worth recording, since it cost time: the bloom's computed
+opacity stayed at `0` through an entire `UNLOCK` beat. It was not the app. A
+synthetic element with the same class and attribute behaved identically in that
+browser session, and setting `transition: none` snapped it to `1` — the page
+had simply stopped advancing its animation clock, which is also why screenshots
+had begun timing out. A fresh page showed the transition running normally.
+
+**Commit.** `5c57f54`
 
 ---
 
