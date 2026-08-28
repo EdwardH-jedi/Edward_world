@@ -663,6 +663,113 @@ had begun timing out. A fresh page showed the transition running normally.
 
 ---
 
+## Phase 12 — The monument intro as a real interaction
+
+**Status:** DONE
+
+**Scope.** Close the gaps between the shipped V4 storyboard and the approved
+brief: a typing gate that works on a phone, letters that are visibly taken from
+the monument one at a time, anime.js owning the scripted motion, and tests for
+the transitions and the name validation. No redesign — the V4 visual
+implementation stays the source of truth.
+
+**Stage vocabulary.** The brief names its states
+`TITLE / MONUMENT_REVEAL / LETTER_SELECTION / NAME_REVEAL / NAME_INPUT /
+UNLOCK / WORLD` and allows equivalents. The shipped machine already has them,
+split a little finer, and was extended rather than renamed:
+
+| Brief | This machine |
+|---|---|
+| `TITLE` | `TITLE` |
+| `MONUMENT_REVEAL` | `PAN` → `SHRINE` |
+| `LETTER_SELECTION` | `SELECTION` |
+| `NAME_REVEAL` | `NAME` |
+| `NAME_INPUT` | `ASK` → `TYPING` |
+| `UNLOCK` | `UNLOCK` |
+| `WORLD` | `WORLD` |
+
+**Acceptance criteria.**
+- [x] The gate is a real focused text input over the carved sockets, so a tap
+      raises a phone's native keyboard and assistive technology gets a labelled
+      control — with no visible box, radius, caret or focus ring.
+- [x] Validation is a text reducer, not a keystroke machine, so swipe
+      keyboards, IMEs and pasting the whole name all work.
+- [x] Case-insensitive; leading, trailing and interior whitespace never fail
+      the gate; an incomplete name never unlocks.
+- [x] A wrong letter dims its socket and lands nothing — no red text, no form
+      error, input still editable.
+- [x] Thirteen letters leave the stone on their own schedules, each from its
+      own carving, each leaving a recess.
+- [x] Repeated letters (O, N, H) come from separate visible carvings.
+- [x] anime.js drives the pan and the extraction; stage progression stays on
+      `setTimeout`.
+- [x] Reduced motion keeps the whole route and the typing requirement, without
+      the travel.
+- [x] `SKIP TO INDEX` still bypasses the intro at every beat.
+
+**Architecture.** `applyText(state, raw)` commits the matched prefix and drops
+the rest, so what the input shows and what the stone holds can never disagree.
+`pressKey` survives as a thin bridge over the same reducer for keystrokes that
+miss the input — one code path, two writers. The input is deliberately
+uncontrolled: a refused letter has to be taken back out of the DOM even when
+React sees no state change.
+
+`drawMonolith` gained a `lifted` float. `selTarget(n, cx - 100, 16)` already
+lands on the phase-5 name coordinates, so a letter that finishes its journey
+sits exactly where the hero beat draws it — the cut is continuous by
+construction rather than by tuning.
+
+**Why `INTRO_SCRIPTED_MS` moved again.** 8000 → 9800. Thirteen separate
+journeys need 2600ms to read as a selection rather than a wave, and the hero
+beat needs 1800ms to be read rather than glimpsed. The six-second budget from
+Phase 8 was superseded by V4; this supersedes that in turn, deliberately.
+
+**Validation result.**
+
+Gates: lint, typecheck, **146 tests (15 files)**, production build — all pass.
+
+Browser, 1440x900 and 390x844. Every edge case in the brief was driven and
+observed: twelve Enter presses on the title advanced exactly one stage; twelve
+more during the reveal changed nothing; the whole name typed before `TYPING`
+left the gate at 0 of 13; the beats ran `PAN → SHRINE → SELECTION → NAME →
+ASK → TYPING` in order; a wrong letter held at 4 of 13 with the text unchanged;
+backspace stepped back; an incomplete name plus six Enter presses did not
+unlock; `soon hyun hwang` with stray leading and trailing spaces did; Escape
+from mid-pan left for the world; `SKIP TO INDEX` mid-intro opened the index and
+returning to the world left Edward moving 168px and all six buildings intact.
+Console clean throughout.
+
+Three defects found by looking:
+
+- **On a phone, the skip button covered the middle of the inscription slab.**
+  The enlarged tap target reached the bottom-right corner where the controls
+  sat, so a finger aiming at the slab would have left the intro instead. The
+  controls move above the slab on coarse pointers. Found by sampling
+  `elementFromPoint` across the slab rather than by trusting the layout.
+- The mobile tap target was 29px tall, under the 44px guideline. The slab keeps
+  its drawn size; only what is tappable grows — 210x46 now.
+- Agent worktrees under `.claude/` were being globbed into `vitest` and
+  `eslint .`, running a doubled suite against a stale checkout and reporting
+  ~4,880 lint problems from code nobody is editing. Both tools now ignore it.
+
+**On the browser's animation clock.** Midway through the pass the page stopped
+issuing `requestAnimationFrame` callbacks entirely — zero frames in 500ms while
+reporting `visibilityState: "visible"` — which froze CSS transitions and hung
+screenshots. It is an environment fault, not the app: a fresh page ran at 60fps.
+It did prove the architecture, though. `setTimeout` kept running, so the intro
+walked its stages correctly on a page where every animation was dead. That is
+exactly why stage progression must never advance from an animation callback.
+
+Because screenshots hang whenever rAF is repainting continuously, the
+extraction is verified by `tests/monument-extraction.test.ts`, which records
+what the routine draws and asserts one recess per lifted letter, distinct
+carvings for repeated letters, and letters landing on the name's own
+coordinates. That is a stronger check than a frame grab.
+
+**Commit.** `6dcd50e`
+
+---
+
 ## Known gaps carried forward
 
 Both of the gaps recorded earlier were closed in Phase 10: the world is now

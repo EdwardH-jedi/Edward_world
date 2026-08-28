@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-28 · Phase 11, the design's V4 intro revision — complete
+**Last updated:** 2026-08-28 · Phase 12, the monument intro as a real interaction — complete
 
 ---
 
@@ -23,6 +23,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 9 | World polish / TOMODACHI | **DONE** |
 | 10 | Release pass | **DONE** |
 | 11 | V4 intro: the approach and the name gate | **DONE** |
+| 12 | Monument intro as a real interaction | **DONE** |
 
 ## What works today
 
@@ -40,7 +41,10 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   the final word — and completion is a door, not a toast. The assembled name
   stays on screen the whole time: the gate tests presence, not memory. `ESC` or
   `SKIP GATE` leaves for the world and `SKIP TO INDEX` for the index, at any
-  moment.
+  moment. The gate is a real text input sitting over the carved sockets, so it
+  works on a phone — tap the slab and the native keyboard opens — and reads as
+  a labelled control to assistive technology, while showing none of a form
+  field's chrome.
 - **Main world** — side-view pixel town, six buildings, terraced terrain,
   stone path, stream and footbridge, town cluster, AFL oval, and TOMODACHI,
   who wanders near the house and has five conversations in him. Smooth
@@ -96,7 +100,7 @@ All green after the 2026-08-28 QA pass:
 ```
 npm run lint        eslint . --max-warnings 0
 npm run typecheck   tsc --noEmit
-npm test            14 files, 127 tests
+npm test            15 files, 146 tests
 npm run build       production build
 ```
 
