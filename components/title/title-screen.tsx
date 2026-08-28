@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
-import { buildings } from "@/data/world";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
-import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
-import { buildingArt } from "@/lib/pixel/buildings";
+import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
+import { APPROACH_ART_SIZE, drawApproach } from "@/lib/pixel/monolith";
+import type { ArtRoutine } from "@/lib/pixel/raster";
 
 interface TitleScreenProps {
   onEnter: () => void;
@@ -13,18 +13,22 @@ interface TitleScreenProps {
 }
 
 /**
- * How far into the world the title screen looks.
+ * The title screen, with the monument still off-screen.
  *
- * Zero puts the sign, Edward's House, TOMODACHI and the start of the Wardrobe
- * in frame — the world is already visible, which is the whole idea. The title
- * sits on top of it rather than in front of a separate illustration.
+ * The visitor meets the place before it asks anything of them: harbour,
+ * terraces, park, framing canopy, first stars. The only sign that something
+ * else exists is a faint warm glow past the right treeline, which is drawn by
+ * the scene itself at camera offset zero. ENTER starts the pan east.
  */
-const TITLE_CAMERA_X = 0;
-
-/** The buildings that fall inside that view. */
-const VISIBLE = new Set(["edwards-house", "wardrobe"]);
-
 export function TitleScreen({ onEnter, onOpenIndex }: TitleScreenProps) {
+  const frame = useAmbientFrame(true);
+
+  // The camera has not moved yet, so the scene draws its title composition.
+  const draw = useCallback<ArtRoutine>(
+    (raster, f) => drawApproach(raster, f, 0),
+    [],
+  );
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== "Enter") return;
@@ -39,64 +43,34 @@ export function TitleScreen({ onEnter, onOpenIndex }: TitleScreenProps) {
 
   return (
     <main className="title-screen">
-      <div aria-hidden="true" className="title-scene">
-        <div
-          className="title-track"
-          style={{ transform: `translate3d(${-TITLE_CAMERA_X}px, 0, 0)` }}
-        >
-          <PixelCanvas
-            artHeight={BACKDROP_ART_SIZE.height}
-            artWidth={BACKDROP_ART_SIZE.width}
-            className="title-backdrop"
-            draw={drawBackdrop}
-            frame={0}
-            unit={PIXEL_UNIT}
-          />
-          {buildings
-            .filter((building) => VISIBLE.has(building.id))
-            .map((building) => {
-              const art = buildingArt[building.id];
-              return (
-                <div
-                  className="title-building"
-                  key={building.id}
-                  style={{
-                    height: building.size.height,
-                    left: building.position.x,
-                    top: building.position.y,
-                    width: building.size.width,
-                  }}
-                >
-                  <PixelCanvas
-                    artHeight={art.size.height}
-                    artWidth={art.size.width}
-                    draw={art.draw}
-                    frame={0}
-                    unit={PIXEL_UNIT}
-                  />
-                </div>
-              );
-            })}
+      <div className="title-stage">
+        <PixelCanvas
+          artHeight={APPROACH_ART_SIZE.height}
+          artWidth={APPROACH_ART_SIZE.width}
+          className="title-scene"
+          draw={draw}
+          fill
+          frame={frame}
+          unit={PIXEL_UNIT}
+        />
+
+        <div className="title-copy">
+          <p className="title-welcome">WELCOME TO</p>
+          <h1 className="title-wordmark">
+            EDWARD HWANG&apos;S
+            <br />
+            WORLD
+          </h1>
         </div>
+
+        <button className="title-enter" onClick={onEnter} type="button">
+          [ PRESS ENTER ]
+        </button>
+
+        <button className="title-skip" onClick={onOpenIndex} type="button">
+          SKIP TO INDEX →
+        </button>
       </div>
-
-      <div className="title-copy">
-        <p className="title-welcome">WELCOME TO</p>
-        <h1 className="title-wordmark">
-          EDWARD HWANG&apos;S
-          <br />
-          WORLD
-        </h1>
-        <p className="title-place">SYDNEY, AU — 2026</p>
-      </div>
-
-      <button className="title-enter" onClick={onEnter} type="button">
-        [ PRESS ENTER ]
-      </button>
-
-      <button className="title-skip" onClick={onOpenIndex} type="button">
-        SKIP TO INDEX →
-      </button>
     </main>
   );
 }

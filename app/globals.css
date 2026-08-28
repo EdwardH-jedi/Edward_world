@@ -109,6 +109,10 @@ p {
   text-transform: uppercase;
 }
 
+/* ── Intro ───────────────────────────────────────────────────────────────────
+   The V4 storyboard. Every frame after the title is one pixel scene drawn at
+   whichever beat it is on, so this stylesheet holds a stage box and a bloom —
+   the choreography is inside the art, where it can be composed. */
 .intro-screen {
   align-items: center;
   background: #161713;
@@ -120,16 +124,17 @@ p {
   position: relative;
 }
 
-/* A fixed-aspect stage: the backdrop, the slots and the creatures all share
-   one coordinate space, so nothing has to be re-aligned at another width. */
+/* The approach and the clearing are drawn at 240x135 and 220x124 — near enough
+   to the same frame that one 16:9 box holds both without a jump at the cut. */
 .intro-stage {
-  aspect-ratio: 200 / 120;
-  max-height: 82vh;
+  aspect-ratio: 16 / 9;
+  max-height: 88vh;
   position: relative;
-  width: min(94vw, 62rem);
+  width: min(96vw, 78rem);
 }
 
-.intro-clearing {
+.intro-scene {
+  display: block;
   height: 100%;
   image-rendering: pixelated;
   inset: 0;
@@ -137,81 +142,30 @@ p {
   width: 100%;
 }
 
-.intro-stage canvas {
-  display: block;
-  image-rendering: pixelated;
-}
-
-.intro-slot {
-  background: var(--loc-warm, #f3e3b2);
-  box-shadow: 0 0 10px rgb(243 227 178 / 60%);
-  height: 1.6%;
-  opacity: 0;
-  position: absolute;
-  transform: translate(-50%, -50%);
-  width: 1%;
-}
-
-.intro-edward {
-  bottom: 20%;
-  left: 8%;
-  position: absolute;
-}
-
-.intro-edward canvas {
-  height: 12%;
-  height: clamp(2.4rem, 7vh, 3.6rem);
-  width: auto;
-}
-
-.intro-glyph {
-  left: 0;
-  position: absolute;
-  top: 0;
-  transform: translate(-50%, -50%);
-}
-
-.intro-glyph canvas {
-  /* The creatures are ink, as the design system says. Against a night sky that
-     needs a little light around them to read as living rather than as holes. */
-  filter: drop-shadow(0 0 5px rgb(243 227 178 / 42%));
-  height: clamp(1.6rem, 4.6vh, 2.4rem);
-  width: auto;
-}
-
-/* The seam of light in the door, and the bloom it becomes. */
-.intro-door {
-  background: var(--loc-warm, #f3e3b2);
-  height: 28%;
-  left: 70%;
-  opacity: 0;
-  position: absolute;
-  top: 48%;
-  transform-origin: center;
-  width: 0.8%;
-}
-
-.intro-screen[data-stage="DOOR_OPEN"] .intro-door { opacity: 1; }
-
+/* The light the proven name lets out, carrying the ritual into the world. */
 .intro-bloom {
   background: radial-gradient(
-    circle at 70% 62%,
+    circle at 54% 62%,
     rgb(247 241 226 / 95%) 0%,
-    rgb(243 227 178 / 70%) 28%,
-    rgb(243 227 178 / 0%) 62%
+    rgb(243 227 178 / 70%) 26%,
+    rgb(243 227 178 / 0%) 60%
   );
   inset: 0;
   opacity: 0;
   pointer-events: none;
   position: absolute;
+  transition: opacity 700ms ease-in;
 }
 
+.intro-bloom[data-open="true"] { opacity: 1; }
+
+/* Inside the frame, alongside the scene — not stranded in the letterbox. */
 .intro-actions {
-  bottom: 1.6rem;
+  bottom: 1rem;
   display: flex;
   gap: 0.6rem;
   position: absolute;
-  right: 1.6rem;
+  right: 1.2rem;
   z-index: 4;
 }
 
@@ -234,8 +188,12 @@ p {
 
 .intro-skip--quiet { color: #9c9482; }
 
+@media (prefers-reduced-motion: reduce) {
+  .intro-bloom { transition: none; }
+}
+
 @media (max-width: 640px) {
-  .intro-actions { bottom: 1rem; right: 1rem; }
+  .intro-actions { bottom: 0.6rem; right: 0.6rem; }
 }
 
 /* ── Title screen ────────────────────────────────────────────────────────────
@@ -244,53 +202,41 @@ p {
    through a moment later. */
 
 .title-screen {
-  background: #e9e0c8;
+  align-items: center;
+  background: #161713;
+  display: flex;
+  flex-direction: column;
   height: 100dvh;
+  justify-content: center;
   overflow: hidden;
   position: relative;
 }
 
+/* The same frame the intro cuts to, so pressing ENTER moves the camera and
+   nothing else. */
+.title-stage {
+  aspect-ratio: 16 / 9;
+  max-height: 88vh;
+  position: relative;
+  width: min(96vw, 78rem);
+}
+
 .title-scene {
-  inset: 0;
-  position: absolute;
-}
-
-.title-track {
-  bottom: 0;
-  height: 472px;
-  left: 0;
-  position: absolute;
-  width: 3840px;
-}
-
-.title-backdrop { inset: 0; position: absolute; }
-
-.title-building { position: absolute; }
-
-.title-track canvas {
   display: block;
+  height: 100%;
   image-rendering: pixelated;
-}
-
-/* A wash so the type stays readable over whatever the world is doing. */
-.title-screen::after {
-  background: linear-gradient(
-    180deg,
-    rgb(233 224 200 / 82%) 0%,
-    rgb(233 224 200 / 40%) 46%,
-    rgb(233 224 200 / 0%) 68%
-  );
-  content: "";
   inset: 0;
-  pointer-events: none;
   position: absolute;
+  width: 100%;
 }
 
+/* The sky the type sits over is the scene's own dusk cream, so the wordmark
+   stays dark ink and only needs a breath of lift behind it. */
 .title-copy {
   left: 50%;
   position: absolute;
   text-align: center;
-  top: 16%;
+  top: 15%;
   transform: translateX(-50%);
   z-index: 2;
 }
@@ -298,7 +244,7 @@ p {
 .title-welcome {
   color: #57473a;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.8rem;
+  font-size: clamp(0.6rem, 1.1vw, 0.8rem);
   letter-spacing: 0.62em;
   margin: 0;
   text-indent: 0.62em;
@@ -307,19 +253,12 @@ p {
 .title-wordmark {
   color: #2b2823;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: clamp(1.6rem, 4.6vw, 3rem);
+  font-size: clamp(1.4rem, 3.6vw, 2.4rem);
   font-weight: 700;
   letter-spacing: 0.06em;
-  line-height: 1.25;
-  margin: 1rem 0 0;
-}
-
-.title-place {
-  color: #7e7763;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.3em;
-  margin: 1.1rem 0 0;
+  line-height: 1.3;
+  margin: 0.8rem 0 0;
+  text-shadow: 0 2px 0 rgb(239 231 211 / 50%);
 }
 
 /* Sits low, over the dark earth, so cream type reads against it. */
@@ -327,11 +266,11 @@ p {
   animation: title-blink 1.4s step-end infinite;
   background: transparent;
   border: 0;
-  bottom: 9%;
+  bottom: 5%;
   color: #f7f1e2;
   cursor: pointer;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 1rem;
+  font-size: clamp(0.8rem, 1.6vw, 1rem);
   left: 50%;
   letter-spacing: 0.14em;
   padding: 0.8rem 1.2rem;
@@ -357,7 +296,7 @@ p {
 .title-skip {
   background: rgb(43 40 35 / 88%);
   border: 0;
-  bottom: 1.6rem;
+  bottom: 1rem;
   color: #efe7d3;
   cursor: pointer;
   font-family: var(--font-mono), ui-monospace, monospace;
@@ -365,7 +304,7 @@ p {
   letter-spacing: 0.2em;
   padding: 0.6rem 0.9rem;
   position: absolute;
-  right: 1.6rem;
+  right: 1.2rem;
   z-index: 3;
 }
 
@@ -380,9 +319,8 @@ p {
 }
 
 @media (max-width: 640px) {
-  .title-copy { top: 12%; }
-  .title-welcome { font-size: 0.6rem; letter-spacing: 0.4em; }
-  .title-skip { bottom: 1rem; right: 1rem; }
+  .title-copy { top: 11%; }
+  .title-welcome { letter-spacing: 0.4em; }
 }
 
 .primary-button {
