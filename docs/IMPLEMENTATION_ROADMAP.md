@@ -770,6 +770,103 @@ coordinates. That is a stronger check than a frame grab.
 
 ---
 
+## Phase 13 — SportsGang: the RANK beat, and golf that travels
+
+**Status:** DONE (browser QA outstanding — see below)
+
+**Scope.** Finish and polish SportsGang only. The phone flow, the
+phone→court transition and all four sports already shipped in Phase 1 and were
+re-inspected rather than rebuilt; this closes what was genuinely missing
+against the brief.
+
+**What was already right, and left alone.** CHOOSE SPORT → FIND PLAYER → MATCH
+→ MEET → PLAY → RESULT as gated and timed stages; all four sports selectable;
+SEARCHING → MATCH FOUND → ACCEPT; the FLIP phone→court transition; golf's
+power-then-contact meters; tennis's PERFECT/GOOD/MISS three-point rally;
+basketball's hold-and-release over three shots; running's pace-and-stamina
+race; keyboard and touch on every sport (`bind()` gives each on-screen control
+real pointer handlers, and running binds pace up/down rather than a mash
+button); and the end panel's wordmark, role, flow, VIEW CASE STUDY, GITHUB and
+BACK TO WORLD.
+
+**What was missing.**
+
+1. **RANK was a word, not a beat.** The product loop the panel prints ends on
+   RANK, and every sport's result note ended "COUNTS TOWARDS RANKING" — a
+   ranking that existed nowhere. RANK is now a gated stage between RESULT and
+   COMPLETE.
+2. **Golf had no camera follow**, so a 250 M drive slid across a fixed picture.
+
+**The honesty problem, and how it was solved.** A ranking implies other
+players, and there are none — no server, no accounts, nobody else in the
+world. Inventing a leaderboard position or a rating would have broken the
+project's standing rule against fabricated metrics (and D3). What the app can
+honestly rank is the visitor against themselves: standings for this visit, per
+sport, computed from runs they actually played. The board says so in as many
+words, and a first run is reported as a first run rather than measured against
+a made-up baseline. The empty "COUNTS TOWARDS RANKING" promise is gone from all
+four notes, replaced by what actually happened in that run.
+
+**Architecture.** `lib/game/sportsgang-standings.ts` is a plain external store:
+module memory, not `localStorage`, so standings survive leaving for the world
+and returning — which is what makes them worth keeping — and reset on reload
+rather than implying a durability the page does not have. `getStandings`
+returns a cached reference so `useSyncExternalStore` settles instead of
+spinning, with a server snapshot for the prerender. Every `SportResult` now
+carries one `RankValue` — carry, points, makes, finish time — with its own
+sense of which direction is better, so the standings never re-derive four sets
+of scoring rules. Running is the only sport where smaller wins.
+
+Golf's fairway is three frames wide with distance posts at 50–250 M; the ball
+is held 32% into the frame once it passes that mark and the strip slides under
+it. The posts carry the effect — a plain green strip translating under a ball
+reads as nothing moving at all. The follow lives inside `.sg-play--golf` and
+deliberately does not touch the venue backdrop, which is wired into the FLIP
+phone→court choreography.
+
+**Validation result.**
+
+Gates on the shared tree: typecheck clean, production build ✓, scoped lint
+clean, and **56 tests across the four SportsGang files** (machine, standings,
+playthrough, minigames) all passing.
+
+`tests/sportsgang-playthrough.test.ts` drives all four simulations the way the
+game loop does — fixed 60Hz tick, deterministic tap pattern, hard tick cap so a
+sport that stops finishing fails loudly rather than hanging the suite. It
+covers the part of the brief's QA list that logic can answer: every sport is
+completable; three runs from a fresh state give identical results, so nothing
+leaks between them; a finished sport refuses to advance, which is what stops a
+live loop firing `onFinish` twice; and a fresh state is genuinely fresh rather
+than a half-reset one.
+
+**Browser QA is outstanding, and that is not a claim of completion.** Playing
+all four sports in a real browser is required by the brief and has not been
+done. Five other Claude sessions are working in this same tree, and one of them
+holds the shared chrome-devtools-mcp profile lock for its own required browser
+testing. Taking it would have killed their session, so it was left alone and a
+watch set for its release. What is verified above is verified; the interaction
+pass — replay, reset, re-entry, Escape, touch, no duplicate loops after
+repeated games — is not, and must be run before this phase is called finished.
+
+**On working in a shared tree.** `git add app/globals.css` swept a large block
+of another session's uncommitted `.ar-*` arcade CSS into the index. It was
+caught by reading `git diff --cached` before committing, and only the three
+SportsGang hunks were staged, via `git hash-object` + `git update-index`, which
+leaves the working tree untouched. Worth remembering: in a shared tree, stage
+explicit paths and read the staged diff — `git add -A` will commit other
+people's half-finished work under your message.
+
+Two pieces of folklore were also corrected for the other sessions: worktrees do
+not break Turbopack — *symlinked* `node_modules` does ("points out of the
+filesystem root"). Copying instead (`cp -Rc`, an APFS clone, near-free) gives a
+worktree that builds. That is how a green lint / test / build result was
+obtained while the shared tree was red, which is what proved the failures
+belonged to another session's refactor rather than to this work.
+
+**Commits.** `05a2b87`, `5ff4527`
+
+---
+
 ## Known gaps carried forward
 
 Both of the gaps recorded earlier were closed in Phase 10: the world is now

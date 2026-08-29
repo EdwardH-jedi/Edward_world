@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-28 · Phase 12, the monument intro as a real interaction — complete
+**Last updated:** 2026-08-29 · Phase 13, SportsGang polish — code complete, browser QA outstanding
 
 ---
 
@@ -24,6 +24,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 10 | Release pass | **DONE** |
 | 11 | V4 intro: the approach and the name gate | **DONE** |
 | 12 | Monument intro as a real interaction | **DONE** |
+| 13 | SportsGang: RANK beat + golf camera follow | **DONE** — browser QA outstanding |
 
 ## What works today
 
