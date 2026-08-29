@@ -25,6 +25,19 @@ const FIELD_FRAMES = 3;
 const HOLD_AT_PERCENT = 32;
 const MARKERS = [50, 100, 150, 200, 250] as const;
 
+/**
+ * How far the tee sits from the left edge, in metres of fairway.
+ *
+ * Without it a ball at 0 M sits on x=0 and, being centred on its own position,
+ * hangs half out of the frame before it is even struck.
+ */
+const TEE_METRES = 8;
+
+/** Where a distance down the fairway falls, as a percentage of the strip. */
+function metresToFieldPercent(metres: number) {
+  return ((metres + TEE_METRES) / FIELD_METRES) * 100;
+}
+
 /** Peak height the flight can reach, for mapping the ball's arc. */
 const APEX_METRES = FIELD_METRES * 0.22;
 
@@ -48,7 +61,7 @@ export function GolfGame({ active, onFinish }: MinigameProps) {
 
   // Where the ball sits along the whole fairway, and where the camera has to
   // be for it to stay in shot.
-  const ballFieldPercent = (state.carry / FIELD_METRES) * 100;
+  const ballFieldPercent = metresToFieldPercent(state.carry);
   const ballFramePercent = ballFieldPercent * FIELD_FRAMES;
   const camera = Math.min(
     Math.max(ballFramePercent - HOLD_AT_PERCENT, 0),
@@ -69,7 +82,7 @@ export function GolfGame({ active, onFinish }: MinigameProps) {
           <div
             className="sg-play__marker"
             key={metres}
-            style={{ left: `${(metres / FIELD_METRES) * 100}%` }}
+            style={{ left: `${metresToFieldPercent(metres)}%` }}
           >
             <span>{metres}</span>
           </div>
