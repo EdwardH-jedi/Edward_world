@@ -2484,10 +2484,12 @@ p {
   transition: none;
 }
 
+/* Posts stand on the ball's own ground line (bottom 23%), not in the air
+   above it — measured against the play box rather than guessed. */
 .sg-play__marker {
-  bottom: 18%;
+  bottom: 23%;
+  height: 9%;
   position: absolute;
-  top: 58%;
   width: 0;
 }
 
@@ -2499,14 +2501,16 @@ p {
   width: 1px;
 }
 
+/* The yardage reads on the grass below the post, where there is nothing to
+   compete with, rather than up against the venue's fence. */
 .sg-play__marker span {
-  color: rgb(87 83 74 / 85%);
+  color: rgb(60 58 50 / 80%);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.5rem;
   left: 0;
   letter-spacing: 0.1em;
   position: absolute;
-  top: -1.1rem;
+  top: calc(100% + 3px);
   transform: translateX(-50%);
 }
 

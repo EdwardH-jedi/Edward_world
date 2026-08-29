@@ -45,6 +45,10 @@ const MAX_LATERAL_METRES = 42;
 /** Fairway is this wide either side of the target line. */
 const FAIRWAY_HALF_WIDTH = 18;
 
+/** A drive this short never got going; shorter still and it never left. */
+const SHORT_METRES = 45;
+const DUFF_METRES = 15;
+
 const POWER_SWEEP_SPEED = 0.95;
 const CONTACT_SWEEP_SPEED = 1.5;
 const FLIGHT_SECONDS = 2.2;
@@ -85,7 +89,16 @@ function describeContact(contact: number) {
   return contact > 0 ? "SLICED" : "HOOKED";
 }
 
-function describeLanding(lateral: number) {
+/**
+ * Where the ball finished.
+ *
+ * Line alone is not enough: a shot that barely leaves the tee is not "on the
+ * fairway" however straight it was, and reporting it that way made a duffed
+ * drive read like a good one. Carry decides first, line second.
+ */
+export function describeLanding(lateral: number, carry: number) {
+  if (carry < DUFF_METRES) return "DUFFED OFF THE TEE";
+  if (carry < SHORT_METRES) return "SHORT OF THE FAIRWAY";
   return Math.abs(lateral) <= FAIRWAY_HALF_WIDTH ? "FAIRWAY" : "ROUGH";
 }
 
@@ -124,6 +137,7 @@ export function advanceGolf(
       // The contact bar reads as a face: 0.5 is the sweet spot.
       const contact = clamp((state.meter - 0.5) * 2, -1, 1);
       const lateral = getLateralMetres(contact);
+      const carry = getCarryMetres(state.power, contact);
       return {
         ...state,
         phase: "FLIGHT",
@@ -132,7 +146,7 @@ export function advanceGolf(
         height: 0,
         lateral,
         verdict: describeContact(contact),
-        landing: describeLanding(lateral),
+        landing: describeLanding(lateral, carry),
         phaseTime: 0,
         prompt: describeContact(contact),
       };

@@ -12,6 +12,7 @@ import {
 } from "@/lib/game/minigames/basketball";
 import {
   advanceGolf,
+  describeLanding,
   createGolfState,
   getCarryMetres,
   getGolfResult,
@@ -309,5 +310,21 @@ describe("running", () => {
     expect(formatRaceTime(0)).toBe("0:00.0");
     expect(formatRaceTime(65.44)).toBe("1:05.4");
     expect(formatRaceTime(125)).toBe("2:05.0");
+  });
+});
+
+describe("a golf drive is judged on how far it went, not just how straight", () => {
+  it("calls a shot that never left the tee a duff, however straight", () => {
+    expect(describeLanding(0, 0)).toBe("DUFFED OFF THE TEE");
+    expect(describeLanding(0, 8)).toBe("DUFFED OFF THE TEE");
+  });
+
+  it("will not put a barely-struck ball on the fairway", () => {
+    expect(describeLanding(2, 30)).toBe("SHORT OF THE FAIRWAY");
+  });
+
+  it("still judges a real drive on its line", () => {
+    expect(describeLanding(3, 200)).toBe("FAIRWAY");
+    expect(describeLanding(30, 200)).toBe("ROUGH");
   });
 });

@@ -22,8 +22,11 @@ const EDWARD_MAP: SpriteMap = {
   h: palette.hair,
   f: palette.skin,
   e: palette.ink,
-  c: palette.hoodie,
-  k: palette.stone3,
+  // Matches the world's Edward: the approved slate-navy outerwear, not the
+  // neutral hoodie he used to wear. The venue sprite and the world sprite are
+  // the same person and have to be dressed the same.
+  c: palette.navy,
+  k: palette.navy2,
   p: palette.denim,
   s: palette.hair,
 };
@@ -39,7 +42,7 @@ const OPPONENT_MAP: SpriteMap = {
   s: palette.char,
 };
 
-/** Edward, unchanged from the world: dark hair, oversized neutral hoodie. */
+/** Edward, dressed as the world dresses him: dark hair, slate-navy outerwear. */
 const EDWARD_BODY: SpriteRows = [
   ".....hhhh.........",
   "....hhhhhhh.......",
