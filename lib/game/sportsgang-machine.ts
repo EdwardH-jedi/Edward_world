@@ -31,6 +31,7 @@ const GATED_STAGES = new Set<SportsgangStage>([
   "MATCH_FOUND",
   "MEET",
   "PLAY",
+  "RANK",
 ]);
 
 /**

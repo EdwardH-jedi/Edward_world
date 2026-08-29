@@ -162,11 +162,16 @@ export function advanceBasketball(
 export function getBasketballResult(state: BasketballState): SportResult {
   const swishes = state.history.filter((entry) => entry === "SWISH").length;
   return {
+    rank: {
+      value: state.made,
+      display: `${state.made} / ${BASKETBALL_SHOTS}`,
+      better: "higher",
+    },
     heading: "SESSION COMPLETE",
     playerLabel: "MADE",
     playerScore: `${state.made} / ${BASKETBALL_SHOTS}`,
     opponentLabel: "SWISHES",
     opponentScore: `${swishes}`,
-    note: "RESULT RECORDED · COUNTS TOWARDS RANKING",
+    note: swishes === 1 ? "1 CLEAN SWISH" : `${swishes} CLEAN SWISHES`,
   };
 }

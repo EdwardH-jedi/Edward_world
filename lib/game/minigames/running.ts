@@ -178,11 +178,16 @@ export function formatRaceTime(seconds: number) {
 
 export function getRunningResult(state: RunningState): SportResult {
   return {
+    rank: {
+      value: Math.round(state.elapsed * 10) / 10,
+      display: formatRaceTime(state.elapsed),
+      better: "lower",
+    },
     heading: "RUN COMPLETE",
     playerLabel: `${RACE_METRES} M`,
     playerScore: formatRaceTime(state.elapsed),
     opponentLabel: "STAMINA LEFT",
     opponentScore: `${Math.round(state.stamina * 100)}%`,
-    note: `${describeRun(state)} · RESULT RECORDED · COUNTS TOWARDS RANKING`,
+    note: describeRun(state),
   };
 }

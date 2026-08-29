@@ -12,6 +12,8 @@
  * nothing is invented.
  */
 
+import type { RankValue } from "@/lib/game/sportsgang-standings";
+
 /** Normalised player input for one tick. */
 export interface MinigameInput {
   /** Action key or pointer is currently held. */
@@ -40,6 +42,11 @@ export const IDLE_INPUT: MinigameInput = {
 
 /** How a finished sport reports itself, shaped for the shared result panel. */
 export interface SportResult {
+  /**
+   * The one number this sport can be ranked by, so the standings can compare
+   * runs of the same sport without re-deriving each sport's scoring rules.
+   */
+  readonly rank: RankValue;
   readonly heading: string;
   readonly playerLabel: string;
   readonly playerScore: string;

@@ -157,11 +157,16 @@ function settlePoint(
 export function getTennisResult(state: TennisState): SportResult {
   const perfects = state.history.filter((entry) => entry === "PERFECT").length;
   return {
+    rank: {
+      value: state.playerPoints,
+      display: `${state.playerPoints} PT`,
+      better: "higher",
+    },
     heading: "MATCH COMPLETE",
     playerLabel: "EDWARD",
     playerScore: `${state.playerPoints}`,
     opponentLabel: "PLAYER 02",
     opponentScore: `${state.opponentPoints}`,
-    note: `${perfects} PERFECT · RESULT RECORDED · COUNTS TOWARDS RANKING`,
+    note: `${perfects} PERFECT ${perfects === 1 ? "RETURN" : "RETURNS"}`,
   };
 }

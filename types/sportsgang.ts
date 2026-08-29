@@ -15,6 +15,7 @@ export const SPORTSGANG_STAGES = [
   "MEET",
   "PLAY",
   "RESULT",
+  "RANK",
   "COMPLETE",
 ] as const;
 
@@ -30,11 +31,13 @@ export type TimedSportsgangStage = Extract<
  * Stages that wait rather than tick.
  *
  * `PLAY` is here because it lasts exactly as long as the player takes: the
- * mini-game reports its own completion, so no timer may move it on.
+ * mini-game reports its own completion, so no timer may move it on. `RANK` is
+ * here because standings are reading material — a timer would take them away
+ * mid-sentence.
  */
 export type GatedSportsgangStage = Extract<
   SportsgangStage,
-  "SPORT_SELECT" | "MATCH_FOUND" | "MEET" | "PLAY"
+  "SPORT_SELECT" | "MATCH_FOUND" | "MEET" | "PLAY" | "RANK"
 >;
 
 export const SPORTSGANG_SPORTS = ["TENNIS", "BASKETBALL", "RUNNING", "GOLF"] as const;

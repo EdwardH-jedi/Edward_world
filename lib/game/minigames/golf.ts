@@ -169,11 +169,12 @@ export function advanceGolf(
 
 export function getGolfResult(state: GolfState): SportResult {
   return {
+    rank: { value: state.carry, display: `${state.carry} M`, better: "higher" },
     heading: "DRIVE COMPLETE",
     playerLabel: "CARRY",
     playerScore: `${state.carry} M`,
     opponentLabel: "LANDED",
     opponentScore: state.landing,
-    note: `${state.verdict} · RESULT RECORDED · COUNTS TOWARDS RANKING`,
+    note: `${state.verdict} · ${state.landing}`,
   };
 }

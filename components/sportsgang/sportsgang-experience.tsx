@@ -11,6 +11,7 @@ import {
 } from "react";
 import { ProjectSummary } from "@/components/locations/project-summary";
 import { MINIGAMES } from "@/components/sportsgang/minigames";
+import { RankBoard } from "@/components/sportsgang/rank-board";
 import { PHONE_STAGES, PixelPhone } from "@/components/sportsgang/pixel-phone";
 import { SportVenue } from "@/components/sportsgang/sport-venue";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
@@ -21,6 +22,7 @@ import {
   nextSportsgangStage,
   SPORTSGANG_STAGE_TIMINGS,
 } from "@/lib/game/sportsgang-machine";
+import { recordRun, type RecordedRun } from "@/lib/game/sportsgang-standings";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
 import {
   applyScreenProjection,
@@ -57,6 +59,7 @@ const STAGE_CAPTIONS: Readonly<Record<SportsgangStage, string>> = {
   MEET: "Player 02 has arrived",
   PLAY: "Your turn to play",
   RESULT: "Result",
+  RANK: "Your standings for this visit",
   COMPLETE: "SportsGang project summary",
 };
 
@@ -67,6 +70,7 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
   const [stage, setStage] = useState<SportsgangStage>("ENTER");
   const [sport, setSport] = useState<SportsgangSport | null>(null);
   const [result, setResult] = useState<SportResult | null>(null);
+  const [run, setRun] = useState<RecordedRun | null>(null);
   const reducedMotion = useReducedMotion();
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -83,6 +87,7 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
   const primaryRef = useRef<HTMLButtonElement>(null);
   const readyRef = useRef<HTMLButtonElement>(null);
   const completeRef = useRef<HTMLAnchorElement>(null);
+  const continueRef = useRef<HTMLButtonElement>(null);
 
   const projectionRef = useRef<CourtProjection | null>(null);
   const expansionRef = useRef<Timeline | null>(null);
@@ -219,6 +224,8 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
       primaryRef.current?.focus();
     } else if (stage === "MEET") {
       readyRef.current?.focus();
+    } else if (stage === "RANK") {
+      continueRef.current?.focus();
     } else if (stage === "COMPLETE") {
       completeRef.current?.focus();
     }
@@ -252,6 +259,9 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
     ]);
     setSport(null);
     setResult(null);
+    // The standings deliberately survive a replay: beating your own mark is
+    // the only ranking this world can honestly offer.
+    setRun(null);
     setStage("ENTER");
   }, []);
 
@@ -263,12 +273,20 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
 
   const activeSport = sport ?? DEFAULT_SPORT;
   const Minigame = MINIGAMES[activeSport];
-  const showCourtPlayers = ["MEET", "PLAY", "RESULT", "COMPLETE"].includes(stage);
+  const showCourtPlayers = ["MEET", "PLAY", "RESULT", "RANK", "COMPLETE"].includes(
+    stage,
+  );
 
-  const finishPlay = useCallback((sportResult: SportResult) => {
-    setResult(sportResult);
-    setStage((current) => nextSportsgangStage(current));
-  }, []);
+  const finishPlay = useCallback(
+    (sportResult: SportResult) => {
+      setResult(sportResult);
+      // Recorded once, here, at the moment the sport reports itself — so a
+      // re-render of the standings can never bank the same run twice.
+      setRun(recordRun(activeSport, sportResult.rank));
+      setStage((current) => nextSportsgangStage(current));
+    },
+    [activeSport],
+  );
 
   return (
     <section
@@ -370,6 +388,15 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
             {result.note}
           </p>
         </div>
+      ) : null}
+
+      {stage === "RANK" ? (
+        <RankBoard
+          continueRef={continueRef}
+          onContinue={advance}
+          run={run}
+          sport={activeSport}
+        />
       ) : null}
 
       {stage === "COMPLETE" ? (

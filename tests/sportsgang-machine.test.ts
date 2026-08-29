@@ -67,7 +67,18 @@ describe("sportsgang stage machine", () => {
       "MATCH_FOUND",
       "MEET",
       "PLAY",
+      "RANK",
     ]);
+  });
+
+  it("gives the standings no timer either — they are there to be read", () => {
+    expect(isTimedSportsgangStage("RANK")).toBe(false);
+    expect(isGatedSportsgangStage("RANK")).toBe(true);
+  });
+
+  it("puts RANK between the result and the project summary", () => {
+    expect(nextSportsgangStage("RESULT")).toBe("RANK");
+    expect(nextSportsgangStage("RANK")).toBe("COMPLETE");
   });
 
   it("never puts a timer on play, which lasts as long as the player takes", () => {
