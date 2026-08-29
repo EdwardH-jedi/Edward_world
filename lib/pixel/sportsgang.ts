@@ -27,6 +27,14 @@ const EDWARD_MAP: SpriteMap = {
   // the same person and have to be dressed the same.
   c: palette.navy,
   k: palette.navy2,
+  // The curtain part — two lit wings either side of an unlit centre. It is the
+  // single most recognisable thing about him, and without it the hair reads as
+  // a helmet rather than a middle part.
+  H: palette.hairLift,
+  // Nose and jaw shade at the front of the three-quarter turn.
+  g: palette.skinShade,
+  // The open shirt at the collar, where the world sprite shows it too.
+  w: palette.shirt,
   p: palette.denim,
   s: palette.hair,
 };
@@ -42,16 +50,22 @@ const OPPONENT_MAP: SpriteMap = {
   s: palette.char,
 };
 
-/** Edward, dressed as the world dresses him: dark hair, slate-navy outerwear. */
+/**
+ * Edward, matched to the world sprite above the neck as well as below it.
+ *
+ * Translated from `EDWARD_SIDE_UPPER` in `lib/pixel/characters.ts`, shifted one
+ * column right for this grid. The face is where recognition lives, so a body
+ * that matched while the head did not still read as a different man.
+ */
 const EDWARD_BODY: SpriteRows = [
   ".....hhhh.........",
-  "....hhhhhhh.......",
-  "...hhhhhhhhh......",
-  "...hhhfffff.......",
+  "....hHhhhh........",
+  "...hhHhhhhh.......",
+  "...hhhhhffh.......",
   "...hhhffeff.......",
-  "...hhhfffff.......",
-  "....ffffff........",
-  "....kccccck.......",
+  "...hhhffffg.......",
+  "....hffffg........",
+  "....kwcccck.......",
   "...cccccccck......",
   "...cccccccck......",
   "...ccccccccf......",
