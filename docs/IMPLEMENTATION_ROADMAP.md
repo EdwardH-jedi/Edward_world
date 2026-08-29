@@ -772,7 +772,7 @@ coordinates. That is a stronger check than a frame grab.
 
 ## Phase 13 — SportsGang: the RANK beat, and golf that travels
 
-**Status:** DONE (browser QA outstanding — see below)
+**Status:** DONE
 
 **Scope.** Finish and polish SportsGang only. The phone flow, the
 phone→court transition and all four sports already shipped in Phase 1 and were
@@ -839,14 +839,35 @@ leaks between them; a finished sport refuses to advance, which is what stops a
 live loop firing `onFinish` twice; and a fresh state is genuinely fresh rather
 than a half-reset one.
 
-**Browser QA is outstanding, and that is not a claim of completion.** Playing
-all four sports in a real browser is required by the brief and has not been
-done. Five other Claude sessions are working in this same tree, and one of them
-holds the shared chrome-devtools-mcp profile lock for its own required browser
-testing. Taking it would have killed their session, so it was left alone and a
-watch set for its release. What is verified above is verified; the interaction
-pass — replay, reset, re-entry, Escape, touch, no duplicate loops after
-repeated games — is not, and must be run before this phase is called finished.
+**Browser QA: done, and it found three things reading could not.** Another
+session held the shared chrome-devtools-mcp profile lock for its own required
+testing, and taking it would have ended their session. Rather than wait
+indefinitely, Chrome was launched headless on a private profile and driven over
+raw CDP — `Runtime.evaluate` for state, `Input.dispatchTouchEvent` for real
+trusted touch, `Page.captureScreenshot` for the visual pass.
+
+All four sports were played to completion, twice over: once with deliberately
+crude timing and once playing properly. Every one runs the full stage sequence
+`SPORT_SELECT → SEARCHING → MATCH_FOUND → MEET → PLAY → RESULT → RANK →
+COMPLETE`, and every one rewards skill rather than mashing — golf 0 M mashed
+against **257 M** timed, tennis 0/3 against **3/3**, basketball 0/3 against
+1/3, running **0:31.3** with 97% stamina left on a controlled pace.
+
+Golf was also played start to finish on **touch alone** — no keyboard at any
+point, including choosing the sport, accepting the match and taking the swing —
+and returned 251 M, a pure strike.
+
+State integrity, all confirmed: REPLAY resets to `ENTER` with the stale result
+and rank panels gone; a second, different sport plays cleanly in the same mount;
+`Escape` returns to the world with movement still live (112 px); and standings
+**survive leaving for the world and re-entering** — three sports still on the
+board after a round trip, which is the whole reason the store exists rather
+than component state. Exactly one play surface exists at a time.
+
+The three defects it found are recorded in commit `d0e7d01`: a duffed drive
+reported as landing on the fairway, distance posts floating in mid-air because
+58% was assumed to be ground level, and a venue Edward still in the old hoodie
+grey while the world's Edward had been re-dressed in slate-navy.
 
 **On working in a shared tree.** `git add app/globals.css` swept a large block
 of another session's uncommitted `.ar-*` arcade CSS into the index. It was
@@ -863,7 +884,7 @@ worktree that builds. That is how a green lint / test / build result was
 obtained while the shared tree was red, which is what proved the failures
 belonged to another session's refactor rather than to this work.
 
-**Commits.** `05a2b87`, `5ff4527`
+**Commits.** `05a2b87`, `5ff4527`, `095bb8a`, `d0e7d01`
 
 ---
 

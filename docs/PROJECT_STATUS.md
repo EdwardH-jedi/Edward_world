@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-29 · Phase 13, SportsGang polish — code complete, browser QA outstanding
+**Last updated:** 2026-08-29 · Phase 13, SportsGang polish — complete, all four sports played
 
 ---
 
@@ -24,7 +24,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 10 | Release pass | **DONE** |
 | 11 | V4 intro: the approach and the name gate | **DONE** |
 | 12 | Monument intro as a real interaction | **DONE** |
-| 13 | SportsGang: RANK beat + golf camera follow | **DONE** — browser QA outstanding |
+| 13 | SportsGang: RANK beat + golf camera follow | **DONE** |
 
 ## What works today
 
@@ -67,10 +67,13 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   dress the mannequin, save the look. The look is genuinely written to this
   browser and greets you on your next visit — the product's local-first
   philosophy enacted rather than described.
-- **AFL Lab location** — a research lab, not a tipping service. Pick a winner,
-  run the model, and a rack of CRTs lights up stage by stage showing what each
-  step actually computed from a seeded demonstration round — including
-  calibration visibly pulling an overconfident number back towards even.
+- **AFL Lab location** — a research lab, not a tipping service. Answer *who do
+  you think wins*, run the model, and watch one round travel the bench: a
+  packet crosses from panel to panel and each CRT comes up out of its scan line
+  showing what that stage actually computed from a seeded demonstration round —
+  including calibration visibly pulling an overconfident number back towards
+  even. It ends by setting your pick beside the model's, and says only whether
+  the two agree.
 - **Arcade location** — walk the floor to the cabinet, press `E`, and its
   display expands into a playable segment of Soonpermario: move, jump, stomp
   three bugs, clear three pits, reach the offer. Coffees are lives, commits are

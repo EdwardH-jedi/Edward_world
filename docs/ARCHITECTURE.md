@@ -150,6 +150,26 @@ The lab reports agreement between the visitor's pick and the model's, and
 nothing else: one run over demonstration data cannot support a claim about
 accuracy, and the repository publishes none for this to borrow.
 
+The room is split from the instruments on purpose. `lib/pixel/afl-lab.ts`
+draws the room — wall, cable tray, match board, field reference, and the bay of
+machinery under the bench — as one deterministic `ArtRoutine`, while the six
+stage panels standing on that bench are live DOM, because every number on them
+is one the pipeline computed and has to stay selectable, announceable text
+rather than rasterised pixels. `LAB_LAYOUT.benchY` is the seam between the two:
+the CSS positions the rack against that same fraction, so the panels sit on the
+drawn bench at any viewport taller than 16:9, and the rack casts its own
+contact shadow to cover the percent or two of drift when it is wider.
+
+`lib/motion/afl-choreography.ts` carries the motion, under the same rule as
+every other choreography module here — it never advances state. The stage
+machine keeps its own time on `setTimeout`; the packet crossing from one panel
+to the next and the tube coming up out of its scan line only describe what that
+looks like. Each hop is measured live from the DOM rather than once per run, so
+the bench re-flowing from six columns to three to two needs no separate
+handling, and `settleCrt` pins a panel lit whether or not its animation ever
+arrived — which is what keeps a backgrounded tab from stranding a screen
+squashed into a scan line.
+
 ## Arcade
 
 `lib/game/arcade/platformer.ts` is one segment of Edward's Career Quest rebuilt
