@@ -405,6 +405,32 @@ p {
   padding-top: 4.5rem;
 }
 
+/* The visitor's own arrival, stated once and quietly. Sits with the other
+   world chrome rather than over the play area, and is absent entirely when
+   the counter has nothing true to say. */
+.world-join {
+  animation: world-join-settle 600ms ease-out both;
+  color: var(--muted, #7e7763);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  margin: 0;
+  position: absolute;
+  right: 1.5rem;
+  text-transform: uppercase;
+  top: 4.2rem;
+  z-index: 3;
+}
+
+@keyframes world-join-settle {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 640px) {
+  .world-join { font-size: 0.55rem; right: 1rem; top: 3.4rem; }
+}
+
 .world-instructions {
   align-items: baseline;
   color: var(--world-cream);

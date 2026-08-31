@@ -52,6 +52,85 @@ export function createInMemoryJoinStore(): JoinStore {
   };
 }
 
+/**
+ * Environment that binds a durable store, in the order it is looked for.
+ *
+ * Both names describe the same thing — a Redis-compatible REST endpoint and a
+ * bearer token. Vercel's marketplace integrations set the `KV_REST_API_*`
+ * pair; a directly-provisioned Upstash database sets the `UPSTASH_*` pair.
+ * Accepting both means provisioning through either route needs no code change.
+ */
+function readRestConfig(): { url: string; token: string } | null {
+  const url = process.env.KV_REST_API_URL ?? process.env.UPSTASH_REDIS_REST_URL;
+  const token =
+    process.env.KV_REST_API_TOKEN ?? process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  return { url: url.replace(/\/$/, ""), token };
+}
+
+/** The single key the counter lives under. */
+export const JOIN_KEY = "edwards-world:joins";
+
+/** How long a counter request may take before it is treated as unavailable. */
+const REQUEST_TIMEOUT_MS = 2_000;
+
+/**
+ * A durable store over a Redis-compatible REST API.
+ *
+ * `INCR` is atomic on the server, which is the whole reason to reach for one:
+ * it is the one operation that stays correct when several Function instances
+ * increment at once, which is exactly where the in-memory store gives up.
+ *
+ * Every failure throws rather than resolving with a guess. `lib/joins/
+ * response.ts` turns a throw into a 500, and the client omits the line
+ * entirely — a counter that quietly invents a number would be worse than one
+ * that says nothing.
+ */
+export function createRestJoinStore(config: {
+  url: string;
+  token: string;
+  key?: string;
+  fetchImpl?: typeof fetch;
+}): JoinStore {
+  const key = config.key ?? JOIN_KEY;
+  const call = config.fetchImpl ?? fetch;
+
+  async function command(path: string): Promise<number> {
+    const response = await call(`${config.url}/${path}/${encodeURIComponent(key)}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${config.token}` },
+      // A hung counter must not hold a request open; the caller degrades.
+      signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      throw new Error(`join store responded ${response.status}`);
+    }
+
+    const body: unknown = await response.json();
+    const result =
+      typeof body === "object" && body !== null && "result" in body
+        ? (body as { result: unknown }).result
+        : undefined;
+
+    // A key that has never been written reads back as null, which is zero
+    // joins rather than a broken store.
+    if (result === null || result === undefined) return 0;
+
+    const total = typeof result === "string" ? Number(result) : result;
+    if (typeof total !== "number" || !Number.isInteger(total) || total < 0) {
+      throw new Error("join store returned a total that is not a count");
+    }
+    return total;
+  }
+
+  return {
+    read: () => command("get"),
+    increment: () => command("incr"),
+  };
+}
+
 let sharedStore: JoinStore | undefined;
 
 /**
@@ -60,7 +139,20 @@ let sharedStore: JoinStore | undefined;
  */
 export function getJoinStore(): JoinStore {
   if (!sharedStore) {
-    sharedStore = createInMemoryJoinStore();
+    const config = readRestConfig();
+    // Durable when the environment provides somewhere durable to write, and
+    // an honest local counter otherwise. Nothing here provisions anything.
+    sharedStore = config ? createRestJoinStore(config) : createInMemoryJoinStore();
   }
   return sharedStore;
+}
+
+/** Test seam: forget the process-wide store so the next call rebinds it. */
+export function resetJoinStoreForTests(): void {
+  sharedStore = undefined;
+}
+
+/** Whether this process is backed by a durable store. For diagnostics only. */
+export function isDurableJoinStoreConfigured(): boolean {
+  return readRestConfig() !== null;
 }

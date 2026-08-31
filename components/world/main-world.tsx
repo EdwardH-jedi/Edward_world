@@ -12,6 +12,8 @@ import {
 } from "@/lib/game/movement";
 import { getGroundYForFootprint, PIXEL_UNIT } from "@/lib/game/terrain";
 import { getTomodachiLines, getWanderOffset } from "@/lib/game/tomodachi";
+import { formatJoinLine } from "@/lib/joins/ordinal";
+import { useJoinTotal } from "@/lib/joins/use-join-total";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
@@ -71,6 +73,9 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const pressedKeys = useRef(new Set<string>());
   const ambientFrame = useAmbientFrame(!disabled);
+  // Null until a real total arrives, and null forever if the counter is
+  // unreachable — the line is simply absent rather than guessed at.
+  const joinTotal = useJoinTotal();
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -239,6 +244,12 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
 
   return (
     <main className="world-screen" inert={disabled || undefined}>
+      {joinTotal !== null ? (
+        <p className="world-join" role="status">
+          {formatJoinLine(joinTotal)}
+        </p>
+      ) : null}
+
       <div className="world-instructions">
         <strong>Explore</strong>
         <span>A / D or ← / → to move · E to interact</span>

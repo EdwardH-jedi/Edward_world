@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { IntroSequence } from "@/components/intro/intro-sequence";
 import { AflExperience } from "@/components/afl/afl-experience";
 import { ArcadeExperience } from "@/components/arcade/arcade-experience";
@@ -11,6 +11,7 @@ import { WardrobeExperience } from "@/components/wardrobe/wardrobe-experience";
 import { InteractionDialog } from "@/components/world/interaction-dialog";
 import { MainWorld } from "@/components/world/main-world";
 import { WorldIndexControl } from "@/components/world/world-index-control";
+import { recordJoinOnce } from "@/lib/joins/client";
 import type { PortfolioProjectId } from "@/types/portfolio";
 import type { InteractionAction, WorldLocationId } from "@/types/world";
 
@@ -34,6 +35,15 @@ export function PortfolioExperience() {
   const [activeProjectExperience, setActiveProjectExperience] =
     useState<PortfolioProjectId | null>(null);
   const [activeLocation, setActiveLocation] = useState<WorldLocationId | null>(null);
+
+  // One join per visitor, counted the first time the world is theirs to walk
+  // — whichever of the three doors they came through. `recordJoinOnce` is
+  // latched at module scope, so this effect re-running proves nothing and
+  // costs nothing.
+  useEffect(() => {
+    if (experience !== "world") return;
+    recordJoinOnce();
+  }, [experience]);
 
   const showWorld = useCallback(() => {
     setIndexOpen(false);
