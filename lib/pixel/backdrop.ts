@@ -262,6 +262,38 @@ function foliage(draw: Raster, frame: number) {
   }
 }
 
+/**
+ * Motes drifting through the open air.
+ *
+ * Deterministic by construction: each mote's lane and phase come from
+ * `scatter`, so the same frame always paints the same sky and nothing
+ * shimmers between redraws. Placement is derived rather than authored
+ * because the world is 960 art pixels wide and hand-placing dust across it
+ * would be neither maintainable nor evenly spread.
+ *
+ * Drift is a whole number of art pixels per ambient tick — at this scale a
+ * sub-pixel rate would round to a stutter. Under reduced motion the shared
+ * frame counter stops advancing, so these settle into a fixed constellation
+ * rather than freezing mid-drift.
+ */
+const MOTE_COUNT = 26;
+
+function motes(draw: Raster, frame: number) {
+  const width = BACKDROP_ART_SIZE.width;
+
+  for (let i = 0; i < MOTE_COUNT; i += 1) {
+    const noise = scatter(i * 61 + 7);
+    // Kept above the rooflines and below the top edge, so motes read as air
+    // rather than as specks on the buildings.
+    const y = 12 + (noise % 22);
+    const speed = 1 + (noise % 3);
+    const x = (noise * 7 + frame * speed) % width;
+
+    // Two thirds sit back in the haze; the rest catch a little more light.
+    draw(x, y, 1, 1, noise % 3 === 0 ? palette.cream : palette.sky2);
+  }
+}
+
 /** Chimney smoke, drawn here so it can rise into open sky above the roofline. */
 function houseSmoke(draw: Raster, frame: number) {
   smoke(draw, 133, 31, frame);
@@ -277,4 +309,5 @@ export const drawBackdrop: ArtRoutine = (draw, frame) => {
   townCluster(draw, frame);
   foliage(draw, frame);
   houseSmoke(draw, frame);
+  motes(draw, frame);
 };

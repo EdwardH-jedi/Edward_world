@@ -390,7 +390,16 @@ p {
   text-decoration: underline;
 }
 
+/* Stepping into the world, rather than cutting to it. Mount-only: there is
+   no exit counterpart, because leaving is driven by React state and an exit
+   animation would mean delaying an unmount — a timing change, not polish. */
+@keyframes world-arrive {
+  from { opacity: 0; transform: scale(1.012); }
+  to { opacity: 1; transform: none; }
+}
+
 .world-screen {
+  animation: world-arrive 520ms ease-out both;
   --world-sky: #e9e0c8;
   --world-char: #2b2823;
   --world-cream: #efe7d3;
@@ -507,6 +516,7 @@ p {
 .world-object__label {
   background: var(--world-char);
   color: var(--world-cream);
+  transition: background-color 180ms ease-out, color 180ms ease-out;
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.625rem;
   left: 50%;
@@ -596,7 +606,16 @@ p {
    A place inside Edward's World: same palette, same pixel unit, same two type
    systems. The court surface is the one accent this location gets. */
 
+/* A location opening over the world. Enter-only, for the same reason the
+   world reveal is: `onExit` unmounts immediately, and making that wait would
+   touch the stage machines rather than the presentation. */
+@keyframes loc-open {
+  from { opacity: 0; transform: scale(1.008); }
+  to { opacity: 1; transform: none; }
+}
+
 .loc-experience {
+  animation: loc-open 320ms ease-out both;
   --loc-sky: #e9e0c8;
   --loc-char: #2b2823;
   --loc-cream: #efe7d3;
