@@ -16,7 +16,7 @@ export default function NotFound() {
       </p>
       <div className="document-page__links">
         <Link href="/">Return to Edward&apos;s World</Link>
-        <Link href="/resume">View resume placeholder</Link>
+        <Link href="/resume">View resume</Link>
       </div>
     </main>
   );

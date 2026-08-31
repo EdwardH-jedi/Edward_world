@@ -4147,8 +4147,11 @@ p {
   padding-block: 8vh 6rem;
 }
 
-/* Rules and lists want the full column; the shared shell starts its children. */
+/* Rules and lists want the full column; the shared shell starts its children.
+   Height is a different question: `align-self` defaults to stretch, which made
+   a one-line note sit in a 73px box with its rule running past the text. */
 .doc-page > * {
+  align-self: start;
   justify-self: stretch;
 }
 
