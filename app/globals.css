@@ -4136,6 +4136,300 @@ p {
 
 }
 
+/* ── Document pages ──────────────────────────────────────────────────────────
+   `/resume` and `/case-studies/*` are read, not played. They borrow the Index's
+   editorial idiom — grotesk body, mono labels, hairline rules — over the site
+   background, so every written surface reads as one publication rather than as
+   a screen that escaped the world. */
+.doc-page {
+  font-family: var(--font-archivo), Arial, Helvetica, sans-serif;
+  gap: 2.4rem;
+  padding-block: 8vh 6rem;
+}
+
+/* Rules and lists want the full column; the shared shell starts its children. */
+.doc-page > * {
+  justify-self: stretch;
+}
+
+.doc-page :where(h1, h2, h3, p, ul, ol, blockquote) {
+  margin: 0;
+}
+
+.doc-back {
+  color: var(--muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
+  text-decoration: none;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.doc-back::before {
+  content: "←\00a0";
+}
+
+.doc-back:hover,
+.doc-back:focus-visible {
+  color: var(--accent);
+}
+
+.doc-head {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.doc-head h1 {
+  font-size: clamp(2rem, 7vw, 3rem);
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  max-width: 20ch;
+}
+
+.doc-lede {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  max-width: 38rem;
+}
+
+/*
+ * A framing constraint the repository states about itself. Set as a stamp
+ * rather than as prose so it cannot be skimmed past — for AFL Predict, reading
+ * the page without it would misrepresent the work.
+ */
+.doc-constraint {
+  border-left: 2px solid var(--foreground);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  line-height: 1.6;
+  max-width: 34rem;
+  padding-left: 0.9rem;
+  text-transform: uppercase;
+}
+
+.doc-section {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 0.9rem;
+  padding-top: 1.1rem;
+}
+
+.doc-label {
+  color: var(--muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.66rem;
+  font-weight: 400;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.doc-quote {
+  max-width: 38rem;
+}
+
+.doc-quote p {
+  font-size: 1.15rem;
+  line-height: 1.55;
+}
+
+.doc-list,
+.doc-timeline__body ul {
+  display: grid;
+  gap: 0.4rem;
+  list-style: none;
+  max-width: 38rem;
+  padding: 0;
+}
+
+.doc-list li,
+.doc-timeline__body li {
+  line-height: 1.55;
+  padding-left: 1.1rem;
+  position: relative;
+}
+
+/* A square rather than a bullet: the one pixel the world is allowed to lend. */
+.doc-list li::before,
+.doc-timeline__body li::before {
+  background: var(--muted);
+  content: "";
+  height: 0.3rem;
+  left: 0;
+  position: absolute;
+  top: 0.62em;
+  width: 0.3rem;
+}
+
+.doc-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  list-style: none;
+  padding: 0;
+}
+
+.doc-chips li {
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  padding: 0.25rem 0.5rem;
+}
+
+.doc-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1.4rem;
+}
+
+.doc-links a {
+  border-bottom: 1px solid var(--line);
+  color: var(--foreground);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding-bottom: 0.15rem;
+  text-decoration: none;
+}
+
+.doc-links a:hover,
+.doc-links a:focus-visible {
+  border-bottom-color: currentcolor;
+  color: var(--accent);
+}
+
+.doc-timeline {
+  display: grid;
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.doc-timeline > li {
+  align-items: start;
+  display: grid;
+  gap: 0.4rem 1.4rem;
+  grid-template-columns: 7rem 1fr;
+}
+
+.doc-timeline__years {
+  color: var(--muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  padding-top: 0.2rem;
+}
+
+.doc-timeline__body h3 {
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+.doc-timeline__body ul {
+  margin-top: 0.45rem;
+}
+
+.doc-work {
+  display: grid;
+  gap: 1.6rem;
+  list-style: none;
+  padding: 0;
+}
+
+.doc-work > li {
+  display: grid;
+  gap: 0.5rem;
+  justify-items: start;
+}
+
+.doc-work > li + li {
+  border-top: 1px solid var(--line);
+  padding-top: 1.6rem;
+}
+
+.doc-work h3 {
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.doc-work__category {
+  color: var(--muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.doc-work__descriptor {
+  line-height: 1.55;
+  max-width: 34rem;
+}
+
+/* What is missing, said once and plainly, instead of being written around.
+   Its rule runs the full column so it reads as another section boundary. */
+.doc-pending {
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  padding-top: 1.1rem;
+}
+
+.doc-more {
+  display: grid;
+  list-style: none;
+  padding: 0;
+}
+
+.doc-more a {
+  align-items: baseline;
+  border-bottom: 1px solid var(--line);
+  color: var(--foreground);
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  padding: 0.9rem 0;
+  text-decoration: none;
+}
+
+.doc-more a:hover,
+.doc-more a:focus-visible {
+  color: var(--accent);
+}
+
+.doc-more__name {
+  font-weight: 600;
+}
+
+.doc-more__descriptor {
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .doc-page {
+    gap: 2rem;
+    padding-block: 5vh 4rem;
+  }
+
+  .doc-timeline > li {
+    grid-template-columns: 1fr;
+  }
+
+  .doc-more a {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .doc-more__descriptor {
+    text-align: left;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
