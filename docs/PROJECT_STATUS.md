@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-29 · Phase 13, SportsGang polish — complete, all four sports played
+**Last updated:** 2026-08-31 · Phase 14, feature/content pass — counter wired, content pages built, world atmosphere
 
 ---
 
@@ -25,6 +25,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 11 | V4 intro: the approach and the name gate | **DONE** |
 | 12 | Monument intro as a real interaction | **DONE** |
 | 13 | SportsGang: RANK beat + golf camera follow | **DONE** |
+| 14 | Visitor counter, case studies + resume, world atmosphere | **DONE** |
 
 ## What works today
 
@@ -110,7 +111,7 @@ All green after the 2026-08-28 QA pass:
 ```
 npm run lint        eslint . --max-warnings 0
 npm run typecheck   tsc --noEmit
-npm test            15 files, 146 tests
+npm test            25 files, 293 tests
 npm run build       production build
 ```
 

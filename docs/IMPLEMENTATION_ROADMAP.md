@@ -888,6 +888,65 @@ belonged to another session's refactor rather than to this work.
 
 ---
 
+## Phase 14 — Feature/content pass: counter, content pages, atmosphere
+
+**Status:** DONE
+
+**Scope.** Move from a QA-clean state toward feature completion without
+destabilising the working game systems. Checkpointed first at `30dc7ca`, which
+captured ~3,400 lines of work several sessions had left uncommitted in the
+shared tree.
+
+**Visitor counter.** The API, store contract and tests already existed and were
+green, but nothing called them. Now wired: one join per arrival, latched at
+module scope because three doors reach the world and StrictMode mounts twice.
+`getJoinStore()` binds a Redis-compatible REST store when the environment
+supplies one — accepting both the `KV_REST_API_*` names a Vercel marketplace
+integration sets and the `UPSTASH_*` names a direct provision sets — and the
+in-memory counter otherwise. Every failure path ends with no line rather than a
+guess.
+
+**Content pages.** `/resume` and the four case studies were real routes with
+placeholder bodies. They now render only what the repository can stand behind,
+sourced against the Verified facts table and checked word for word. Three new
+optional fields carry it: `repositorySummary`, `repositoryNotes`, `framingNote`.
+The AFL framing constraint travels into page metadata as well as the body.
+
+**Atmosphere.** Four enter-only effects: the world arriving, a location
+opening, proximity easing on the label chip, and 26 deterministic motes.
+Nothing animates on exit — that would mean delaying an unmount, which is a
+change to the stage machines rather than to presentation.
+
+**Character.** Left alone deliberately. The avatar is a finished procedural
+design, and replacement is already decoupled from movement, camera, bounds and
+proximity — everything non-art reads only `position`, `size` and `facing`. The
+swap contract is documented in `public/assets/README.md`.
+
+**Deferred by instruction:** BGM (awaiting a final audio asset) and all
+movement-feel tuning (to be done once BGM exists, so visual, movement and
+musical pacing can be tuned together).
+
+**Validation.** TypeScript, ESLint, 293 tests across 25 files, production
+build, `npm audit` 0 vulnerabilities, `git diff --check` — all clean. Browser
+QA at 390x844, 768x1024, 1280x800 and 1440x900: all seven routes render with no
+horizontal overflow, the invalid route 404s, the intro and name gate reach the
+world, A/D and both arrow keys and touch all move, all five locations open with
+movement locked and return on Escape, and all six House object cards trap focus
+with Shift+Tab and restore it. Console clean throughout.
+
+**Findings reported rather than fixed:** focus leaves the House *room* to the
+global WORLD/INDEX controls after the last object button. The object cards
+themselves are correctly modal. Whether the room should trap focus is a
+modality decision for whoever owns Edward's House, and it predates this pass.
+
+Also: `tests/_house-render.test.ts` is a render-to-PNG scratch harness whose
+only assertion is that the file it wrote is non-empty. It is collected by
+vitest and counts toward the total.
+
+**Commits.** `30dc7ca`, `86506e4`, `11fae65`, `ec8ff6e`, `ae6680a`, `0cf984c`
+
+---
+
 ## Known gaps carried forward
 
 Both of the gaps recorded earlier were closed in Phase 10: the world is now
