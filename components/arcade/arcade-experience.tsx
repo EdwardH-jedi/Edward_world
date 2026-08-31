@@ -2,10 +2,15 @@
 
 import type { Timeline } from "animejs";
 import { createTimeline } from "animejs";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ProjectSummary } from "@/components/locations/project-summary";
 import { useMinigameInput } from "@/components/sportsgang/minigames/use-minigame-input";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
+import {
+  type FloorLayout,
+  getFloorLayout,
+  isAtCabinet,
+} from "@/lib/game/arcade/arcade-floor";
 import {
   advancePlatformer,
   createPlatformerState,
@@ -18,6 +23,7 @@ import {
   PICKUPS,
   PLATFORMS,
   PLAYER_SIZE,
+  STARTING_COFFEES,
   type PlatformerState,
 } from "@/lib/game/arcade/platformer";
 import { getCameraX, movePlayerX } from "@/lib/game/movement";
@@ -36,11 +42,7 @@ interface ArcadeExperienceProps {
 
 const PRODUCT_FLOW = ["MOVE", "JUMP", "CLOSE BUGS", "REACH THE OFFER"] as const;
 
-/** The arcade floor, in the same CSS pixels the world uses. */
-const FLOOR_WIDTH = 1_120;
-const CABINET_X = 720;
-const APPROACH_RANGE = 150;
-const WALK_SPEED = 240;
+const EDWARD_WIDTH = 48;
 
 /** The playable viewport, in level units. */
 const VIEW = { width: 640, height: LEVEL_HEIGHT } as const;
@@ -49,7 +51,8 @@ type ArcadePhase = "FLOOR" | "PLAYING" | "DONE";
 
 export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
   const [phase, setPhase] = useState<ArcadePhase>("FLOOR");
-  const [edwardX, setEdwardX] = useState(120);
+  const [layout, setLayout] = useState<FloorLayout>(() => getFloorLayout(1_120));
+  const [edwardX, setEdwardX] = useState(() => getFloorLayout(1_120).startX);
   const [facing, setFacing] = useState<"left" | "right">("right");
   const [walking, setWalking] = useState(false);
   const [game, setGame] = useState<PlatformerState>(createPlatformerState);
@@ -61,12 +64,67 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
   const playRef = useRef<HTMLButtonElement>(null);
   const gameRef = useRef(game);
   const expansionRef = useRef<Timeline | null>(null);
+  /** Until Edward has been walked, a resize may reposition him freely. */
+  const walkedRef = useRef(false);
+  /**
+   * How much of a level pixel one screen pixel is.
+   *
+   * Measured rather than expressed in CSS: `scale` takes a unitless number and
+   * `calc(94vw / 640)` is a length, so the stylesheet's version of this was
+   * silently invalid and the level rendered at 1:1, cropped to whatever fit.
+   */
+  const [stageScale, setStageScale] = useState(1);
 
   const { consume, bind } = useMinigameInput(phase !== "DONE", {
     captureActionKeys: phase === "PLAYING",
   });
 
-  const nearCabinet = Math.abs(edwardX - CABINET_X) < APPROACH_RANGE;
+  const nearCabinet = isAtCabinet(edwardX, layout);
+
+  // The floor is however wide the viewport is, so the room is measured rather
+  // than assumed. Without this the cabinet sits off the side of a phone.
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    function apply() {
+      const width = root?.clientWidth || window.innerWidth;
+      const next = getFloorLayout(width);
+      setLayout(next);
+      setEdwardX((current) =>
+        walkedRef.current
+          ? Math.min(current, next.floorWidth - EDWARD_WIDTH / 2)
+          : next.startX,
+      );
+    }
+
+    apply();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", apply);
+      return () => window.removeEventListener("resize", apply);
+    }
+    const observer = new ResizeObserver(apply);
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const screen = screenRef.current;
+    if (!screen) return;
+
+    function apply() {
+      if (screen) setStageScale(screen.clientWidth / VIEW.width);
+    }
+
+    apply();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", apply);
+      return () => window.removeEventListener("resize", apply);
+    }
+    const observer = new ResizeObserver(apply);
+    observer.observe(screen);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
@@ -74,15 +132,21 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
     return () => previousFocus?.focus();
   }, []);
 
+  /** Stop the run without leaving the arcade: the summary is the ending. */
+  const endRun = useCallback(() => setPhase("DONE"), []);
+
+  // Escape means "back out of where I am". Mid-run that is the run, not the
+  // room — the summary is what a finished visit is supposed to leave behind.
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key !== "Escape") return;
       event.preventDefault();
-      onExit();
+      if (phase === "PLAYING") endRun();
+      else onExit();
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onExit]);
+  }, [endRun, onExit, phase]);
 
   // Walking the floor reuses the world's own movement, so the arcade feels
   // like the same place rather than a separate app.
@@ -91,15 +155,16 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
     const direction = (input.right ? 1 : 0) - (input.left ? 1 : 0);
     setWalking(direction !== 0);
     if (direction === 0) return;
+    walkedRef.current = true;
     setFacing(direction > 0 ? "right" : "left");
     setEdwardX((current) =>
       movePlayerX({
         currentX: current,
         direction: direction as 1 | -1,
         deltaSeconds: delta,
-        speed: WALK_SPEED,
-        worldWidth: FLOOR_WIDTH,
-        playerWidth: 48,
+        speed: layout.walkSpeed,
+        worldWidth: layout.floorWidth,
+        playerWidth: EDWARD_WIDTH,
       }),
     );
   });
@@ -171,13 +236,20 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nearCabinet, phase, startPlaying]);
 
-  const replay = useCallback(() => {
-    gameRef.current = createPlatformerState();
-    setGame(gameRef.current);
-    setPhase("FLOOR");
-  }, []);
+  /** Straight back into the level: the machine resets and starts again. */
+  const playAgain = useCallback(() => {
+    setWalking(false);
+    startPlaying();
+  }, [startPlaying]);
 
   const summary = getRunSummary(game);
+  const outcome = useMemo(() => {
+    if (game.phase === "FINISHED") return "OFFER EXTENDED";
+    if (game.phase === "FAILED") return "OUT OF COFFEE";
+    return "RUN ENDED EARLY";
+  }, [game.phase]);
+  /** Rises by one each time a coffee is spent; keys the hit flash. */
+  const hits = STARTING_COFFEES - game.coffees;
   const cameraX = getCameraX({
     playerX: game.x,
     playerWidth: PLAYER_SIZE.width,
@@ -199,20 +271,31 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
         <div className="ar-carpet" />
         <div className="ar-neon">SOONPERMARIO</div>
         <div className="ar-shelf" />
+        <div className="ar-neighbours">
+          <div className="ar-neighbour" data-slot="far-left" />
+          <div className="ar-neighbour" data-slot="left" />
+          <div className="ar-neighbour" data-slot="right" />
+          <div className="ar-neighbour" data-slot="far-right" />
+        </div>
+        <div className="ar-spot" style={{ left: layout.cabinetX }} />
       </div>
 
-      <button className="loc-exit" onClick={onExit} type="button">
-        ESC · BACK TO WORLD
+      <button
+        className="loc-exit"
+        onClick={phase === "PLAYING" ? endRun : onExit}
+        type="button"
+      >
+        {phase === "PLAYING" ? "ESC · END RUN" : "ESC · BACK TO WORLD"}
       </button>
 
       <p aria-live="polite" className="loc-announcer">
         {phase === "FLOOR"
           ? nearCabinet
-            ? "At the cabinet. Press E to play."
-            : "Walk to the cabinet."
+            ? "At the Soonpermario cabinet. Press E to play."
+            : "Walk to the Soonpermario cabinet."
           : phase === "PLAYING"
             ? "Playing Soonpermario"
-            : "Soonpermario project summary"}
+            : `${outcome}. Soonpermario project summary.`}
       </p>
 
       {/* The cabinet on the arcade floor. */}
@@ -220,16 +303,21 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
         aria-hidden="true"
         className="ar-cabinet"
         data-near={nearCabinet || undefined}
-        style={{ left: CABINET_X }}
+        style={{ left: layout.cabinetX }}
       >
         <div className="ar-cabinet__marquee">SOONPERMARIO</div>
         <div className="ar-cabinet__bezel">
-          <div className="ar-cabinet__slot" ref={slotRef} />
+          <div className="ar-cabinet__slot" ref={slotRef}>
+            {/* Attract mode: the machine is playing to an empty room. */}
+            <span className="ar-attract" />
+            <span className="ar-attract__word">DEMO</span>
+          </div>
         </div>
         <div className="ar-cabinet__panel">
           <span />
           <span />
         </div>
+        <div className="ar-cabinet__plinth" />
       </div>
 
       {phase === "FLOOR" ? (
@@ -255,7 +343,17 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
         {/* The stage carries the scale so the camera can translate in level
             units inside it; scaling and translating the same element would
             leave the camera offset in the wrong coordinate space. */}
-        <div className="ar-stage">
+        <div className="ar-stage" style={{ transform: `scale(${stageScale})` }}>
+        {/* Scenery, at a third of the camera's speed. Depth for free: the
+            same camera, one multiplier, no second simulation. */}
+        <div
+          aria-hidden="true"
+          className="ar-far"
+          style={{ transform: `translate3d(${-cameraX * 0.34}px, 0, 0)` }}
+        >
+          <span className="ar-far__horizon" />
+          <span className="ar-far__racks" />
+        </div>
         <div
           className="ar-level"
           style={{ transform: `translate3d(${-cameraX}px, 0, 0)` }}
@@ -285,7 +383,9 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
                   top: pickup.y,
                   width: pickup.width,
                 }}
-              />
+              >
+                {pickup.kind === "SKILL" ? <span>{pickup.label}</span> : null}
+              </div>
             ),
           )}
 
@@ -303,6 +403,8 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
                     width: hazard.width,
                   }}
                 >
+                  <i className="ar-bug__eye" />
+                  <i className="ar-bug__eye" />
                   <span>{hazard.label}</span>
                 </div>
               );
@@ -319,6 +421,7 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
 
           <div
             className="ar-player"
+            data-grounded={game.grounded || undefined}
             style={{
               height: PLAYER_SIZE.height,
               left: game.x,
@@ -337,6 +440,9 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
           </div>
         </div>
         </div>
+
+        <div className="ar-scanlines" />
+        {hits > 0 ? <div className="ar-hit" key={hits} /> : null}
 
         <div className="ar-hud">
           <span>COFFEE {"☕".repeat(Math.max(0, game.coffees))}</span>
@@ -359,27 +465,60 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
           <p className="loc-beat__text">
             {nearCabinet ? "SOONPERMARIO · E TO PLAY" : "WALK TO THE CABINET · A D"}
           </p>
-          <button
-            className="loc-button loc-button--primary"
-            disabled={!nearCabinet}
-            onClick={startPlaying}
-            ref={playRef}
-            type="button"
-          >
-            [ E · PLAY ]
-          </button>
+          <div className="ar-prompt__row">
+            <button
+              aria-label="Walk left"
+              className="ar-control ar-control--walk"
+              type="button"
+              {...bind("left")}
+            >
+              ←
+            </button>
+            <button
+              className="loc-button loc-button--primary"
+              disabled={!nearCabinet}
+              onClick={startPlaying}
+              ref={playRef}
+              type="button"
+            >
+              [ E · PLAY ]
+            </button>
+            <button
+              aria-label="Walk right"
+              className="ar-control ar-control--walk"
+              type="button"
+              {...bind("right")}
+            >
+              →
+            </button>
+          </div>
         </div>
       ) : null}
 
       {phase === "PLAYING" ? (
         <div className="ar-controls">
-          <button className="ar-control" type="button" {...bind("left")}>
+          <button
+            aria-label="Move left"
+            className="ar-control"
+            type="button"
+            {...bind("left")}
+          >
             ←
           </button>
-          <button className="ar-control" type="button" {...bind("action")}>
+          <button
+            aria-label="Jump"
+            className="ar-control"
+            type="button"
+            {...bind("action")}
+          >
             JUMP
           </button>
-          <button className="ar-control" type="button" {...bind("right")}>
+          <button
+            aria-label="Move right"
+            className="ar-control"
+            type="button"
+            {...bind("right")}
+          >
             →
           </button>
         </div>
@@ -387,17 +526,18 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
 
       {phase === "DONE" ? (
         <ProjectSummary
+          caseStudyLabel="VIEW PROJECT"
           firstActionRef={summaryRef}
           flow={PRODUCT_FLOW}
           onExit={onExit}
-          onReplay={replay}
+          onReplay={playAgain}
           projectId="soonpermario"
           replayLabel="PLAY AGAIN"
           role="PLAYABLE EXPERIMENT"
           wordmark="SOONPERMARIO"
         >
           <p className="ar-result">
-            <span>{summary.finished ? "OFFER EXTENDED" : "OUT OF COFFEE"}</span>
+            <span>{outcome}</span>
             <span className="ar-result__stat">
               {summary.commits}/{summary.totalCommits} COMMITS
             </span>

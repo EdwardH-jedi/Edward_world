@@ -19,6 +19,8 @@ interface ProjectSummaryProps {
   onExit: () => void;
   onReplay: () => void;
   replayLabel?: string;
+  /** What the link to the case study is called here. */
+  caseStudyLabel?: string;
   /** Location-specific content, shown between the stack and the actions. */
   children?: ReactNode;
 }
@@ -39,6 +41,7 @@ export function ProjectSummary({
   onExit,
   onReplay,
   replayLabel = "REPLAY",
+  caseStudyLabel = "VIEW CASE STUDY",
   children,
 }: ProjectSummaryProps) {
   const project = getProjectById(projectId);
@@ -72,7 +75,7 @@ export function ProjectSummary({
           href={project.caseStudyUrl}
           ref={firstActionRef}
         >
-          VIEW CASE STUDY
+          {caseStudyLabel}
         </Link>
         {project.githubUrl ? (
           <a

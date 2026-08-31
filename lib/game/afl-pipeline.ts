@@ -82,7 +82,12 @@ const FORM_WEIGHT = 0.055;
 const REST_WEIGHT = 0.09;
 const TRAVEL_WEIGHT = 0.0004;
 const RECENT_WEIGHT = 0.045;
-const ENSEMBLE_SPLIT = 0.65;
+/**
+ * How much of the ensemble is the form model, the rest being the recent-form
+ * one. Exported because the MODELS panel shows the split: a weighting the
+ * visitor reads should be the weighting that ran, not a number typed twice.
+ */
+export const ENSEMBLE_SPLIT = 0.65;
 
 export function sigmoid(z: number) {
   return 1 / (1 + Math.exp(-z));

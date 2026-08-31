@@ -3,6 +3,7 @@ import {
   advancePlatformer,
   createPlatformerState,
   FLAG,
+  getJumpReach,
   getRunSummary,
   hazardAt,
   HAZARDS,
@@ -54,6 +55,65 @@ describe("level layout", () => {
     expect(gaps.every((gap) => gap > 0)).toBe(true);
     // Wide enough to matter, narrow enough to clear.
     expect(Math.max(...gaps)).toBeLessThan(180);
+  });
+
+  it("gives a jump real room over the widest gap, not a pixel of it", () => {
+    const ground = PLATFORMS.filter((platform) => platform.y === 300).sort(
+      (a, b) => a.x - b.x,
+    );
+    // What the player must actually cross: the gap plus their own body, since
+    // they leave from the last ledge pixel their heels are still on.
+    const crossings = ground
+      .slice(1)
+      .map(
+        (platform, index) =>
+          platform.x - (ground[index].x + ground[index].width) + PLAYER_SIZE.width,
+      );
+    const { distance } = getJumpReach();
+    // The margin is the point. A jump that only just reaches means the gap is
+    // cleared from its final pixels or not at all, which is not a jump a
+    // first-time player can make.
+    expect(distance).toBeGreaterThan(Math.max(...crossings) + 40);
+  });
+
+  it("hangs no ledge over the run-up to a gap", () => {
+    const { distance } = getJumpReach();
+    const ground = PLATFORMS.filter((platform) => platform.y === 300).sort(
+      (a, b) => a.x - b.x,
+    );
+    const ledges = PLATFORMS.filter((platform) => platform.y !== 300);
+
+    ground.slice(0, -1).forEach((run, index) => {
+      const edge = run.x + run.width;
+      const crossing = ground[index + 1].x - edge + PLAYER_SIZE.width;
+      // The earliest a jump may leave and still land: anywhere in here is a
+      // place a player might take off from, so a ledge above it is a ceiling
+      // on the only jump that clears the pit.
+      const earliest = edge - (distance - crossing) - PLAYER_SIZE.width;
+      for (const ledge of ledges) {
+        const overlaps = ledge.x < edge && ledge.x + ledge.width > earliest;
+        expect(`${ledge.x}@${ledge.y} over ${earliest.toFixed(0)}-${edge}`).toBe(
+          overlaps ? "" : `${ledge.x}@${ledge.y} over ${earliest.toFixed(0)}-${edge}`,
+        );
+      }
+    });
+  });
+
+  it("puts every platform within reach of a jump from the ground below it", () => {
+    const { height } = getJumpReach();
+    const highest = Math.min(...PLATFORMS.map((platform) => platform.y));
+    expect(300 - highest).toBeLessThan(height);
+  });
+
+  it("leaves no pickup a player cannot stand or jump up to", () => {
+    const { height } = getJumpReach();
+    // Feet at the apex of a jump from the lowest ground.
+    const apex = 300 - height;
+    for (const pickup of PICKUPS) {
+      // The player's head is a body-height above their feet, so a pickup is
+      // reachable if the apex body overlaps it at all.
+      expect(apex - PLAYER_SIZE.height).toBeLessThan(pickup.y + pickup.height);
+    }
   });
 
   it("patrols each hazard between its own bounds, forever", () => {
@@ -215,7 +275,7 @@ describe("consequences", () => {
     expect(summary.totalBugs).toBe(HAZARDS.length);
   });
 
-  it("is completable, and quickly enough to be a demonstration", () => {
+  it("is completable at any frame rate, however early the player commits", () => {
     /** Is there ground directly under this point? */
     const groundAt = (x: number) =>
       PLATFORMS.some(
@@ -224,23 +284,41 @@ describe("consequences", () => {
       );
 
     // A bot that actually plays: jump the gaps, jump the bugs, otherwise run.
-    // If this cannot finish, neither can a person.
-    const state = run(60 * 120, (_tick, current) => {
-      const nose = current.x + PLAYER_SIZE.width;
-      const bugAhead = HAZARDS.some((hazard) => {
-        const at = hazardAt(hazard, current.elapsed);
-        return at.x > current.x && at.x < nose + 70;
-      });
-      const gapAhead = !groundAt(nose + 8);
-      // Hold the button while rising, the way a person does.
-      const shouldJump =
-        (current.grounded && (gapAhead || bugAhead)) || current.vy < 0;
-      return shouldJump ? rightJump : right;
-    });
+    // `lead` is how far ahead of the edge it decides — 0 is a player who
+    // leaves from the last pixel, 60 is one who commits well before it. The
+    // level has to hold for both, and at frame rates the loop really sees.
+    const play = (fps: number, lead: number) => {
+      const tick = 1 / fps;
+      let state = createPlatformerState();
+      for (
+        let frame = 0;
+        frame < fps * 120 && state.phase !== "FAILED" && state.phase !== "FINISHED";
+        frame += 1
+      ) {
+        const nose = state.x + PLAYER_SIZE.width + lead;
+        const bugAhead = HAZARDS.some((hazard) => {
+          const at = hazardAt(hazard, state.elapsed);
+          return at.x > state.x && at.x < nose + 70;
+        });
+        const gapAhead = !groundAt(nose + 8);
+        // Hold the button while rising, the way a person does.
+        const shouldJump =
+          (state.grounded && (gapAhead || bugAhead)) || state.vy < 0;
+        state = advancePlatformer(state, shouldJump ? rightJump : right, tick);
+      }
+      return state;
+    };
 
-    expect(state.phase).toBe("FINISHED");
-    // A short segment: long enough to be a game, short enough to be a demo.
-    expect(state.elapsed).toBeGreaterThan(5);
-    expect(state.elapsed).toBeLessThan(45);
+    for (const fps of [60, 50, 30]) {
+      for (const lead of [0, 15, 30, 60]) {
+        const state = play(fps, lead);
+        expect(`${fps}/${lead}: ${state.phase}`).toBe(`${fps}/${lead}: FINISHED`);
+        // The bot never hesitates, so its time is the floor of the human
+        // window, not the target: a first-time player who stops, misjudges a
+        // gap and spends a coffee lands in the 15-30s this is sized for.
+        expect(state.elapsed).toBeGreaterThan(6);
+        expect(state.elapsed).toBeLessThan(20);
+      }
+    }
   });
 });

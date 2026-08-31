@@ -3,72 +3,166 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMinigameInput } from "@/components/sportsgang/minigames/use-minigame-input";
+import { useDialogFocus } from "@/components/ui/accessible-dialog";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { chapters, contact, leagueRank } from "@/data/personal";
 import { getProjectById } from "@/data/projects";
 import { movePlayerX } from "@/lib/game/movement";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
 import { animateElement, motionPresets } from "@/lib/motion/animate-element";
+import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { useGameLoop } from "@/lib/motion/use-game-loop";
+import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { drawEdward, EDWARD_ART_SIZE, getWalkFrame } from "@/lib/pixel/characters";
+import {
+  drawHouseRoom,
+  HOUSE_ART_SIZE,
+  HOUSE_STAND_Y,
+  HOUSE_THING_BOUNDS,
+  type HouseReveal,
+  type HouseThingId,
+  houseThingCentre,
+} from "@/lib/pixel/house";
 
 interface HouseExperienceProps {
   onExit: () => void;
 }
 
-const ROOM_WIDTH = 1_240;
-const REACH = 96;
-const WALK_SPEED = 230;
+/** Art pixels of walking per second. Slow enough to notice the room. */
+const WALK_SPEED = 46;
+/** How close Edward's centre has to be before a thing is within reach. */
+const REACH = 20;
+/** The unfold, the power-on and the drawer all move in four chunky steps. */
+const REVEAL_STEP = 0.25;
+const REVEAL_MS = 70;
 
 interface Thing {
-  readonly id: string;
-  readonly x: number;
+  readonly id: HouseThingId;
   readonly label: string;
   readonly heading: string;
-  readonly kind: "map" | "desk" | "computer" | "papers" | "rail" | "rig";
+  /** How the card offers to leave the object as it found it. */
+  readonly closeLabel: string;
+  /** Paper things get a paper card; screens get a screen. */
+  readonly surface: "paper" | "screen";
 }
 
 /**
  * Six things in a room.
  *
- * The other buildings say what Edward builds. This one says who he is, and it
- * says it by being looked at rather than by being read: nothing here is an
- * About page, everything is an object you walk up to.
+ * Nothing here is an About page. Every answer is attached to an object you
+ * walk up to, and the objects are the ones that would be in the room anyway.
  */
 const THINGS: readonly Thing[] = [
-  { id: "map", x: 150, label: "MAP", heading: "KOREA → SYDNEY", kind: "map" },
-  { id: "desk", x: 330, label: "DESK", heading: "STUDY", kind: "desk" },
-  { id: "computer", x: 500, label: "COMPUTER", heading: "WHAT I BUILD", kind: "computer" },
-  { id: "papers", x: 670, label: "PAPERS", heading: "RESUME", kind: "papers" },
-  { id: "rail", x: 850, label: "RAIL", heading: "CLOTHES", kind: "rail" },
-  { id: "rig", x: 1_040, label: "GAMING PC", heading: "OFF THE CLOCK", kind: "rig" },
+  {
+    id: "map",
+    label: "MAP",
+    heading: "KOREA → SYDNEY",
+    closeLabel: "FOLD IT BACK",
+    surface: "paper",
+  },
+  {
+    id: "desk",
+    label: "DESK",
+    heading: "STUDY",
+    closeLabel: "PUT IT BACK",
+    surface: "paper",
+  },
+  {
+    id: "computer",
+    label: "COMPUTER",
+    heading: "WHAT I BUILD",
+    closeLabel: "STEP AWAY",
+    surface: "screen",
+  },
+  {
+    id: "papers",
+    label: "DRAWER",
+    heading: "RESUME",
+    closeLabel: "SHUT THE DRAWER",
+    surface: "paper",
+  },
+  {
+    id: "rail",
+    label: "RAIL",
+    heading: "CLOTHES",
+    closeLabel: "PUT IT BACK",
+    surface: "paper",
+  },
+  {
+    id: "rig",
+    label: "GAMING PC",
+    heading: "OFF THE CLOCK",
+    closeLabel: "STEP AWAY",
+    surface: "screen",
+  },
 ];
 
+/**
+ * Screens stay on once they have been woken. Everything else goes back the way
+ * it was found — which is the difference between a room someone has walked
+ * through and a room where every drawer is hanging open.
+ */
+const LATCHING: ReadonlySet<HouseThingId> = new Set<HouseThingId>([
+  "computer",
+  "rig",
+]);
+
+/** A percentage of the room strip, for placing DOM over the art. */
+function across(value: number) {
+  return `${(value / HOUSE_ART_SIZE.width) * 100}%`;
+}
+
+function down(value: number) {
+  return `${(value / HOUSE_ART_SIZE.height) * 100}%`;
+}
+
 export function HouseExperience({ onExit }: HouseExperienceProps) {
-  const [edwardX, setEdwardX] = useState(60);
+  const [edwardX, setEdwardX] = useState(24);
   const [facing, setFacing] = useState<"left" | "right">("right");
   const [walking, setWalking] = useState(false);
-  const [openId, setOpenId] = useState<string | null>(null);
-  const [seen, setSeen] = useState<readonly string[]>([]);
+  const [openId, setOpenId] = useState<HouseThingId | null>(null);
+  const [seen, setSeen] = useState<readonly HouseThingId[]>([]);
+  const [reveal, setReveal] = useState<HouseReveal>({});
 
   const rootRef = useRef<HTMLElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const openRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const thingRefs = useRef(new Map<HouseThingId, HTMLButtonElement>());
 
   const { consume } = useMinigameInput(openId === null);
+  const ambientFrame = useAmbientFrame(true);
+  const reducedMotion = useReducedMotion();
 
   const nearest = useMemo(() => {
-    const centre = edwardX + 24;
+    const centre = edwardX + EDWARD_ART_SIZE.width / 2;
     const candidate = THINGS.map((thing) => ({
       thing,
-      distance: Math.abs(thing.x - centre),
+      distance: Math.abs(houseThingCentre(thing.id) - centre),
     }))
       .filter(({ distance }) => distance <= REACH)
       .sort((a, b) => a.distance - b.distance)[0];
     return candidate?.thing ?? null;
   }, [edwardX]);
 
-  const open = openId ? THINGS.find((thing) => thing.id === openId) ?? null : null;
+  const open = openId
+    ? THINGS.find((thing) => thing.id === openId) ?? null
+    : null;
+
+  const look = useCallback((id: HouseThingId) => {
+    triggerRef.current = thingRefs.current.get(id) ?? null;
+    setOpenId(id);
+    setSeen((current) => (current.includes(id) ? current : [...current, id]));
+  }, []);
+
+  const close = useCallback(() => setOpenId(null), []);
+
+  useDialogFocus({
+    active: open !== null,
+    containerRef: cardRef,
+    initialFocusRef: closeRef,
+    onClose: close,
+    returnFocusRef: triggerRef,
+  });
 
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
@@ -80,21 +174,17 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
-        if (openId) setOpenId(null);
-        else onExit();
+        if (!openId) onExit();
         return;
       }
       if (event.key.toLowerCase() === "e" && !openId && nearest) {
         event.preventDefault();
-        setOpenId(nearest.id);
-        setSeen((current) =>
-          current.includes(nearest.id) ? current : [...current, nearest.id],
-        );
+        look(nearest.id);
       }
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nearest, onExit, openId]);
+  }, [look, nearest, onExit, openId]);
 
   useGameLoop(openId === null, (delta) => {
     const input = consume();
@@ -108,11 +198,62 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
         direction: direction as 1 | -1,
         deltaSeconds: delta,
         speed: WALK_SPEED,
-        worldWidth: ROOM_WIDTH,
-        playerWidth: 48,
+        worldWidth: HOUSE_ART_SIZE.width,
+        playerWidth: EDWARD_ART_SIZE.width,
       }),
     );
   });
+
+  /** What each thing should settle at, given what is open and what was seen. */
+  const targets = useMemo(() => {
+    const next: Record<HouseThingId, number> = {} as Record<HouseThingId, number>;
+    for (const thing of THINGS) {
+      next[thing.id] =
+        thing.id === openId || (LATCHING.has(thing.id) && seen.includes(thing.id))
+          ? 1
+          : 0;
+    }
+    return next;
+  }, [openId, seen]);
+
+  /**
+   * What the room is actually showing. A visitor who has asked for reduced
+   * motion is handed the settled state directly rather than being animated
+   * towards it, so for them there is nothing left to step.
+   */
+  const shown = reducedMotion ? targets : reveal;
+  const settled =
+    reducedMotion ||
+    THINGS.every((thing) => (reveal[thing.id] ?? 0) === targets[thing.id]);
+
+  /**
+   * Walks each thing towards its target a quarter at a time. Chunky on purpose
+   * — the world's motion is a hand-authored loop, not an eased curve.
+   */
+  useEffect(() => {
+    if (settled) return;
+    const timer = window.setInterval(() => {
+      setReveal((current) => {
+        const next: Record<HouseThingId, number> = { ...current } as Record<
+          HouseThingId,
+          number
+        >;
+        let moved = false;
+        for (const thing of THINGS) {
+          const from = current[thing.id] ?? 0;
+          const to = targets[thing.id];
+          if (from === to) continue;
+          next[thing.id] =
+            from < to
+              ? Math.min(to, from + REVEAL_STEP)
+              : Math.max(to, from - REVEAL_STEP);
+          moved = true;
+        }
+        return moved ? next : current;
+      });
+    }, REVEAL_MS);
+    return () => window.clearInterval(timer);
+  }, [settled, targets]);
 
   useEffect(() => {
     if (!open || !cardRef.current) return;
@@ -120,15 +261,18 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
     const animation = animateElement(cardRef.current, motionPresets.screenSwap, {
       duration: 220,
     });
-    openRef.current?.focus();
     return () => {
       animation.revert();
     };
   }, [open]);
 
-  const close = useCallback(() => setOpenId(null), []);
   const wardrobe = getProjectById("wardrobe");
-  const walkFrame = getWalkFrame(edwardX, PIXEL_UNIT, walking);
+  const walkFrame = getWalkFrame(edwardX, 1, walking);
+  const roomDraw = useMemo(
+    () => (draw: Parameters<typeof drawHouseRoom>[0], frame: number) =>
+      drawHouseRoom(draw, frame, shown),
+    [shown],
+  );
 
   return (
     <section
@@ -137,72 +281,98 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
       ref={rootRef}
       tabIndex={-1}
     >
-      <div aria-hidden="true" className="hs-room">
-        <div className="hs-wall" />
-        <div className="hs-skirting" />
-        <div className="hs-floor" />
-        <div className="hs-window" />
-        <div className="hs-lamp" />
-      </div>
-
-      <button className="loc-exit" onClick={onExit} type="button">
+      <button
+        className="loc-exit"
+        inert={open ? true : undefined}
+        onClick={onExit}
+        type="button"
+      >
         ESC · BACK TO WORLD
       </button>
 
       <p aria-live="polite" className="loc-announcer">
         {open
-          ? `${open.heading}`
+          ? open.heading
           : nearest
             ? `${nearest.label}. Press E to look.`
             : "Walk around the room."}
       </p>
 
-      {/* Everything the visitor walks among lives on one stage, positioned as
-          a fraction of the room, so the layout holds at any width. */}
-      <div className="hs-stage">
-      {THINGS.map((thing) => (
-        <button
-          className="hs-thing"
-          data-kind={thing.kind}
-          data-near={nearest?.id === thing.id || undefined}
-          data-seen={seen.includes(thing.id) || undefined}
-          key={thing.id}
-          onClick={() => {
-            setOpenId(thing.id);
-            setSeen((current) =>
-              current.includes(thing.id) ? current : [...current, thing.id],
-            );
-          }}
-          style={{ left: `${(thing.x / ROOM_WIDTH) * 100}%` }}
-          type="button"
-        >
-          <span className="hs-thing__art" />
-          <span className="hs-thing__label">{thing.label}</span>
-        </button>
-      ))}
-
+      {/* One strip of art holds the whole room. Every piece of DOM over it is
+          placed from the same art coordinates the objects were drawn at, so a
+          hotspot can never drift away from the thing it belongs to. */}
       <div
-        aria-hidden="true"
-        className="hs-edward"
-        data-facing={facing}
-        style={{ left: `${(edwardX / ROOM_WIDTH) * 100}%` }}
+        className="hs-room"
+        inert={open ? true : undefined}
+        style={{
+          aspectRatio: `${HOUSE_ART_SIZE.width} / ${HOUSE_ART_SIZE.height}`,
+        }}
       >
         <PixelCanvas
-          artHeight={EDWARD_ART_SIZE.height}
-          artWidth={EDWARD_ART_SIZE.width}
-          draw={drawEdward}
-          flipX={facing === "left"}
-          frame={walkFrame}
-          unit={PIXEL_UNIT}
+          artHeight={HOUSE_ART_SIZE.height}
+          artWidth={HOUSE_ART_SIZE.width}
+          className="hs-room__art"
+          draw={roomDraw}
+          fill
+          frame={ambientFrame}
+          unit={4}
         />
-      </div>
+
+        {THINGS.map((thing) => {
+          const bounds = HOUSE_THING_BOUNDS[thing.id];
+          return (
+            <button
+              className="hs-thing"
+              data-near={nearest?.id === thing.id || undefined}
+              data-seen={seen.includes(thing.id) || undefined}
+              key={thing.id}
+              onClick={() => look(thing.id)}
+              ref={(node) => {
+                if (node) thingRefs.current.set(thing.id, node);
+                else thingRefs.current.delete(thing.id);
+              }}
+              style={{
+                height: down(bounds.height),
+                left: across(bounds.x),
+                top: down(bounds.y),
+                width: across(bounds.width),
+              }}
+              type="button"
+            >
+              <span className="hs-thing__label">{thing.label}</span>
+              {nearest?.id === thing.id && !open ? (
+                <span aria-hidden="true" className="hs-thing__key">
+                  E
+                </span>
+              ) : null}
+            </button>
+          );
+        })}
+
+        <div
+          aria-hidden="true"
+          className="hs-edward"
+          style={{
+            bottom: down(HOUSE_ART_SIZE.height - HOUSE_STAND_Y),
+            left: across(edwardX),
+            width: across(EDWARD_ART_SIZE.width),
+          }}
+        >
+          <PixelCanvas
+            artHeight={EDWARD_ART_SIZE.height}
+            artWidth={EDWARD_ART_SIZE.width}
+            draw={drawEdward}
+            fill
+            flipX={facing === "left"}
+            frame={walkFrame}
+            unit={4}
+          />
+        </div>
       </div>
 
       {!open ? (
         <div className="hs-hint">
-          <p>
-            {nearest ? `${nearest.label} · E TO LOOK` : "A / D TO WALK · E TO LOOK"}
-          </p>
+          <p>{nearest ? `${nearest.label} · E TO LOOK` : "A / D TO WALK · E TO LOOK"}</p>
           <p className="hs-hint__progress">
             {seen.length} OF {THINGS.length} LOOKED AT
           </p>
@@ -210,13 +380,23 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
       ) : null}
 
       {open ? (
-        <div className="hs-card" ref={cardRef}>
+        <div
+          aria-labelledby="house-card-title"
+          aria-modal="true"
+          className="hs-card"
+          data-surface={open.surface}
+          ref={cardRef}
+          role="dialog"
+          tabIndex={-1}
+        >
           <div className="hs-card__head">
             <p className="hs-card__eyebrow">{open.label}</p>
-            <h2 className="hs-card__heading">{open.heading}</h2>
+            <h2 className="hs-card__heading" id="house-card-title">
+              {open.heading}
+            </h2>
           </div>
 
-          {open.kind === "map" ? (
+          {open.id === "map" ? (
             <ol className="hs-chapters">
               {chapters.map((chapter) => (
                 <li key={chapter.id}>
@@ -234,7 +414,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
             </ol>
           ) : null}
 
-          {open.kind === "desk" ? (
+          {open.id === "desk" ? (
             <div className="hs-body">
               <p>
                 University of Sydney, 2022 – 2026. Bachelor of Advanced
@@ -248,7 +428,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
             </div>
           ) : null}
 
-          {open.kind === "computer" ? (
+          {open.id === "computer" ? (
             <div className="hs-body">
               <p>
                 Four projects in this world, and the code behind all of them is
@@ -277,7 +457,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
             </div>
           ) : null}
 
-          {open.kind === "papers" ? (
+          {open.id === "papers" ? (
             <div className="hs-body">
               <p>
                 {contact.name} — {contact.location}.
@@ -294,7 +474,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
             </div>
           ) : null}
 
-          {open.kind === "rail" ? (
+          {open.id === "rail" ? (
             <div className="hs-body">
               <p>
                 Clothes are a real interest, not a side note — enough of one to
@@ -310,13 +490,13 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
             </div>
           ) : null}
 
-          {open.kind === "rig" ? (
+          {open.id === "rig" ? (
             <div className="hs-body">
               <p>League of Legends, mostly.</p>
               <p className="hs-placeholder">
                 {leagueRank
                   ? `Current rank: ${leagueRank}.`
-                  : "Rank not published here yet — this shelf is waiting for a real number rather than a made-up one."}
+                  : "Rank not published here yet — this corner is waiting for a real number rather than a made-up one."}
               </p>
             </div>
           ) : null}
@@ -325,12 +505,16 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
             <button
               className="loc-button loc-button--primary"
               onClick={close}
-              ref={openRef}
+              ref={closeRef}
               type="button"
             >
-              PUT IT BACK
+              {open.closeLabel}
             </button>
-            <button className="loc-button loc-button--quiet" onClick={onExit} type="button">
+            <button
+              className="loc-button loc-button--quiet"
+              onClick={onExit}
+              type="button"
+            >
               BACK TO WORLD
             </button>
           </div>

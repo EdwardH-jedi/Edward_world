@@ -1,24 +1,41 @@
 /**
  * The Wardrobe archive.
  *
- * Five steps, all of them the visitor's to take — there is nothing timed here,
- * so this needs a step list rather than the timed/gated machinery SportsGang
- * uses. The steps mirror the product's own loop.
+ * Five stages, all of them the visitor's to take — there is nothing timed here
+ * and nothing to unlock, so this needs a stage list rather than the timed
+ * machinery SportsGang uses. The stages mirror the product's own loop, and the
+ * room reaches each one by being used rather than by a CONTINUE button.
  */
-export const WARDROBE_STEPS = [
+export const WARDROBE_STAGES = [
   "CAPTURE",
   "ARCHIVE",
   "ORGANISE",
   "COMPOSE",
   "SAVE",
-  "COMPLETE",
 ] as const;
 
-export type WardrobeStep = (typeof WARDROBE_STEPS)[number];
+export type WardrobeStage = (typeof WARDROBE_STAGES)[number];
+
+/** How each stage is spelled on the ribbon, in the product's own words. */
+export const STAGE_LABEL: Readonly<Record<WardrobeStage, string>> = {
+  CAPTURE: "CAPTURE",
+  ARCHIVE: "ARCHIVE",
+  ORGANISE: "ORGANISE",
+  COMPOSE: "COMPOSE",
+  SAVE: "SAVE LOOK",
+};
 
 /** Where a garment sits on the mannequin. One garment per slot. */
 export const OUTFIT_SLOTS = ["OUTER", "TOP", "BOTTOM", "SHOES"] as const;
 export type OutfitSlot = (typeof OUTFIT_SLOTS)[number];
+
+/** How the room names each layer on its shelves. */
+export const SLOT_LABEL: Readonly<Record<OutfitSlot, string>> = {
+  OUTER: "OUTER",
+  TOP: "TOPS",
+  BOTTOM: "BOTTOMS",
+  SHOES: "SHOES",
+};
 
 export type Season = "ALL YEAR" | "WARM" | "COOL";
 

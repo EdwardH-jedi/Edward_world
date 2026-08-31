@@ -74,10 +74,16 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   including calibration visibly pulling an overconfident number back towards
   even. It ends by setting your pick beside the model's, and says only whether
   the two agree.
-- **Arcade location** — walk the floor to the cabinet, press `E`, and its
-  display expands into a playable segment of Soonpermario: move, jump, stomp
-  three bugs, clear three pits, reach the offer. Coffees are lives, commits are
-  the collectibles.
+- **Arcade location** — a dark room with four unlit machines and one that is
+  running. Walk the floor to it, press `E`, and its display expands into a
+  playable segment of Soonpermario: move, jump, get past three bugs (land on
+  one to close it, or clear it), take the skills off the ledges, cross three
+  pits, reach the offer. Coffees are lives, commits are the collectibles.
+  About twenty seconds if you know the way. `Escape` mid-run ends the run and
+  shows the summary rather than leaving; `Escape` again returns to the world.
+  The floor, the walk pace and the cabinet's position are derived from the
+  measured viewport, so the machine is centre stage on a phone as well as a
+  desktop, and the walk and the game both have touch controls.
 - **Edward's House** — the personal room. Walk up to six objects and look at
   them: the map from Jeju to Sydney, the desk, the computer, the resume, the
   clothes rail, the gaming PC. Every line is verified biography; the one thing

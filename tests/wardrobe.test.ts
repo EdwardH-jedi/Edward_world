@@ -2,25 +2,45 @@ import { describe, expect, it } from "vitest";
 import { garments, getGarment } from "@/data/wardrobe";
 import {
   archiveReducer,
-  canAdvance,
+  archivedInSlot,
+  archivedSlots,
   canSaveLook,
+  completedStages,
   countWorn,
   createArchiveState,
+  currentStage,
   isArchived,
+  isComplete,
+  isWorn,
   MINIMUM_LOOK_SLOTS,
-  nextWardrobeStep,
   type ArchiveAction,
   type ArchiveState,
 } from "@/lib/game/wardrobe-archive";
+import {
+  createGarmentRoutine,
+  createHangingRoutine,
+  createMannequinRoutine,
+  GARMENT_ART_SIZE,
+  HANGER_ART_SIZE,
+  MANNEQUIN_ART_SIZE,
+  outfitColours,
+  shadeHex,
+} from "@/lib/pixel/wardrobe";
 import {
   deserializeOutfit,
   serializeOutfit,
   SAVED_LOOK_KEY,
 } from "@/lib/storage/saved-look";
-import { OUTFIT_SLOTS, WARDROBE_STEPS } from "@/types/wardrobe";
+import { OUTFIT_SLOTS, WARDROBE_STAGES } from "@/types/wardrobe";
+import type { Raster } from "@/lib/pixel/raster";
 
 function apply(state: ArchiveState, ...actions: readonly ArchiveAction[]) {
   return actions.reduce(archiveReducer, state);
+}
+
+/** Archives a garment the way the room does: look at it, then keep it. */
+function keep(state: ArchiveState, garmentId: string) {
+  return apply(state, { type: "ARCHIVE", garmentId });
 }
 
 describe("wardrobe catalogue", () => {
@@ -52,15 +72,6 @@ describe("wardrobe catalogue", () => {
 });
 
 describe("archive rules", () => {
-  it("walks the product's own loop and stops at the end", () => {
-    for (let index = 0; index < WARDROBE_STEPS.length - 1; index += 1) {
-      expect(nextWardrobeStep(WARDROBE_STEPS[index])).toBe(
-        WARDROBE_STEPS[index + 1],
-      );
-    }
-    expect(nextWardrobeStep("COMPLETE")).toBe("COMPLETE");
-  });
-
   it("will not let a garment be worn before it has been archived", () => {
     const state = apply(createArchiveState(), {
       type: "WEAR",
@@ -70,80 +81,216 @@ describe("archive rules", () => {
     expect(countWorn(state.outfit)).toBe(0);
   });
 
-  it("archives on capture, and captures the same garment only once", () => {
-    const once = apply(createArchiveState(), {
-      type: "CAPTURE",
-      garmentId: "grey-hoodie",
+  it("ignores garments the catalogue does not know", () => {
+    const state = apply(
+      createArchiveState(),
+      { type: "SELECT", garmentId: "no-such-garment" },
+      { type: "ARCHIVE", garmentId: "no-such-garment" },
+    );
+    expect(state.selected).toBeNull();
+    expect(state.archived).toEqual([]);
+  });
+
+  it("puts a garment on the table without archiving it", () => {
+    const state = apply(createArchiveState(), {
+      type: "SELECT",
+      garmentId: "cream-tee",
     });
-    const twice = apply(once, { type: "CAPTURE", garmentId: "grey-hoodie" });
-    expect(once.archived).toEqual(["grey-hoodie"]);
-    expect(twice.archived).toEqual(["grey-hoodie"]);
-    expect(isArchived(twice, "grey-hoodie")).toBe(true);
+    expect(state.selected).toBe("cream-tee");
+    expect(isArchived(state, "cream-tee")).toBe(false);
+  });
+
+  it("archives a garment once, however many times it is asked", () => {
+    const state = keep(keep(createArchiveState(), "cream-tee"), "cream-tee");
+    expect(state.archived).toEqual(["cream-tee"]);
+    expect(state.selected).toBe("cream-tee");
   });
 
   it("puts a garment in its own slot and replaces what was there", () => {
     const state = apply(
-      createArchiveState(),
-      { type: "CAPTURE", garmentId: "grey-hoodie" },
-      { type: "CAPTURE", garmentId: "cream-tee" },
+      keep(keep(createArchiveState(), "grey-hoodie"), "cream-tee"),
       { type: "WEAR", garmentId: "grey-hoodie" },
       { type: "WEAR", garmentId: "cream-tee" },
     );
-    expect(state.outfit.TOP).toBe("cream-tee");
-    expect(countWorn(state.outfit)).toBe(1);
-    expect(getGarment("cream-tee")?.slot).toBe("TOP");
+    expect(state.outfit).toEqual({ TOP: "cream-tee" });
+    expect(isWorn(state, "cream-tee")).toBe(true);
+    expect(isWorn(state, "grey-hoodie")).toBe(false);
   });
 
-  it("takes a garment back off", () => {
-    const state = apply(
-      createArchiveState(),
-      { type: "CAPTURE", garmentId: "faded-denim" },
-      { type: "WEAR", garmentId: "faded-denim" },
-      { type: "REMOVE", slot: "BOTTOM" },
-    );
-    expect(state.outfit.BOTTOM).toBeUndefined();
+  it("takes a garment back off, and ignores an empty slot", () => {
+    const worn = apply(keep(createArchiveState(), "grey-hoodie"), {
+      type: "WEAR",
+      garmentId: "grey-hoodie",
+    });
+    const bare = apply(worn, { type: "REMOVE", slot: "TOP" });
+    expect(bare.outfit).toEqual({});
+    expect(apply(bare, { type: "REMOVE", slot: "TOP" })).toBe(bare);
   });
 
   it("refuses to save a look that is barely a look", () => {
-    const thin = apply(
-      createArchiveState(),
-      { type: "CAPTURE", garmentId: "grey-hoodie" },
-      { type: "WEAR", garmentId: "grey-hoodie" },
-    );
-    expect(canSaveLook(thin)).toBe(false);
-    expect(apply(thin, { type: "SAVE" }).savedOutfit).toBeNull();
+    const one = apply(keep(createArchiveState(), "grey-hoodie"), {
+      type: "WEAR",
+      garmentId: "grey-hoodie",
+    });
+    expect(canSaveLook(one)).toBe(false);
+    expect(apply(one, { type: "SAVE" }).savedOutfit).toBeNull();
 
-    const enough = apply(thin, ...[
-      { type: "CAPTURE", garmentId: "faded-denim" } as const,
-      { type: "WEAR", garmentId: "faded-denim" } as const,
-    ]);
-    expect(countWorn(enough.outfit)).toBe(MINIMUM_LOOK_SLOTS);
-    expect(canSaveLook(enough)).toBe(true);
-    const saved = apply(enough, { type: "SAVE" });
+    const two = apply(keep(one, "faded-denim"), {
+      type: "WEAR",
+      garmentId: "faded-denim",
+    });
+    expect(countWorn(two.outfit)).toBe(MINIMUM_LOOK_SLOTS);
+    expect(canSaveLook(two)).toBe(true);
+
+    const saved = apply(two, { type: "SAVE" });
     expect(saved.savedOutfit).toEqual({ TOP: "grey-hoodie", BOTTOM: "faded-denim" });
-    expect(saved.step).toBe("COMPLETE");
+    expect(isComplete(saved)).toBe(true);
+    // A snapshot, not a live view of the mannequin.
+    expect(saved.savedOutfit).not.toBe(saved.outfit);
   });
 
-  it("holds each step until its own precondition is met", () => {
-    const fresh = createArchiveState();
-    expect(canAdvance(fresh)).toBe(false);
-    expect(apply(fresh, { type: "ADVANCE" }).step).toBe("CAPTURE");
-
-    const captured = apply(fresh, { type: "CAPTURE", garmentId: "grey-hoodie" });
-    expect(canAdvance(captured)).toBe(true);
-    expect(apply(captured, { type: "ADVANCE" }).step).toBe("ARCHIVE");
+  it("sorts the archive into layers, in capture order", () => {
+    const state = keep(keep(keep(createArchiveState(), "cream-tee"), "leather-boots"), "grey-hoodie");
+    expect(archivedInSlot(state, "TOP").map((g) => g.id)).toEqual([
+      "cream-tee",
+      "grey-hoodie",
+    ]);
+    expect(archivedInSlot(state, "SHOES").map((g) => g.id)).toEqual(["leather-boots"]);
+    expect(archivedInSlot(state, "OUTER")).toEqual([]);
+    expect([...archivedSlots(state)].sort()).toEqual(["SHOES", "TOP"]);
   });
 
-  it("needs more than one kind of garment before organising is meaningful", () => {
-    const oneKind = apply(
-      { ...createArchiveState(), step: "ORGANISE" },
-      { type: "CAPTURE", garmentId: "grey-hoodie" },
-      { type: "CAPTURE", garmentId: "cream-tee" },
+  it("starts over completely, keeping nothing from the visit", () => {
+    const used = apply(
+      keep(keep(createArchiveState(), "grey-hoodie"), "faded-denim"),
+      { type: "WEAR", garmentId: "grey-hoodie" },
+      { type: "WEAR", garmentId: "faded-denim" },
+      { type: "SAVE" },
+      { type: "RESET" },
     );
-    expect(canAdvance(oneKind)).toBe(false);
+    expect(used).toEqual(createArchiveState());
+  });
+});
 
-    const twoKinds = apply(oneKind, { type: "CAPTURE", garmentId: "faded-denim" });
-    expect(canAdvance(twoKinds)).toBe(true);
+describe("stage derivation", () => {
+  it("opens on the first stage with nothing done", () => {
+    const fresh = createArchiveState();
+    expect(currentStage(fresh)).toBe("CAPTURE");
+    expect(Object.values(completedStages(fresh)).some(Boolean)).toBe(false);
+    expect(isComplete(fresh)).toBe(false);
+  });
+
+  it("moves through the product's loop by being used, not by advancing", () => {
+    const selected = apply(createArchiveState(), {
+      type: "SELECT",
+      garmentId: "field-jacket",
+    });
+    expect(currentStage(selected)).toBe("ARCHIVE");
+
+    const archived = keep(selected, "field-jacket");
+    expect(currentStage(archived)).toBe("ORGANISE");
+
+    // A second garment of the same kind is not a second layer.
+    const sameLayer = keep(archived, "wool-overshirt");
+    expect(currentStage(sameLayer)).toBe("ORGANISE");
+
+    const twoLayers = keep(sameLayer, "faded-denim");
+    expect(currentStage(twoLayers)).toBe("COMPOSE");
+
+    const dressed = apply(twoLayers, { type: "WEAR", garmentId: "faded-denim" });
+    expect(currentStage(dressed)).toBe("SAVE");
+
+    const look = apply(dressed, { type: "WEAR", garmentId: "field-jacket" }, { type: "SAVE" });
+    expect(completedStages(look)).toEqual({
+      CAPTURE: true,
+      ARCHIVE: true,
+      ORGANISE: true,
+      COMPOSE: true,
+      SAVE: true,
+    });
+    // Every stage done: the ribbon rests on the last one rather than falling off.
+    expect(currentStage(look)).toBe(WARDROBE_STAGES[WARDROBE_STAGES.length - 1]);
+  });
+
+  it("never reads a look kept on an earlier visit as progress", () => {
+    // A previous visit's look lives in storage, not in reducer state, so a
+    // returning visitor still starts the loop at CAPTURE.
+    const returning = createArchiveState();
+    expect(returning.savedOutfit).toBeNull();
+    expect(currentStage(returning)).toBe("CAPTURE");
+    expect(isComplete(returning)).toBe(false);
+  });
+});
+
+describe("wardrobe art", () => {
+  /** Collects every block a routine draws, so the art box can be checked. */
+  function record(routine: (draw: Raster, frame: number) => void) {
+    const blocks: { x: number; y: number; width: number; height: number }[] = [];
+    const draw: Raster = (x, y, width, height) => {
+      blocks.push({ x, y, width, height });
+    };
+    routine(draw, 0);
+    return blocks;
+  }
+
+  function assertInside(
+    blocks: readonly { x: number; y: number; width: number; height: number }[],
+    size: { width: number; height: number },
+    label: string,
+  ) {
+    expect(blocks.length, label).toBeGreaterThan(0);
+    for (const block of blocks) {
+      expect(block.x, `${label} x`).toBeGreaterThanOrEqual(0);
+      expect(block.y, `${label} y`).toBeGreaterThanOrEqual(0);
+      expect(block.x + block.width, `${label} right`).toBeLessThanOrEqual(size.width);
+      expect(block.y + block.height, `${label} bottom`).toBeLessThanOrEqual(size.height);
+    }
+  }
+
+  it("keeps every garment icon inside its art box", () => {
+    for (const garment of garments) {
+      assertInside(
+        record(createGarmentRoutine(garment.slot, garment.colour)),
+        GARMENT_ART_SIZE,
+        `${garment.id} icon`,
+      );
+      assertInside(
+        record(createHangingRoutine(garment.slot, garment.colour)),
+        HANGER_ART_SIZE,
+        `${garment.id} on a hanger`,
+      );
+    }
+  });
+
+  it("keeps the mannequin inside its art box, dressed or bare", () => {
+    assertInside(record(createMannequinRoutine({})), MANNEQUIN_ART_SIZE, "bare form");
+
+    const full = outfitColours(
+      {
+        OUTER: "field-jacket",
+        TOP: "grey-hoodie",
+        BOTTOM: "faded-denim",
+        SHOES: "leather-boots",
+      },
+      getGarment,
+    );
+    expect(Object.keys(full).sort()).toEqual(["BOTTOM", "OUTER", "SHOES", "TOP"]);
+    assertInside(record(createMannequinRoutine(full)), MANNEQUIN_ART_SIZE, "dressed form");
+  });
+
+  it("draws each garment in the colour the catalogue records", () => {
+    const colours = new Set<string>();
+    const draw: Raster = (_x, _y, _width, _height, colour) => {
+      colours.add(colour);
+    };
+    createMannequinRoutine(outfitColours({ TOP: "cream-tee" }, getGarment))(draw, 0);
+    expect(colours.has(getGarment("cream-tee")!.colour)).toBe(true);
+  });
+
+  it("shades a colour without leaving the hex range", () => {
+    expect(shadeHex("#FFFFFF", 0.5)).toBe("#808080");
+    expect(shadeHex("#000000")).toBe("#000000");
+    expect(shadeHex("not a colour")).toBe("not a colour");
   });
 });
 
@@ -164,7 +311,6 @@ describe("saved look storage", () => {
 
   it("drops slots holding unknown or mismatched garments", () => {
     expect(deserializeOutfit('{"TOP":"no-such-garment"}')).toBeNull();
-    // A real garment filed under the wrong slot is not trusted either.
     expect(deserializeOutfit('{"SHOES":"grey-hoodie"}')).toBeNull();
     expect(deserializeOutfit('{"TOP":"grey-hoodie","SHOES":"grey-hoodie"}')).toEqual({
       TOP: "grey-hoodie",
@@ -172,6 +318,6 @@ describe("saved look storage", () => {
   });
 
   it("namespaces its storage key", () => {
-    expect(SAVED_LOOK_KEY.startsWith("edwards-world:")).toBe(true);
+    expect(SAVED_LOOK_KEY).toMatch(/^edwards-world:/);
   });
 });

@@ -192,11 +192,17 @@ export function terraces(
   }
 }
 
-/** Edward at world scale. `dark` is his silhouette, for the doorway. */
+/**
+ * Edward at world scale. `dark` is his silhouette, for the doorway.
+ *
+ * Same character as the world sprite, six pixels wide: the slate-navy coat is
+ * the one detail that has to survive the shrink, or the opening reads as
+ * somebody else walking into the house.
+ */
 export function tinyAvatar(draw: Raster, x: number, y: number, dark = false) {
   const hair = dark ? P.char : "#26221D";
   const face = dark ? P.char : P.skin;
-  const coat = dark ? P.char : "#7B7669";
+  const coat = dark ? P.char : "#3B4756";
   const legs = dark ? P.char : "#3A362F";
   const rows = [
     ".hhhh.", ".hffh.", "cccccc", "cccccc",

@@ -43,6 +43,14 @@ export const palette = {
   midHill: "#A9A188",
   treeline: "#5A664C",
   crtShell: "#C9BC9C",
+  // Edward's own colours. Kept as desaturated as the rest of the board: the
+  // "navy" outerwear is a slate that reads cool against the cream sky and
+  // dark against the grass, without introducing a saturated hue.
+  navy: "#3B4756",
+  navy2: "#2A323D",
+  shirt: "#DCD5C0",
+  hairLift: "#453D34",
+  skinShade: "#BC946E",
 } as const;
 
 export type PaletteColor = (typeof palette)[keyof typeof palette];

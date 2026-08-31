@@ -4,6 +4,7 @@ import {
   CALIBRATION_TEMPERATURE,
   createFixture,
   describeAgreement,
+  ENSEMBLE_SPLIT,
   extractFeatures,
   formatProbability,
   formatSigned,
@@ -11,7 +12,7 @@ import {
   runPipeline,
   sigmoid,
 } from "@/lib/game/afl-pipeline";
-import { PIPELINE_STAGES, TEAM_A, TEAM_B } from "@/types/afl";
+import { PIPELINE_STAGES, STAGE_NOTES, TEAM_A, TEAM_B } from "@/types/afl";
 
 describe("demonstration fixture", () => {
   it("is fully determined by its seed", () => {
@@ -143,5 +144,62 @@ describe("presentation", () => {
     for (const text of [agree, disagree]) {
       expect(text).not.toMatch(/correct|right|wrong|accura/i);
     }
+  });
+});
+
+describe("the ensemble split the MODELS panel shows", () => {
+  it("is a real weighting between the two models", () => {
+    expect(ENSEMBLE_SPLIT).toBeGreaterThan(0);
+    expect(ENSEMBLE_SPLIT).toBeLessThan(1);
+  });
+
+  it("sums to one, so the panel can print both halves from the one constant", () => {
+    expect(ENSEMBLE_SPLIT + (1 - ENSEMBLE_SPLIT)).toBeCloseTo(1, 10);
+  });
+
+  it("is the weighting the ensemble actually applies", () => {
+    // A features vector where only the form model can move: the ensemble must
+    // land exactly ENSEMBLE_SPLIT of the way from zero to the form model.
+    const models = runModels({
+      formDiff: 40,
+      recentDiff: 0,
+      restDiff: 0,
+      travelDiff: 0,
+    });
+    expect(models.recentModel).toBe(0);
+    expect(models.ensemble).toBeCloseTo(ENSEMBLE_SPLIT * models.formModel, 2);
+  });
+});
+
+describe("what the lab says each stage is doing", () => {
+  it("has a note for every stage and no note for anything else", () => {
+    expect(Object.keys(STAGE_NOTES).sort()).toEqual([...PIPELINE_STAGES].sort());
+  });
+
+  it("writes each note as a readable sentence rather than a label", () => {
+    for (const stage of PIPELINE_STAGES) {
+      const note = STAGE_NOTES[stage];
+      expect(note.length).toBeGreaterThan(30);
+      expect(note.trim()).toBe(note);
+      expect(note.endsWith(".")).toBe(true);
+    }
+  });
+
+  it("never claims accuracy, live data, or a real fixture", () => {
+    // The repository this location represents publishes no accuracy figures
+    // and explicitly says paper-trading research, so nothing the lab narrates
+    // is allowed to imply otherwise.
+    const forbidden =
+      /\baccura|\bcorrect\b|\blive\b|\breal (match|fixture|club|game)|\bbets?\b|\bbetting\b|\btips?\b|\btipping\b|\bwin rate\b|\bproven\b/i;
+    for (const stage of PIPELINE_STAGES) {
+      expect(STAGE_NOTES[stage]).not.toMatch(forbidden);
+    }
+  });
+
+  it("describes calibration as shrinking confidence, which is what the code does", () => {
+    // Guards the one note that makes a claim about behaviour: if the
+    // temperature were ever dropped below 1, this note would become a lie.
+    expect(STAGE_NOTES.CALIBRATION).toMatch(/even/i);
+    expect(CALIBRATION_TEMPERATURE).toBeGreaterThan(1);
   });
 });

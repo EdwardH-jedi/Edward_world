@@ -207,3 +207,41 @@ export function digit(
 export function scatter(seed: number) {
   return ((seed * 1_103_515_245 + 12_345) >>> 8) % 1_000;
 }
+
+/** An axis-aligned rectangle in art pixels. */
+export interface ArtRect {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+/**
+ * Wraps a raster so every rect is translated by `offset` and then clipped to
+ * `bounds`, with anything fully outside dropped rather than drawn.
+ *
+ * Two things in the house need this. A window shows a *crop* of a scene
+ * authored at another size (`sydney.ts` paints full-width sky and water bands,
+ * which would flood the room without a clip), and the wall map reveals its face
+ * by growing the rectangle its contents are allowed to occupy — one unfold,
+ * one set of coordinates, no second copy of the artwork at a smaller size.
+ */
+export function clipRaster(
+  draw: Raster,
+  bounds: ArtRect,
+  offset: { readonly x: number; readonly y: number } = { x: 0, y: 0 },
+): Raster {
+  const clipLeft = Math.round(bounds.x);
+  const clipTop = Math.round(bounds.y);
+  const clipRight = clipLeft + Math.round(bounds.width);
+  const clipBottom = clipTop + Math.round(bounds.height);
+
+  return (x, y, width, height, color) => {
+    const left = Math.max(clipLeft, Math.round(x) + offset.x);
+    const top = Math.max(clipTop, Math.round(y) + offset.y);
+    const right = Math.min(clipRight, Math.round(x) + offset.x + Math.round(width));
+    const bottom = Math.min(clipBottom, Math.round(y) + offset.y + Math.round(height));
+    if (right <= left || bottom <= top) return;
+    draw(left, top, right - left, bottom - top, color);
+  };
+}

@@ -1,6 +1,11 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  type ReactNode,
+  type RefObject,
+} from "react";
 
 interface AccessibleDialogProps {
   title: string;
@@ -12,22 +17,34 @@ interface AccessibleDialogProps {
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
-export function AccessibleDialog({
-  title,
-  onClose,
-  children,
-  className = "",
-}: AccessibleDialogProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
+interface DialogFocusOptions<T extends HTMLElement> {
+  active?: boolean;
+  containerRef: RefObject<T | null>;
+  initialFocusRef?: RefObject<HTMLElement | null>;
+  onClose: () => void;
+  returnFocusRef?: RefObject<HTMLElement | null>;
+}
 
+/** Shared focus lifecycle for dialogs that need to keep their own visual shell. */
+export function useDialogFocus<T extends HTMLElement>({
+  active = true,
+  containerRef,
+  initialFocusRef,
+  onClose,
+  returnFocusRef,
+}: DialogFocusOptions<T>) {
   useEffect(() => {
+    if (!active) return;
+
     const previousFocus = document.activeElement as HTMLElement | null;
-    const dialog = dialogRef.current;
-    dialog?.focus();
+    const returnFocus = returnFocusRef?.current ?? previousFocus;
+    const dialog = containerRef.current;
+    (initialFocusRef?.current ?? dialog)?.focus({ preventScroll: true });
 
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
+        event.stopPropagation();
         onClose();
         return;
       }
@@ -46,17 +63,15 @@ export function AccessibleDialog({
 
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
+      const current = document.activeElement;
 
-      if (
-        event.shiftKey &&
-        (document.activeElement === first || document.activeElement === dialog)
-      ) {
+      if (!dialog.contains(current)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && (current === first || current === dialog)) {
         event.preventDefault();
         last.focus();
-      } else if (
-        !event.shiftKey &&
-        (document.activeElement === last || document.activeElement === dialog)
-      ) {
+      } else if (!event.shiftKey && (current === last || current === dialog)) {
         event.preventDefault();
         first.focus();
       }
@@ -65,9 +80,19 @@ export function AccessibleDialog({
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      previousFocus?.focus();
+      returnFocus?.focus({ preventScroll: true });
     };
-  }, [onClose]);
+  }, [active, containerRef, initialFocusRef, onClose, returnFocusRef]);
+}
+
+export function AccessibleDialog({
+  title,
+  onClose,
+  children,
+  className = "",
+}: AccessibleDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus({ containerRef: dialogRef, onClose });
 
   return (
     <div className="overlay-backdrop" role="presentation">

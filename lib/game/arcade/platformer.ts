@@ -5,8 +5,9 @@ import { clamp, type MinigameInput } from "@/lib/game/minigames/types";
  *
  * The original is an HTML5 Canvas platformer where the collectibles are
  * commits, the lives are cups of coffee and the flag is a graduate offer. This
- * is a portfolio-sized slice of it: move, jump, get past two bugs and a couple
- * of gaps, reach the offer. Roughly twenty seconds if you know the way.
+ * is a portfolio-sized slice of it: move, jump, get past three bugs and three
+ * pits, take the skills off the ledges, reach the offer. About ten seconds if
+ * you already know the way, fifteen to thirty the first time through.
  *
  * Pure and deterministic — no rAF, no DOM, no canvas. Original geometry and
  * original wording throughout; nothing here is borrowed from anyone's assets.
@@ -44,8 +45,17 @@ const FALL_LIMIT = LEVEL_HEIGHT + 40;
 export const PLAYER_SIZE = { width: 26, height: 34 } as const;
 
 const GRAVITY = 1_750;
-const RUN_SPEED = 225;
-const JUMP_VELOCITY = -575;
+const RUN_SPEED = 240;
+/**
+ * Tuned against the level, not by feel.
+ *
+ * At -575 a full jump carried 148px and the widest ledge-to-ledge crossing is
+ * 130px, so the only way over a gap was to leave from its last few pixels —
+ * anyone who committed early fell in, and the platform at y=196 sat 10px above
+ * the highest a jump could reach, which left a pickup no player could take.
+ * `getJumpReach` reports both numbers and the tests hold them above the level.
+ */
+const JUMP_VELOCITY = -690;
 /**
  * Fastest the player may still be rising once the button is released.
  *
@@ -60,13 +70,38 @@ const MAX_FALL = 900;
 
 export const STARTING_COFFEES = 3;
 
-/** Solid ground. The gaps between these are the pits. */
+/**
+ * What a full-height jump is actually worth, from the constants above.
+ *
+ * Exported so the level can be checked against the movement rather than
+ * against a playtest: a gap wider than `distance`, or a platform higher than
+ * `height`, is not a difficulty choice but a dead end.
+ */
+export function getJumpReach() {
+  const airtime = (2 * -JUMP_VELOCITY) / GRAVITY;
+  return {
+    airtime,
+    height: JUMP_VELOCITY ** 2 / (2 * GRAVITY),
+    distance: airtime * RUN_SPEED,
+  };
+}
+
+/**
+ * Solid ground. The gaps between these are the pits.
+ *
+ * The ledges are placed as much for what is *not* under them as for where
+ * they are: a ledge over a gap's run-up is a ceiling on the jump that clears
+ * it, and a player who commits early head-bumps it and drops into the pit.
+ * So every ledge sits clear of a run-up, and the first one sits over the
+ * opening stretch where nothing is at stake — somewhere to try the jump
+ * before it costs anything.
+ */
 export const PLATFORMS: readonly Box[] = [
-  { x: 0, y: 300, width: 480, height: 60 },
-  { x: 400, y: 218, width: 96, height: 16 },
-  { x: 584, y: 300, width: 420, height: 60 },
+  { x: 0, y: 300, width: 500, height: 60 },
+  { x: 60, y: 210, width: 96, height: 14 },
+  { x: 584, y: 300, width: 440, height: 60 },
   { x: 760, y: 196, width: 104, height: 16 },
-  { x: 1_108, y: 300, width: 420, height: 60 },
+  { x: 1_108, y: 300, width: 440, height: 60 },
   { x: 1_250, y: 214, width: 96, height: 16 },
   { x: 1_600, y: 236, width: 88, height: 16 },
   { x: 1_632, y: 300, width: 408, height: 60 },
@@ -79,8 +114,8 @@ export const HAZARDS: readonly Hazard[] = [
     y: 274,
     width: 24,
     height: 26,
-    from: 190,
-    to: 390,
+    from: 230,
+    to: 400,
     speed: 62,
     label: "API BUG",
     closed: "BUG-014 CLOSED · CANNOT REPRODUCE",
@@ -113,7 +148,7 @@ export const HAZARDS: readonly Hazard[] = [
 
 export const PICKUPS: readonly Pickup[] = [
   { id: "c1", kind: "COMMIT", x: 300, y: 250, width: 14, height: 14, label: "COMMIT" },
-  { id: "c2", kind: "COMMIT", x: 432, y: 180, width: 14, height: 14, label: "COMMIT" },
+  { id: "c2", kind: "COMMIT", x: 96, y: 172, width: 14, height: 14, label: "COMMIT" },
   { id: "s1", kind: "SKILL", x: 792, y: 158, width: 20, height: 20, label: "PYTHON" },
   { id: "c3", kind: "COMMIT", x: 880, y: 250, width: 14, height: 14, label: "COMMIT" },
   { id: "c4", kind: "COMMIT", x: 1_282, y: 176, width: 14, height: 14, label: "COMMIT" },

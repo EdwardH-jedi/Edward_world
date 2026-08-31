@@ -16,11 +16,12 @@ import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
 import {
-  drawEdward,
   drawTomodachi,
   EDWARD_ART_SIZE,
+  edwardPoses,
   getWalkFrame,
   TOMODACHI_ART_SIZE,
+  type EdwardPose,
 } from "@/lib/pixel/characters";
 import type { Player, WorldObject } from "@/types/world";
 import type { InteractionAction } from "@/types/world";
@@ -31,6 +32,13 @@ interface MainWorldProps {
 }
 
 const MOVEMENT_KEYS = new Set(["a", "d", "arrowleft", "arrowright"]);
+
+/**
+ * How long Edward keeps his walking stance after the keys go up, before he
+ * settles and turns to face the visitor. Without it, tapping a key would
+ * strobe him between the side and front poses.
+ */
+const SETTLE_MS = 420;
 
 const TOMODACHI_ART: BuildingArt = {
   size: TOMODACHI_ART_SIZE,
@@ -57,6 +65,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     position: { ...initialPlayer.position },
   }));
   const [moving, setMoving] = useState(false);
+  const [settled, setSettled] = useState(true);
   const [tomodachiVisits, setTomodachiVisits] = useState(0);
   const [viewportWidth, setViewportWidth] = useState(0);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -105,6 +114,14 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     if (disabled) pressedKeys.current.clear();
   }, [disabled]);
 
+  // Settling is what lets him hold his walking stance for a beat before he
+  // turns to face the visitor; moving un-settles him again from the frame loop.
+  useEffect(() => {
+    if (moving) return;
+    const timer = window.setTimeout(() => setSettled(true), SETTLE_MS);
+    return () => window.clearTimeout(timer);
+  }, [moving]);
+
   useEffect(() => {
     let animationFrame = 0;
     let lastTime = performance.now();
@@ -116,6 +133,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
 
       // Same value bails out of a re-render, so this is safe every frame.
       setMoving((current) => (current === (direction !== 0) ? current : direction !== 0));
+      if (direction !== 0) setSettled((current) => (current ? false : current));
 
       if (direction !== 0) {
         setPlayer((current) => {
@@ -198,6 +216,27 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
 
   const walkFrame = getWalkFrame(player.position.x, PIXEL_UNIT, moving);
 
+  /**
+   * Which Edward to draw. Purely presentational — every branch reads state the
+   * world already keeps, so movement, collision and interaction detection are
+   * untouched. He walks in profile, turns his back to a building as it opens,
+   * raises a hand at anything he can interact with, and otherwise settles and
+   * looks out at the visitor, which is the pose that reads as the protagonist.
+   */
+  const pose: EdwardPose = moving
+    ? "walk"
+    : disabled && nearbyObject?.kind === "building"
+      ? "back"
+      : nearbyObject
+        ? "inspect"
+        : settled
+          ? "front"
+          : "walk";
+
+  // The walk cycle steps with distance; the standing poses breathe on the
+  // ambient tick. A stopped-but-not-settled Edward holds the idle frame.
+  const spriteFrame = moving ? walkFrame : pose === "walk" ? 0 : ambientFrame;
+
   return (
     <main className="world-screen" inert={disabled || undefined}>
       <div className="world-instructions">
@@ -268,6 +307,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
             data-facing={player.facing}
             data-object-id={player.id}
             data-moving={moving || undefined}
+            data-pose={pose}
             style={{
               height: player.size.height,
               left: player.position.x,
@@ -278,9 +318,9 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
             <PixelCanvas
               artHeight={EDWARD_ART_SIZE.height}
               artWidth={EDWARD_ART_SIZE.width}
-              draw={drawEdward}
+              draw={edwardPoses[pose]}
               flipX={player.facing === "left"}
-              frame={walkFrame}
+              frame={spriteFrame}
               unit={PIXEL_UNIT}
             />
           </div>

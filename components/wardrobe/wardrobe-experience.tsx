@@ -6,73 +6,95 @@ import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { garments, getGarment } from "@/data/wardrobe";
 import {
   archiveReducer,
-  canAdvance,
+  archivedInSlot,
   canSaveLook,
+  completedStages,
   countWorn,
   createArchiveState,
+  currentStage,
   isArchived,
+  isComplete,
+  isWorn,
   MINIMUM_LOOK_SLOTS,
 } from "@/lib/game/wardrobe-archive";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
-import { animateElement, motionPresets } from "@/lib/motion/animate-element";
-import { edwardRoutines, PLAYER_ART_SIZE } from "@/lib/pixel/sportsgang";
+import {
+  confirmSave,
+  flyBetween,
+  landIn,
+  settleOutfit,
+  type WardrobeFlight,
+} from "@/lib/motion/wardrobe-choreography";
+import {
+  createGarmentRoutine,
+  createHangingRoutine,
+  createMannequinRoutine,
+  GARMENT_ART_SIZE,
+  HANGER_ART_SIZE,
+  MANNEQUIN_ART_SIZE,
+  outfitColours,
+} from "@/lib/pixel/wardrobe";
 import { clearSavedLook, writeSavedLook } from "@/lib/storage/saved-look";
 import { useSavedLook } from "@/lib/storage/use-saved-look";
-import { OUTFIT_SLOTS, type WardrobeStep } from "@/types/wardrobe";
+import {
+  OUTFIT_SLOTS,
+  SLOT_LABEL,
+  STAGE_LABEL,
+  WARDROBE_STAGES,
+  type Garment,
+  type Outfit,
+  type OutfitSlot,
+  type WardrobeStage,
+} from "@/types/wardrobe";
 
 interface WardrobeExperienceProps {
   onExit: () => void;
 }
 
-/** The product's own loop. Scene copy, not project data. */
-const PRODUCT_FLOW = ["CAPTURE", "ARCHIVE", "ORGANISE", "COMPOSE", "SAVE LOOK"] as const;
+/** The product's own loop, spelled as the summary panel spells it. */
+const PRODUCT_FLOW = WARDROBE_STAGES.map((stage) => STAGE_LABEL[stage]);
 
-const STEP_COPY: Readonly<Record<WardrobeStep, { title: string; body: string }>> = {
-  CAPTURE: {
-    title: "CAPTURE",
-    body: "Photograph what you own. Pick garments off the rail to bring them into the archive.",
-  },
-  ARCHIVE: {
-    title: "ARCHIVE",
-    body: "Each garment is stored with what you can read off it — no guessing, no scoring.",
-  },
-  ORGANISE: {
-    title: "ORGANISE",
-    body: "The archive sorts itself by what a garment is, so composing an outfit is a choice between real things.",
-  },
-  COMPOSE: {
-    title: "COMPOSE",
-    body: "Dress the mannequin. One garment per layer, taken from what you have actually archived.",
-  },
-  SAVE: {
-    title: "SAVE LOOK",
-    body: "Keep the look. It is written to this browser and stays on this device.",
-  },
-  COMPLETE: { title: "SAVED", body: "" },
+/**
+ * One short line per stage: what to do next, never what the product is.
+ *
+ * The room is meant to be legible without them — every bay is labelled and
+ * every control says what it does — so these stay imperative and stay one
+ * line, and none of them explains an idea the visitor could not just do.
+ */
+const STAGE_PROMPT: Readonly<Record<WardrobeStage, string>> = {
+  CAPTURE: "Take a garment off the rail.",
+  ARCHIVE: "Add it to the archive.",
+  ORGANISE: "Archive another kind of garment.",
+  COMPOSE: "Pick from the shelves to dress the mannequin.",
+  SAVE: "Two layers make a look. Save it.",
 };
 
-const STEP_ANNOUNCEMENTS: Readonly<Record<WardrobeStep, string>> = {
-  CAPTURE: "Capture garments into the archive",
-  ARCHIVE: "Archived garment details",
-  ORGANISE: "The archive, sorted by layer",
-  COMPOSE: "Compose an outfit on the mannequin",
-  SAVE: "Save the look to this browser",
-  COMPLETE: "Wardrobe project summary",
-};
+const ART_UNIT = { hanging: 3, table: 6, shelf: 3, mannequin: 7, frame: 4 } as const;
 
 export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
-  const [state, dispatch] = useReducer(archiveReducer, null, () =>
-    createArchiveState(),
-  );
+  const [state, dispatch] = useReducer(archiveReducer, undefined, createArchiveState);
   const [storageWorked, setStorageWorked] = useState(true);
-  // Read from storage rather than mirrored into state, so forgetting a look
-  // updates the room immediately and no effect has to write state on mount.
-  const previousLook = useSavedLook();
+  const [message, setMessage] = useState("Wardrobe. Take a garment off the rail.");
+
+  // Read from storage rather than mirrored into state, so a look kept on an
+  // earlier visit hangs in the frame without counting as progress through the
+  // loop — and forgetting it updates the room immediately.
+  const savedLook = useSavedLook();
 
   const rootRef = useRef<HTMLElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const continueRef = useRef<HTMLButtonElement>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const figureRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<HTMLDivElement>(null);
   const summaryRef = useRef<HTMLAnchorElement>(null);
+  const railRefs = useRef(new Map<string, HTMLElement>());
+  const shelfRefs = useRef(new Map<OutfitSlot, HTMLElement>());
+  const tileRefs = useRef(new Map<string, HTMLElement>());
+  const activeFlightsRef = useRef(new Set<WardrobeFlight>());
+
+  const complete = isComplete(state);
+  const stage = currentStage(state);
+  const done = completedStages(state);
+  const selected = state.selected ? getGarment(state.selected) : undefined;
+  const worn = countWorn(state.outfit);
 
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
@@ -91,83 +113,116 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
   }, [onExit]);
 
   useEffect(() => {
-    if (state.step === "COMPLETE") summaryRef.current?.focus();
-    else continueRef.current?.focus();
-  }, [state.step]);
+    if (complete) summaryRef.current?.focus();
+  }, [complete]);
 
-  useEffect(() => {
-    if (!panelRef.current) return;
+  const startFlight = useCallback(
+    (
+      source: HTMLElement | null,
+      target: HTMLElement | null,
+      onSettled?: () => void,
+    ) => {
+      let flight: WardrobeFlight | null = null;
+      flight = flyBetween(source, target, {
+        onSettled: () => {
+          if (flight) activeFlightsRef.current.delete(flight);
+          onSettled?.();
+        },
+      });
+      if (flight) activeFlightsRef.current.add(flight);
+    },
+    [],
+  );
 
-    const animation = animateElement(panelRef.current, motionPresets.screenSwap, {
-      duration: 260,
-    });
-    return () => {
-      animation.revert();
-    };
-  }, [state.step]);
+  useEffect(
+    () => () => {
+      for (const flight of activeFlightsRef.current) flight.cancel();
+      activeFlightsRef.current.clear();
+    },
+    [],
+  );
 
-  const inspected = state.inspecting ? getGarment(state.inspecting) : undefined;
-  const worn = countWorn(state.outfit);
+  const selectGarment = useCallback((garment: Garment) => {
+    dispatch({ type: "SELECT", garmentId: garment.id });
+    setMessage(`${garment.name} is on the work table.`);
+    startFlight(railRefs.current.get(garment.id) ?? null, tableRef.current);
+    landIn(tableRef.current);
+  }, [startFlight]);
+
+  const archiveGarment = useCallback((garment: Garment) => {
+    dispatch({ type: "ARCHIVE", garmentId: garment.id });
+    setMessage(`${garment.name} archived under ${SLOT_LABEL[garment.slot]}.`);
+    startFlight(
+      tableRef.current,
+      shelfRefs.current.get(garment.slot) ?? null,
+      () => landIn(tileRefs.current.get(garment.id) ?? null),
+    );
+  }, [startFlight]);
+
+  const wearGarment = useCallback((garment: Garment) => {
+    dispatch({ type: "WEAR", garmentId: garment.id });
+    setMessage(`${garment.name} is on the mannequin.`);
+    startFlight(
+      tileRefs.current.get(garment.id) ?? null,
+      figureRef.current,
+      () => settleOutfit(figureRef.current),
+    );
+  }, [startFlight]);
+
+  const removeLayer = useCallback((slot: OutfitSlot) => {
+    dispatch({ type: "REMOVE", slot });
+    setMessage(`${SLOT_LABEL[slot]} taken off the mannequin.`);
+    settleOutfit(figureRef.current);
+  }, []);
 
   const saveLook = useCallback(() => {
     if (!canSaveLook(state)) return;
-    setStorageWorked(writeSavedLook(state.outfit));
+    // Storage and state move first; the flight is only how it is shown.
+    const kept = writeSavedLook(state.outfit);
+    setStorageWorked(kept);
     dispatch({ type: "SAVE" });
-  }, [state]);
+    setMessage(
+      kept
+        ? "Look saved to this browser."
+        : "Storage is unavailable, so the look was not kept.",
+    );
+    startFlight(figureRef.current, frameRef.current, () =>
+      confirmSave(frameRef.current),
+    );
+  }, [startFlight, state]);
 
-  const restart = useCallback(() => {
-    dispatch({ type: "RESET", savedOutfit: null });
+  const startOver = useCallback(() => {
+    dispatch({ type: "RESET" });
+    setMessage("Wardrobe. Take a garment off the rail.");
   }, []);
 
   const forgetLook = useCallback(() => {
     clearSavedLook();
-    dispatch({ type: "CLEAR_SAVED" });
+    setMessage("Saved look forgotten. Nothing is kept on this device.");
   }, []);
 
-  const bySlot = useMemo(
-    () =>
-      OUTFIT_SLOTS.map((slot) => ({
-        slot,
-        items: state.archived
-          .map((id) => getGarment(id))
-          .filter((garment) => garment?.slot === slot),
-      })),
-    [state.archived],
+  const mannequin = useMemo(
+    () => createMannequinRoutine(outfitColours(state.outfit, getGarment)),
+    [state.outfit],
   );
 
-  const showRail = state.step === "CAPTURE";
-  const showArchive = ["ARCHIVE", "ORGANISE", "COMPOSE", "SAVE"].includes(state.step);
-  const showMannequin = ["COMPOSE", "SAVE", "COMPLETE"].includes(state.step);
-  const copy = STEP_COPY[state.step];
+  const framedLook = useMemo(
+    () => createMannequinRoutine(outfitColours(savedLook ?? {}, getGarment)),
+    [savedLook],
+  );
 
   return (
     <section
       aria-label="Wardrobe"
       className="loc-experience wd-room"
-      data-step={state.step}
+      data-stage={stage}
       ref={rootRef}
       tabIndex={-1}
     >
       <div className="wd-interior" aria-hidden="true">
-        <div className="wd-wall">
-          <div className="wd-window" />
-          <div className="wd-mirror" />
-          <div className="wd-boxes">
-            <span />
-            <span />
-            <span />
-          </div>
-        </div>
+        <div className="wd-wall" />
+        <div className="wd-skirting" />
         <div className="wd-floor" />
-        <div className="wd-edward">
-          <PixelCanvas
-            artHeight={PLAYER_ART_SIZE.height}
-            artWidth={PLAYER_ART_SIZE.width}
-            draw={edwardRoutines.idle}
-            frame={0}
-            unit={PIXEL_UNIT}
-          />
-        </div>
       </div>
 
       <button className="loc-exit" onClick={onExit} type="button">
@@ -175,193 +230,236 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
       </button>
 
       <p aria-live="polite" className="loc-announcer">
-        {STEP_ANNOUNCEMENTS[state.step]}
+        {message}
       </p>
 
-      <div className="wd-stage">
-        {showRail ? (
-          <div className="wd-rail">
-            <div className="wd-rail__bar" />
-            <ul className="wd-rail__items">
-              {garments.map((garment) => (
-                <li key={garment.id}>
-                  <button
-                    className="wd-garment"
-                    data-archived={isArchived(state, garment.id) || undefined}
-                    onClick={() =>
-                      dispatch({ type: "CAPTURE", garmentId: garment.id })
-                    }
-                    type="button"
-                  >
-                    <span
-                      className="wd-garment__swatch"
-                      data-slot={garment.slot}
-                      style={{ background: garment.colour }}
-                    />
-                    <span className="wd-garment__name">{garment.name}</span>
-                    <span className="wd-garment__state">
-                      {isArchived(state, garment.id) ? "ARCHIVED" : "CAPTURE"}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
+      <SavedLookFrame
+        forget={forgetLook}
+        frameRef={frameRef}
+        look={savedLook}
+        routine={framedLook}
+      />
 
-        {showArchive ? (
-          <div className="wd-archive">
-            {bySlot.map(({ slot, items }) => (
-              <div className="wd-archive__group" key={slot}>
-                <p className="wd-archive__slot">{slot}</p>
-                {items.length === 0 ? (
-                  <p className="wd-archive__empty">NOTHING ARCHIVED</p>
+      {complete ? null : (
+        <div className="wd-studio">
+          <ol className="wd-flow">
+            {WARDROBE_STAGES.map((entry) => (
+              <li
+                data-done={done[entry] || undefined}
+                data-now={entry === stage || undefined}
+                key={entry}
+              >
+                {STAGE_LABEL[entry]}
+              </li>
+            ))}
+          </ol>
+          <p className="wd-prompt">{STAGE_PROMPT[stage]}</p>
+
+          <div className="wd-bays">
+            <section aria-label="Clothing rail" className="wd-bay wd-bay--rail">
+              <p className="wd-bay__name">
+                RAIL<span>{garments.length} GARMENTS</span>
+              </p>
+              <div className="wd-rail__bar" aria-hidden="true" />
+              <ul className="wd-rail__items">
+                {garments.map((garment) => (
+                  <li key={garment.id}>
+                    <button
+                      className="wd-hanging"
+                      data-archived={isArchived(state, garment.id) || undefined}
+                      data-selected={state.selected === garment.id || undefined}
+                      onClick={() => selectGarment(garment)}
+                      ref={(node) => {
+                        if (node) railRefs.current.set(garment.id, node);
+                        else railRefs.current.delete(garment.id);
+                      }}
+                      type="button"
+                    >
+                      <HangingArt garment={garment} />
+                      <span className="wd-hanging__name">{garment.name}</span>
+                      {isArchived(state, garment.id) ? (
+                        <span className="wd-hanging__tag">ARCHIVED</span>
+                      ) : null}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section aria-label="Work table" className="wd-bay wd-bay--table">
+              <p className="wd-bay__name">WORK TABLE</p>
+              <div className="wd-table" ref={tableRef}>
+                {selected ? (
+                  <>
+                    <div className="wd-table__art">
+                      <GarmentArt garment={selected} unit={ART_UNIT.table} />
+                    </div>
+                    <div className="wd-table__read">
+                      <p className="wd-table__name">{selected.name}</p>
+                      <dl className="wd-meta">
+                        <div>
+                          <dt>LAYER</dt>
+                          <dd>{SLOT_LABEL[selected.slot]}</dd>
+                        </div>
+                        <div>
+                          <dt>COLOUR</dt>
+                          <dd>{selected.colourName}</dd>
+                        </div>
+                        <div>
+                          <dt>FABRIC</dt>
+                          <dd>{selected.fabric}</dd>
+                        </div>
+                        <div>
+                          <dt>SEASON</dt>
+                          <dd>{selected.season}</dd>
+                        </div>
+                      </dl>
+                      <p className="wd-table__note">
+                        Read off the garment. Nothing guessed, nothing scored.
+                      </p>
+                    </div>
+                  </>
                 ) : (
-                  <ul>
-                    {items.map((garment) =>
-                      garment ? (
-                        <li key={garment.id}>
-                          <button
-                            className="wd-garment wd-garment--compact"
-                            data-worn={
-                              state.outfit[garment.slot] === garment.id || undefined
-                            }
-                            onClick={() =>
-                              dispatch(
-                                state.step === "COMPOSE" || state.step === "SAVE"
-                                  ? { type: "WEAR", garmentId: garment.id }
-                                  : { type: "INSPECT", garmentId: garment.id },
-                              )
-                            }
-                            type="button"
-                          >
-                            <span
-                              className="wd-garment__swatch"
-                              style={{ background: garment.colour }}
-                            />
-                            <span className="wd-garment__name">{garment.name}</span>
-                          </button>
-                        </li>
-                      ) : null,
-                    )}
-                  </ul>
+                  <p className="wd-empty">
+                    Empty. Pick something off the rail to look at it.
+                  </p>
                 )}
               </div>
-            ))}
-          </div>
-        ) : null}
+              {selected ? (
+                <TableAction
+                  archived={isArchived(state, selected.id)}
+                  garment={selected}
+                  onArchive={archiveGarment}
+                  onWear={wearGarment}
+                  worn={isWorn(state, selected.id)}
+                />
+              ) : null}
+            </section>
 
-        {showMannequin ? (
-          <div className="wd-mannequin">
-            <p className="wd-mannequin__title">THE LOOK</p>
-            <div className="wd-mannequin__figure">
-              {OUTFIT_SLOTS.map((slot) => {
-                const garment = state.outfit[slot]
-                  ? getGarment(state.outfit[slot] as string)
-                  : undefined;
-                return (
-                  <div className="wd-slot" data-slot={slot} key={slot}>
-                    <span
-                      className="wd-slot__fill"
-                      style={garment ? { background: garment.colour } : undefined}
-                    />
-                    <span className="wd-slot__label">
-                      {garment ? garment.name : slot}
-                    </span>
-                    {garment && state.step !== "COMPLETE" ? (
-                      <button
-                        className="wd-slot__remove"
-                        onClick={() => dispatch({ type: "REMOVE", slot })}
-                        type="button"
-                      >
-                        <span aria-hidden="true">×</span>
-                        <span className="wd-visually-hidden">
-                          Remove {garment.name}
-                        </span>
-                      </button>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : null}
-      </div>
-
-      {state.step !== "COMPLETE" ? (
-        <div className="wd-panel" ref={panelRef}>
-          <div className="wd-panel__head">
-            <p className="wd-panel__step">{copy.title}</p>
-            <ol className="wd-panel__flow">
-              {PRODUCT_FLOW.map((step) => (
-                <li data-done={PRODUCT_FLOW.indexOf(step) < currentIndex(state.step) || undefined} key={step}>
-                  {step}
-                </li>
-              ))}
-            </ol>
-          </div>
-          <p className="wd-panel__body">{copy.body}</p>
-
-          {inspected && state.step !== "CAPTURE" ? (
-            <dl className="wd-meta">
-              <div><dt>TYPE</dt><dd>{inspected.slot}</dd></div>
-              <div><dt>COLOUR</dt><dd>{inspected.colourName}</dd></div>
-              <div><dt>FABRIC</dt><dd>{inspected.fabric}</dd></div>
-              <div><dt>SEASON</dt><dd>{inspected.season}</dd></div>
-            </dl>
-          ) : null}
-
-          {state.step === "CAPTURE" ? (
-            <p className="wd-panel__count">
-              {state.archived.length} ARCHIVED · {garments.length} ON THE RAIL
-            </p>
-          ) : null}
-
-          {previousLook && state.step === "CAPTURE" ? (
-            <div className="wd-recall">
-              <p>
-                YOUR SAVED LOOK IS STILL HERE · STORED IN THIS BROWSER · NOTHING
-                LEFT THIS DEVICE
+            <section aria-label="Archive" className="wd-bay wd-bay--archive">
+              <p className="wd-bay__name">
+                ARCHIVE<span>{state.archived.length} KEPT</span>
               </p>
-              <button className="loc-button loc-button--quiet" onClick={forgetLook} type="button">
-                FORGET IT
-              </button>
-            </div>
-          ) : null}
+              <div className="wd-shelves">
+                {OUTFIT_SLOTS.map((slot) => {
+                  const held = archivedInSlot(state, slot);
+                  return (
+                    <div
+                      className="wd-shelf"
+                      key={slot}
+                      ref={(node) => {
+                        if (node) shelfRefs.current.set(slot, node);
+                        else shelfRefs.current.delete(slot);
+                      }}
+                    >
+                      <p className="wd-shelf__label">{SLOT_LABEL[slot]}</p>
+                      {held.length === 0 ? (
+                        <p className="wd-shelf__empty">EMPTY</p>
+                      ) : (
+                        <ul>
+                          {held.map((garment) => (
+                            <li key={garment.id}>
+                              <button
+                                className="wd-tile"
+                                data-worn={isWorn(state, garment.id) || undefined}
+                                onClick={() => wearGarment(garment)}
+                                ref={(node) => {
+                                  if (node) tileRefs.current.set(garment.id, node);
+                                  else tileRefs.current.delete(garment.id);
+                                }}
+                                type="button"
+                              >
+                                <GarmentArt garment={garment} unit={ART_UNIT.shelf} />
+                                <span>{garment.name}</span>
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
 
-          <div className="wd-panel__actions">
-            {state.step === "SAVE" ? (
+            <section aria-label="Mannequin" className="wd-bay wd-bay--studio">
+              <p className="wd-bay__name">
+                MANNEQUIN<span>
+                  {worn} / {OUTFIT_SLOTS.length} LAYERS
+                </span>
+              </p>
+              <div className="wd-stand">
+                <div className="wd-mirror" aria-hidden="true" />
+                <div className="wd-figure" ref={figureRef}>
+                  <PixelCanvas
+                    artHeight={MANNEQUIN_ART_SIZE.height}
+                    artWidth={MANNEQUIN_ART_SIZE.width}
+                    draw={mannequin}
+                    frame={0}
+                    unit={ART_UNIT.mannequin}
+                  />
+                </div>
+              </div>
+              <ul className="wd-worn">
+                {OUTFIT_SLOTS.map((slot) => {
+                  const garment = state.outfit[slot]
+                    ? getGarment(state.outfit[slot] as string)
+                    : undefined;
+                  return (
+                    <li data-filled={garment ? true : undefined} key={slot}>
+                      <span className="wd-worn__slot">{SLOT_LABEL[slot]}</span>
+                      <span className="wd-worn__name">
+                        {garment ? garment.name : "—"}
+                      </span>
+                      {garment ? (
+                        <button
+                          className="wd-worn__off"
+                          onClick={() => removeLayer(slot)}
+                          type="button"
+                        >
+                          <span aria-hidden="true">×</span>
+                          <span className="wd-visually-hidden">
+                            Take off {garment.name}
+                          </span>
+                        </button>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
               <button
-                className="loc-button loc-button--primary"
+                className="loc-button loc-button--primary wd-save"
                 disabled={!canSaveLook(state)}
                 onClick={saveLook}
-                ref={continueRef}
                 type="button"
               >
                 SAVE LOOK
               </button>
-            ) : (
-              <button
-                className="loc-button loc-button--primary"
-                disabled={!canAdvance(state)}
-                onClick={() => dispatch({ type: "ADVANCE" })}
-                ref={continueRef}
-                type="button"
-              >
-                CONTINUE
-              </button>
-            )}
-            <span className="wd-panel__hint">
-              {state.step === "COMPOSE" || state.step === "SAVE"
-                ? `${worn} OF ${OUTFIT_SLOTS.length} LAYERS · ${MINIMUM_LOOK_SLOTS} NEEDED`
-                : "PICK A GARMENT TO CONTINUE"}
-            </span>
+              <p className="wd-save__hint">
+                {canSaveLook(state)
+                  ? "Kept in this browser only."
+                  : `${MINIMUM_LOOK_SLOTS} layers minimum.`}
+              </p>
+            </section>
           </div>
         </div>
-      ) : null}
+      )}
 
-      {state.step === "COMPLETE" ? (
+      {complete ? (
         <>
+          {/* The look stays standing in the room it was made in. */}
+          <div className="wd-final" aria-hidden="true">
+            <div className="wd-mirror" />
+            <div className="wd-figure">
+              <PixelCanvas
+                artHeight={MANNEQUIN_ART_SIZE.height}
+                artWidth={MANNEQUIN_ART_SIZE.width}
+                draw={mannequin}
+                frame={0}
+                unit={ART_UNIT.mannequin}
+              />
+            </div>
+          </div>
           <p className="loc-caption">
             {storageWorked
               ? "LOOK SAVED TO THIS BROWSER"
@@ -371,26 +469,140 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
             firstActionRef={summaryRef}
             flow={PRODUCT_FLOW}
             onExit={onExit}
-            onReplay={restart}
+            onReplay={startOver}
             projectId="wardrobe"
-            role="LOCAL-FIRST ARCHIVE"
             replayLabel="START OVER"
+            role="LOCAL-FIRST ARCHIVE"
             wordmark="WARDROBE"
-          />
+          >
+            <p className="wd-summary__line">
+              Captured {state.archived.length} garments, composed {worn} layers,
+              kept the look on this device.
+            </p>
+          </ProjectSummary>
         </>
       ) : null}
     </section>
   );
 }
 
-function currentIndex(step: WardrobeStep) {
-  const order: readonly WardrobeStep[] = [
-    "CAPTURE",
-    "ARCHIVE",
-    "ORGANISE",
-    "COMPOSE",
-    "SAVE",
-    "COMPLETE",
-  ];
-  return order.indexOf(step);
+/** The rail shows a garment the way a rail does: on a hanger. */
+function HangingArt({ garment }: { garment: Garment }) {
+  const routine = useMemo(
+    () => createHangingRoutine(garment.slot, garment.colour),
+    [garment.colour, garment.slot],
+  );
+  return (
+    <PixelCanvas
+      artHeight={HANGER_ART_SIZE.height}
+      artWidth={HANGER_ART_SIZE.width}
+      draw={routine}
+      frame={0}
+      unit={ART_UNIT.hanging}
+    />
+  );
+}
+
+function GarmentArt({ garment, unit }: { garment: Garment; unit: number }) {
+  const routine = useMemo(
+    () => createGarmentRoutine(garment.slot, garment.colour),
+    [garment.colour, garment.slot],
+  );
+  return (
+    <PixelCanvas
+      artHeight={GARMENT_ART_SIZE.height}
+      artWidth={GARMENT_ART_SIZE.width}
+      draw={routine}
+      frame={0}
+      unit={unit}
+    />
+  );
+}
+
+interface TableActionProps {
+  garment: Garment;
+  archived: boolean;
+  worn: boolean;
+  onArchive: (garment: Garment) => void;
+  onWear: (garment: Garment) => void;
+}
+
+/**
+ * The table's single control.
+ *
+ * A garment that is not in the archive can only be archived, which is the one
+ * rule of the product this room most needs to make felt.
+ */
+function TableAction({
+  garment,
+  archived,
+  worn,
+  onArchive,
+  onWear,
+}: TableActionProps) {
+  if (!archived) {
+    return (
+      <button
+        className="loc-button loc-button--primary wd-table__action"
+        onClick={() => onArchive(garment)}
+        type="button"
+      >
+        ADD TO ARCHIVE
+      </button>
+    );
+  }
+  if (worn) {
+    return <p className="wd-table__state">ON THE MANNEQUIN</p>;
+  }
+  return (
+    <button
+      className="loc-button wd-table__action"
+      onClick={() => onWear(garment)}
+      type="button"
+    >
+      PUT ON MANNEQUIN
+    </button>
+  );
+}
+
+interface SavedLookFrameProps {
+  look: Outfit | null;
+  routine: ReturnType<typeof createMannequinRoutine>;
+  frameRef: React.RefObject<HTMLDivElement | null>;
+  forget: () => void;
+}
+
+/**
+ * The frame on the wall: where a saved look lives between visits.
+ *
+ * It is drawn empty before anything is saved on purpose — the destination has
+ * to exist before the visitor saves, or saving has nowhere to mean anything.
+ */
+function SavedLookFrame({ look, routine, frameRef, forget }: SavedLookFrameProps) {
+  return (
+    <div className="wd-saved">
+      <p className="wd-saved__name">SAVED LOOK</p>
+      <div className="wd-saved__frame" data-filled={look ? true : undefined} ref={frameRef}>
+        {look ? (
+          <PixelCanvas
+            artHeight={MANNEQUIN_ART_SIZE.height}
+            artWidth={MANNEQUIN_ART_SIZE.width}
+            draw={routine}
+            frame={0}
+            unit={ART_UNIT.frame}
+          />
+        ) : (
+          <p className="wd-saved__empty">NOTHING SAVED</p>
+        )}
+      </div>
+      <p className="wd-saved__note">
+        {look ? "ON THIS DEVICE ONLY" : "STAYS IN THIS BROWSER"}
+      </p>
+      {look ? (
+        <button className="loc-button loc-button--quiet wd-saved__forget" onClick={forget} type="button">
+          FORGET IT
+        </button>
+      ) : null}
+    </div>
+  );
 }
