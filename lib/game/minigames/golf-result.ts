@@ -27,10 +27,20 @@ export const GUEST_DISPLAY_NAME = "GUEST";
  * Identifies the rules a score was achieved under.
  *
  * A board that mixes runs from different rule sets is not a leaderboard, so
- * this travels with every run and B bumps it whenever the hole plays
+ * this travels with every run and is bumped whenever the hole plays
  * differently.
+ *
+ * `-2` is the one hole: 300 m, par 4, three clubs, stroke-and-distance out of
+ * bounds and an eight-shot cap. `-1` named the single drive that preceded it,
+ * which was scored on carry distance and ranked the other way up. They are not
+ * the same game and their scores must never share a board, which is why the
+ * public board keys on this string — see `lib/sportsgang-board/`.
+ *
+ * Bumped by D at integration on B's request (REQUESTS.md B-4): the constant
+ * lives in this frozen file, so B could not move it itself and the string was
+ * left describing rules it no longer described.
  */
-export const GOLF_RULES_VERSION = "golf-1h-2026-09-1" as const;
+export const GOLF_RULES_VERSION = "golf-1h-2026-09-2" as const;
 
 /** How a run ended. An abandoned run is still a fact worth recording. */
 export type GolfRunStatus = "completed" | "abandoned";
@@ -45,7 +55,15 @@ export interface GolfShotV1 {
   readonly index: number;
   /** Simulated milliseconds from the start of the run to this shot. */
   readonly atSimulationMs: number;
-  /** Carry of this shot in metres, as the simulation computed it. */
+  /**
+   * How far this shot finished from where it was played, in metres.
+   *
+   * **Carry plus roll**, not carry alone: it is the number the HUD shows as
+   * `LAST SHOT`, and the one a player would recognise. The name predates the
+   * hole and is kept only because changing it would change the wire format for
+   * no gain; the comment is the correction (REQUESTS.md B-4). A true carry with
+   * roll excluded is not recorded anywhere.
+   */
   readonly carryM: number;
   /** Penalty strokes this shot incurred, if any. */
   readonly penalty: number;

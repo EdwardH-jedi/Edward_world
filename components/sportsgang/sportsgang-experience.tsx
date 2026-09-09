@@ -300,11 +300,20 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
   const Minigame = MINIGAMES[activeSport];
   const opponent = SPORT_OPPONENTS[activeSport];
   /**
-   * Tennis is played rather than watched, so while its match is running the
-   * mini-game owns both figures on the court and the venue's static pair steps
-   * out of the way. Every other stage — and every other sport — is unchanged.
+   * Sports that draw their own playing surface, so the venue's static dressing
+   * steps out of the way while they are running.
+   *
+   * Tennis was always here: it is played rather than watched, so the mini-game
+   * owns both figures on the court. Golf joined at integration on B's request
+   * (REQUESTS.md B-1) — the hole draws its own flag and its own player, so
+   * leaving the venue's dressing up put a second motionless flag beside the
+   * real one and stood Edward and PLAYER 02 on the fairway while Edward was
+   * also playing the hole.
+   *
+   * Every other stage, and every other sport, is unchanged.
    */
-  const playingMatch = stage === "PLAY" && activeSport === "TENNIS";
+  const SURFACE_OWNED_BY_GAME: readonly SportsgangSport[] = ["TENNIS", "GOLF"];
+  const playingMatch = stage === "PLAY" && SURFACE_OWNED_BY_GAME.includes(activeSport);
   const showCourtPlayers =
     ["MEET", "PLAY", "RESULT", "RANK", "COMPLETE"].includes(stage) && !playingMatch;
 
@@ -357,6 +366,7 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
         opponentFrame={frames.opponent}
         opponentRef={opponentRef}
         showPlayers={showCourtPlayers}
+        surfaceOwnedByGame={playingMatch}
         sport={activeSport}
       />
 

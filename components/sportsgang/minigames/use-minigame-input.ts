@@ -175,7 +175,18 @@ export function useMinigameInput(
       "data-minigame-control": channel,
       onPointerDown: (event: React.PointerEvent) => {
         event.preventDefault();
-        event.currentTarget.setPointerCapture?.(event.pointerId);
+        // Capture is best-effort. It throws `NotFoundError` whenever the id is
+        // not currently an active pointer — a race between a release and a
+        // re-press, or a synthetic event from a test harness — and because it
+        // runs before the press is recorded, an uncaught throw would leave the
+        // control looking dead. Registering the press matters; capturing does
+        // not (REQUESTS.md C-3).
+        try {
+          event.currentTarget.setPointerCapture?.(event.pointerId);
+        } catch {
+          // Without capture the release still arrives via pointerup or
+          // pointercancel, both of which are already bound below.
+        }
         tracker.press(channel, "pointer");
       },
       onPointerUp: (event: React.PointerEvent) => {

@@ -19,6 +19,17 @@ interface SportVenueProps {
   edwardFrame: PlayerFrame;
   opponentFrame: PlayerFrame;
   showPlayers: boolean;
+  /**
+   * The running mini-game is drawing the playing surface itself, so the
+   * venue's own dressing for that sport steps aside.
+   *
+   * Optional and defaulted, so every existing call site is unchanged. Added at
+   * integration on B's request (REQUESTS.md B-1): golf's hole draws its own
+   * flag, and the venue's flag beside it read as a second, motionless one. The
+   * venue's dressing is still right for ENTER, MEET, RESULT and RANK, when no
+   * hole is drawn — it is only wrong during PLAY.
+   */
+  surfaceOwnedByGame?: boolean;
 }
 
 /**
@@ -41,6 +52,7 @@ export function SportVenue({
   edwardFrame,
   opponentFrame,
   showPlayers,
+  surfaceOwnedByGame = false,
 }: SportVenueProps) {
   // Running and tennis both draw their own moving figures, so the static pair
   // steps aside for them; `showPlayers` is what decides *when* for tennis,
@@ -76,7 +88,7 @@ export function SportVenue({
           </>
         ) : null}
 
-        {sport === "GOLF" ? (
+        {sport === "GOLF" && !surfaceOwnedByGame ? (
           <>
             <div className="sg-court__tee" />
             <div className="sg-court__green" />
@@ -97,7 +109,7 @@ export function SportVenue({
         </div>
       ) : null}
 
-      {sport === "GOLF" ? (
+      {sport === "GOLF" && !surfaceOwnedByGame ? (
         <div className="sg-court__flag">
           <div className="sg-court__flag-cloth" />
         </div>
