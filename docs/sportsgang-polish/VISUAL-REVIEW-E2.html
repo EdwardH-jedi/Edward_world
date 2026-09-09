@@ -33,6 +33,18 @@
     <tr><th>GLOBAL_LEADERBOARD</th><td><code>BLOCKED_CONFIG</code> — <code>vercel env ls production</code> reports no environment variables at all</td></tr>
   </table>
     <section>
+      <h2>Tennis — ALEX's contact, frame by frame (stepped reconstruction)</h2>
+      <p class=note>The defect this pass found (E2-1). Driven on a virtual clock one 16.7&nbsp;ms step at a time, so the frames either side of contact could be captured. The ball reverses on the contact frame with the spark at the strings &mdash; FOREHAND 63.579 &rarr; <strong>64.002</strong> &rarr; 63.271&nbsp;%, SMASH 62.266 &rarr; <strong>62.317</strong> &rarr; 61.489&nbsp;%. <strong>A stepped reconstruction, not a real-time recording.</strong></p>
+      <div class="grid">
+      <figure><a href="evidence-e2/tennis-alex1-after.png"><img src="evidence-e2/tennis-alex1-after.png" alt="tennis-alex1-after.png" loading="lazy"></a><figcaption>tennis-alex1-after.png</figcaption></figure>
+      <figure><a href="evidence-e2/tennis-alex1-before.png"><img src="evidence-e2/tennis-alex1-before.png" alt="tennis-alex1-before.png" loading="lazy"></a><figcaption>tennis-alex1-before.png</figcaption></figure>
+      <figure><a href="evidence-e2/tennis-alex1-contact.png"><img src="evidence-e2/tennis-alex1-contact.png" alt="tennis-alex1-contact.png" loading="lazy"></a><figcaption>tennis-alex1-contact.png</figcaption></figure>
+      <figure><a href="evidence-e2/tennis-alex2-after.png"><img src="evidence-e2/tennis-alex2-after.png" alt="tennis-alex2-after.png" loading="lazy"></a><figcaption>tennis-alex2-after.png</figcaption></figure>
+      <figure><a href="evidence-e2/tennis-alex2-before.png"><img src="evidence-e2/tennis-alex2-before.png" alt="tennis-alex2-before.png" loading="lazy"></a><figcaption>tennis-alex2-before.png</figcaption></figure>
+      <figure><a href="evidence-e2/tennis-alex2-contact.png"><img src="evidence-e2/tennis-alex2-contact.png" alt="tennis-alex2-contact.png" loading="lazy"></a><figcaption>tennis-alex2-contact.png</figcaption></figure>
+      </div>
+    </section>
+    <section>
       <h2>Tennis — normal play</h2>
       <p class=note>A live match on the dev server. All five swings (FOREHAND, SERVE, BACKHAND, SMASH, VOLLEY) were read from <code>data-swing</code> during ordinary rallies, not from a fixture.</p>
       <div class="grid">
@@ -76,7 +88,7 @@
     </section>
     <section>
       <h2>Golf — the hole, the swing, the HUD</h2>
-      <p class=note>Green, flagstick and cup are visible from the tee, with distance markers and the full HUD: SHOT, TOTAL STROKES, TO HOLE, LAST SHOT, CLUB, RANGE, PAR. Then the swing frames and the state after each shot.</p>
+      <p class=note>Green, flagstick and cup are visible from the tee, with distance markers and the full HUD: SHOT, TOTAL STROKES, TO HOLE, LAST SHOT, CLUB, RANGE, PAR.</p>
       <div class="grid">
       <figure><a href="evidence-e2/golf-1-tee.png"><img src="evidence-e2/golf-1-tee.png" alt="golf-1-tee.png" loading="lazy"></a><figcaption>golf-1-tee.png</figcaption></figure>
       <figure><a href="evidence-e2/golf-2-swing-f0.png"><img src="evidence-e2/golf-2-swing-f0.png" alt="golf-2-swing-f0.png" loading="lazy"></a><figcaption>golf-2-swing-f0.png</figcaption></figure>

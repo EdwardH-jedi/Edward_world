@@ -244,10 +244,6 @@ describe("a whole match keeps its physical invariants on every schedule", () => 
   });
 
   it("never leaves the ball inside the net's plane below the tape", () => {
-    for (const [name, run] of runs) {
-      void name;
-      void run;
-    }
     // Structural: a crossing below NET_TOP awards the point and stops the ball
     // at the tape. Asserted directly in the walk below.
     const stepper = createFixedStepper();

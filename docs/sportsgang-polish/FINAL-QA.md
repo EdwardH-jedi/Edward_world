@@ -547,6 +547,7 @@ Every figure below is this pass's own measurement, from its own Chrome.
 | **Running — standing + S** | **Distance unchanged at `128 M TO GO`, pace 0 %**, through 2 s of `S` alone; stamina recovered 53 → 100 %. No creep. |
 | **Running — lanes** | A *held* `↑` moves the runner `bottom` 22 % → 28 % after ~750 ms; a held `↓` returns it 28 % → **16 %** and clamps there. A momentary tap does not change lane — worth knowing, and the reason an earlier attempt in this pass read as a failure before it was chased down. · `evidence-e2/running-*.png` |
 | **Tennis — five swings** | All five were seen **on screen in ordinary play**: FOREHAND, SERVE, BACKHAND, SMASH and VOLLEY, read from `data-swing` on the two figures during a live match. |
+| **Tennis — contact sync** | The frames either side of two of ALEX's contacts were captured on a **stepped clock** (see below): the ball reverses on the contact frame with the spark at his strings. FOREHAND: ball `left` 63.579 → **64.002** → 63.271 %. SMASH: 62.266 → **62.317** → 61.489 %. · `evidence-e2/tennis-alex1-{before,contact,after}.png`, `tennis-alex2-*.png` |
 | **Golf — course** | Green, flagstick and a visible cup, distance markers to 250 m, and the full HUD: `SHOT 1`, `TOTAL STROKES 0`, `TO HOLE 300 M`, `LAST SHOT`, `CLUB DRIVER`, `RANGE 225 M`, `HOLE 1 · 300 M · PAR 4`. · `evidence-e2/golf-1-tee.png` |
 | **Golf — shot cycle** | Power bar → accuracy → contact, with `SOLID CONTACT` and `131 M · ON THE FAIRWAY` recorded, and `NO CONTACT` for a mistimed swing. Distances and stroke counts update separately. |
 | **Exit** | `EXIT · E TO LEAVE` at the right-hand end; walking past never opens it; `E` opens exactly the copy `Bye bye!` / `Hope to see you again, and have a great day!`, with `LOOK AROUND AGAIN`, `PROJECT INDEX` and `ESC · BACK TO THE WORLD`. Returning lands beside the gate. |
@@ -554,6 +555,14 @@ Every figure below is this pass's own measurement, from its own Chrome.
 | **Exit — reduced motion** | With `prefers-reduced-motion: reduce`, the same canvas holds **528 lit pixels, identical across all seven samples over 4.2 s** — one still frame. Reproduces the first pass's figure exactly. |
 | **Exit — visitor count** | `/api/joins` was called **0 times** across the entire exit sequence, including the return. |
 | **Preserved surfaces** | On the **production** build (`:3017`): Edward's House (COLLECTION), Wardrobe, SportsGang, AFL Lab, Arcade/Soonpermario and the Exit all opened and closed cleanly, with the farewell copy intact. |
+
+**How the contact frames were taken.** `requestAnimationFrame` was replaced with a
+queue and `performance.now` with a virtual clock **before the app mounted**, so the
+whole world — walking, the venue, the match — was driven one 16.7 ms step at a
+time by this pass. That makes the run reproducible: the same two contacts land on
+the same steps (227 and 758) across separate runs, which is how the frames either
+side of them could be captured at all. **These are a stepped reconstruction, not
+a real-time recording**, exactly as the first pass's serve frames were.
 
 **Honest limits on the above.** The reduced-motion check proves the sky canvas is
 a held still frame; this pass hooked `requestAnimationFrame` globally, so it
@@ -666,6 +675,8 @@ written to any durable or production store, because there is none.
 | SHA | |
 |---|---|
 | `a385ce9` | `fix(tennis): spark ALEX's return where the strings met it` |
+| `a0a13b9` | `docs(qa): the second pass, its evidence and the corrected verdict` |
+| *(last)* | `docs(qa): the contact frames, and tidying this pass left` |
 
 Branched from `aab5c39`. `main` is untouched at `4c75644`. Nothing was pushed,
 merged or deployed, and no Vercel deployment was created.
@@ -717,4 +728,5 @@ fix and invited exactly the tolerance-widening the brief forbids.
   shot cycle, the HUD arithmetic and the course furniture but did not re-hole it.
 - **A normal-speed video recording** of a tennis contact. Both passes captured
   stepped frames and stills; neither produced a real-time recording, so any
-  claim resting on one is `VISUAL_NOT_VERIFIED`.
+  claim resting on one is `VISUAL_NOT_VERIFIED`. The E2-1 frames in §10.4 are a
+  stepped reconstruction and are labelled as one.
