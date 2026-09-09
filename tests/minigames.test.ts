@@ -527,6 +527,18 @@ describe("basketball", () => {
   });
 });
 
+/**
+ * Running's controls changed in this pass: the arrows are movement and `S` is
+ * the spurt, where `up` used to be an accelerator and idling still moved the
+ * runner forward. These tests are the ones that fed it input, so they now feed
+ * it the input the game actually has. **The behaviour being asserted is
+ * deliberately unchanged** — every claim below is the claim it was making
+ * before, about the stamina economy that this pass preserved. The control
+ * contract itself is covered in `tests/running-controls.test.ts`.
+ */
+const RUN_FORWARD: MinigameInput = { ...IDLE_INPUT, right: true };
+const RUN_FLAT_OUT: MinigameInput = { ...IDLE_INPUT, right: true, sprint: true };
+
 describe("running", () => {
   it("drains above cruise and recovers below it", () => {
     expect(getStaminaRate(CRUISE_PACE)).toBe(0);
@@ -543,7 +555,7 @@ describe("running", () => {
       createRunningState(),
       advanceRunning,
       3000,
-      () => ({ ...IDLE_INPUT, up: true }),
+      () => RUN_FLAT_OUT,
     );
     expect(state.stamina).toBeGreaterThanOrEqual(0);
     expect(state.stamina).toBeLessThanOrEqual(1);
@@ -551,7 +563,12 @@ describe("running", () => {
   });
 
   it("finishes the race and reports a time derived from the pace held", () => {
-    const cruise = run<RunningState>(createRunningState(), advanceRunning, 20000);
+    const cruise = run<RunningState>(
+      createRunningState(),
+      advanceRunning,
+      20000,
+      () => RUN_FORWARD,
+    );
     expect(cruise.done).toBe(true);
     expect(cruise.distance).toBe(RACE_METRES);
     expect(cruise.elapsed).toBeGreaterThan(0);
@@ -559,12 +576,17 @@ describe("running", () => {
   });
 
   it("makes going out too hard cost more than it gains", () => {
-    const measured = run<RunningState>(createRunningState(), advanceRunning, 20000);
+    const measured = run<RunningState>(
+      createRunningState(),
+      advanceRunning,
+      20000,
+      () => RUN_FORWARD,
+    );
     const reckless = run<RunningState>(
       createRunningState(),
       advanceRunning,
       20000,
-      () => ({ ...IDLE_INPUT, up: true }),
+      () => RUN_FLAT_OUT,
     );
     expect(reckless.blewUp).toBe(true);
     expect(measured.blewUp).toBe(false);
@@ -573,7 +595,12 @@ describe("running", () => {
   });
 
   it("stays a demonstration rather than a chore", () => {
-    const cruise = run<RunningState>(createRunningState(), advanceRunning, 40000);
+    const cruise = run<RunningState>(
+      createRunningState(),
+      advanceRunning,
+      40000,
+      () => RUN_FORWARD,
+    );
     // Long enough that pacing has to be paid for, short enough to sit through.
     expect(cruise.elapsed).toBeGreaterThan(15);
     expect(cruise.elapsed).toBeLessThan(50);
@@ -584,7 +611,7 @@ describe("running", () => {
       createRunningState(),
       advanceRunning,
       40000,
-      () => ({ ...IDLE_INPUT, up: true }),
+      () => RUN_FLAT_OUT,
     );
     // Pace is sticky: easing off is a decision the runner has to make, so a
     // real pacing strategy has to spend and then pay back.
@@ -593,9 +620,11 @@ describe("running", () => {
       advanceRunning,
       40000,
       (_tick, current) => {
-        if (current.stamina > 0.55) return { ...IDLE_INPUT, up: true };
-        if (current.stamina < 0.35) return { ...IDLE_INPUT, down: true };
-        return IDLE_INPUT;
+        if (current.stamina > 0.55) return RUN_FLAT_OUT;
+        // Easing off is now letting go of the arrow, which is what drops the
+        // pace below cruise and therefore what pays the stamina back.
+        if (current.stamina < 0.35) return IDLE_INPUT;
+        return RUN_FORWARD;
       },
     );
     expect(paced.blewUp).toBe(false);

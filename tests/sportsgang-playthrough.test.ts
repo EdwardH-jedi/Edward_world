@@ -92,7 +92,14 @@ const GAMES = {
     create: createRunningState,
     advance: advanceRunning,
     result: getRunningResult,
-    input: (tick: number) => tapPattern(tick, 12, 6),
+    // Running is steered rather than tapped since this pass: the action key is
+    // not what moves the runner, so the pattern that drives it to the line is
+    // holding a direction, with the spurt going on and off along the way.
+    input: (tick: number) => ({
+      ...IDLE_INPUT,
+      right: true,
+      sprint: tick % 240 < 60,
+    }),
   },
 } as const;
 

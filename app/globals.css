@@ -5277,6 +5277,7 @@ p {
   z-index: 6;
 }
 /* @end A */
+
 /* @owner:B golf — one hole
    Appended as its own block and prefixed `.sg-golf-*` / `.sg-golf__*`, so a
    merge with the other sports touches nothing shared. The 162 existing `.sg-`
@@ -5679,3 +5680,123 @@ p {
   .sg-golf__trail { opacity: 0.25 !important; }
 }
 /* @end B */
+
+/* @owner:C basketball — the ball itself
+   Sizing only. Position, the 1:1 box and the `translate(-50%, 50%)` that puts
+   the simulation's ball centre at the element's centre all stay on the frozen
+   `.sg-play__ball` rule above, so the arc, the ring and the judging are
+   measured against exactly what they were before. Scoped to `.sg-ball`, which
+   only basketball carries: the tennis and golf balls are untouched. */
+.sg-ball {
+  /* The court is `min(92vw, 900px)`, and the ring inside it is 5.76% of that.
+     3% puts the ball at just under half the ring's width, which is where a
+     basketball sits against a real hoop. On a phone that percentage would come
+     out near 10px, too small for four seams to survive, so it is floored — the
+     floor is reached only below about 500px of court, and takes the ball to
+     roughly three quarters of the ring rather than past it. */
+  width: clamp(15px, 3%, 30px);
+}
+
+.sg-ball__art {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* @end C */
+
+/* @owner:C running — steering pad and held spurt
+   The runner's own `bottom` is set inline from the simulation's lane, so the
+   frozen `.sg-play__runner` rule keeps owning everything else about it. */
+.sg-run-controls {
+  align-items: stretch;
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Four keys on a cross, so a thumb finds a direction without looking. The two
+   that matter most — left and right, which are the race — get the middle row
+   to themselves and the width that goes with it. */
+.sg-run-pad {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 0.25rem;
+  grid-template-areas:
+    ". up ."
+    "left . right"
+    ". down .";
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.sg-run-pad__key {
+  background: transparent;
+  border: 1px solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8rem;
+  line-height: 1;
+  min-height: 2rem;
+  padding: 0.35rem 0;
+  /* Stops a drag off the key turning into a page scroll mid-race, and stops a
+     double tap being read as a zoom. */
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-run-pad__key--up { grid-area: up; }
+.sg-run-pad__key--down { grid-area: down; }
+.sg-run-pad__key--left { grid-area: left; }
+.sg-run-pad__key--right { grid-area: right; }
+
+/* The spurt sits apart from the pad rather than in it: it is a different kind
+   of control — held, not aimed — and a thumb on it must never be near enough to
+   a direction key to catch one by accident. */
+.sg-run-sprint {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  flex: 0 0 7rem;
+  flex-direction: column;
+  gap: 0.2rem;
+  justify-content: center;
+  width: auto;
+}
+
+.sg-run-sprint span {
+  font-size: 0.42rem;
+  letter-spacing: 0.2em;
+  opacity: 0.7;
+}
+
+/* Held, by either a finger or the S key. */
+.sg-run-sprint[aria-pressed="true"] {
+  background: var(--loc-cream);
+}
+
+/* On a phone an existing rule moves the whole HUD from above the court to
+   below it, so anything the HUD gains in height falls off the bottom of the
+   screen. The pad gives that height back by flattening the cross into one row:
+   three rows of keys plus their gaps is 123px, one row is 44px, and the 73px
+   the taller layout overflowed by is comfortably inside the difference.
+
+   Left and right sit on the outside, where a thumb holding a phone already
+   rests, with the two lane keys inboard — the same ordering the arrow keys
+   have. Every key keeps the 44px minimum tap target the landscape layout
+   already sets for `.sg-play__action`. */
+@media (max-width: 640px) {
+  .sg-run-pad {
+    grid-template-areas: "left up down right";
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .sg-run-pad__key {
+    font-size: 0.9rem;
+    min-height: 2.75rem;
+  }
+
+  .sg-run-sprint {
+    flex-basis: 5.5rem;
+  }
+}
+
+/* @end C */
