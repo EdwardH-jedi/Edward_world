@@ -5800,3 +5800,231 @@ p {
 }
 
 /* @end C */
+
+/* @owner:D public golf board and the nickname box
+   Appended as its own block, prefixed `.sg-board-*` / `.sg-board__*` and
+   `.sg-name-*` / `.sg-name__*`, per the prefix ownership in OWNERSHIP.md. No
+   existing rule is edited. */
+
+/* Sits above the per-visit RANK panel, which keeps its own place: the two are
+   deliberately different things and are never merged into one list. */
+.sg-board {
+  background: rgb(34 31 26 / 95%);
+  border: 1px solid #57534a;
+  left: 50%;
+  max-width: min(92vw, 34rem);
+  padding: 1rem 1.2rem;
+  position: absolute;
+  top: 4%;
+  transform: translateX(-50%);
+  width: min(92vw, 34rem);
+  z-index: 7;
+}
+
+.sg-board__head {
+  align-items: baseline;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: space-between;
+}
+
+.sg-board__title {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  margin: 0;
+}
+
+.sg-board__scope,
+.sg-board__honesty {
+  color: #8d8578;
+  font-size: 0.46rem;
+  letter-spacing: 0.14em;
+  margin: 0;
+}
+
+/* The claim the board makes about itself. Never quiet, never optional. */
+.sg-board__honesty {
+  border-bottom: 1px solid #3a362f;
+  color: #b2a894;
+  margin: 0.5rem 0 0.6rem;
+  padding-bottom: 0.5rem;
+}
+
+.sg-board__table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  list-style: none;
+  margin: 0;
+  max-height: 34vh;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.sg-board__row {
+  align-items: baseline;
+  border-bottom: 1px solid rgb(87 83 74 / 35%);
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1.6rem 1fr auto;
+  padding-bottom: 0.3rem;
+}
+
+/* The asking visitor's own row, marked without naming anyone. */
+.sg-board__row[data-you] {
+  background: rgb(201 138 82 / 14%);
+}
+
+.sg-board__rank {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.72rem;
+}
+
+.sg-board__name {
+  color: var(--loc-cream);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  overflow-wrap: anywhere;
+}
+
+.sg-board__strokes {
+  color: var(--loc-cream);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.sg-board__strokes small {
+  color: #8d8578;
+  font-size: 0.4rem;
+  letter-spacing: 0.12em;
+}
+
+.sg-board__aside {
+  color: #8d8578;
+  font-size: 0.42rem;
+  grid-column: 2 / -1;
+  letter-spacing: 0.12em;
+}
+
+.sg-board__state {
+  color: #b2a894;
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  margin: 0.6rem 0 0;
+  text-align: center;
+}
+
+.sg-board__state--error {
+  color: #d99a6c;
+}
+
+.sg-board__state--ok {
+  color: var(--loc-orange);
+}
+
+.sg-board__state button {
+  margin-top: 0.5rem;
+}
+
+.sg-board__yours {
+  border-top: 1px solid #3a362f;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  text-align: center;
+}
+
+/* ATTEMPT and TOTAL STROKES are named in full, because SHOT, TOTAL STROKES,
+   ATTEMPT, RANK and VISITOR NUMBER are five different numbers. */
+.sg-board__attempt {
+  color: #8d8578;
+  display: flex;
+  font-size: 0.46rem;
+  justify-content: space-between;
+  letter-spacing: 0.14em;
+  margin: 0 0 0.6rem;
+}
+
+.sg-board__attempt span {
+  color: var(--loc-cream);
+}
+
+/* ── The nickname box ───────────────────────────────────────────────────── */
+
+.sg-name {
+  max-width: min(92vw, 26rem);
+}
+
+.sg-name__label {
+  color: #8d8578;
+  display: block;
+  font-size: 0.46rem;
+  letter-spacing: 0.16em;
+  margin: 0.4rem 0 0.35rem;
+}
+
+.sg-name__input {
+  background: #14110d;
+  border: 1px solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  /* 16px keeps iOS Safari from zooming the page when the field takes focus. */
+  font-size: 16px;
+  padding: 0.5rem 0.6rem;
+  width: 100%;
+}
+
+.sg-name__preview {
+  color: var(--loc-cream);
+  font-size: 0.52rem;
+  letter-spacing: 0.12em;
+  margin: 0.7rem 0 0.3rem;
+  overflow-wrap: anywhere;
+}
+
+.sg-name__preview strong {
+  color: var(--loc-orange);
+}
+
+.sg-name__scope {
+  color: #8d8578;
+  font-size: 0.46rem;
+  line-height: 1.7;
+  margin: 0 0 0.6rem;
+}
+
+.sg-name__error {
+  color: #d99a6c;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.5rem;
+}
+
+.sg-name__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* A phone has the board and the RANK panel competing for one screen, so the
+   board gives up its own height rather than overlapping. */
+@media (max-width: 640px) {
+  .sg-board {
+    padding: 0.8rem 0.9rem;
+    top: 2%;
+  }
+
+  .sg-board__table {
+    max-height: 26vh;
+  }
+
+  .sg-board__head {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+}
+
+/* @end D */
