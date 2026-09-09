@@ -16,6 +16,7 @@ import { useJoinTotal } from "@/lib/joins/use-join-total";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
+import { worldExitArt } from "@/lib/pixel/world-exit";
 import {
   EDWARD_ART_SIZE,
   edwardPoses,
@@ -50,6 +51,9 @@ function getDirection(keys: ReadonlySet<string>): HorizontalDirection {
 /** Resolves the art routine and grid size for any world object. */
 function getObjectArt(object: WorldObject): BuildingArt {
   if (object.kind === "building") return buildingArt[object.id];
+  // The exit is a sign by kind, because it is not a building and not a
+  // project, but it is a gateway and has to read as one.
+  if (object.id === "world-exit") return worldExitArt;
   return signpostArt;
 }
 
@@ -177,6 +181,11 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
 
   useEffect(() => {
     function handleInteraction(event: KeyboardEvent) {
+      // `repeat` matters at the exit in particular: an overlay closing while E
+      // is still held would otherwise re-open it immediately, which is the one
+      // way the farewell could fire without anyone asking for it. Holding E at
+      // any other object used to re-fire too.
+      if (event.repeat) return;
       if (event.key.toLowerCase() !== "e" || !nearbyObject || disabled) return;
       event.preventDefault();
       openNearby();
