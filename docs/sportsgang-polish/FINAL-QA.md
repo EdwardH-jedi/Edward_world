@@ -1,12 +1,18 @@
 # FINAL-QA — independent review of the SportsGang polish
 
-**Verdict: CONDITIONAL.** The code passes its gates and the six requirements
-behave as asked on a real screen, but the public golf leaderboard has no shared
-storage in this environment, and in a production build it therefore does not
-work at all — it says so honestly rather than faking a board, which is the
-right behaviour and still not a working feature. Three defects were found by
-looking at the running app and all three are fixed on this branch — E-3 with a
-caveat named in §4. Details below.
+**Verdict: CONDITIONAL.** Two QA passes have now run over this branch. The code
+passes its gates, and the six requirements behave as asked on a real screen. The
+blocker is unchanged and is not a code defect: **the public golf leaderboard has
+no shared storage, in this environment or on the deploy target**, so in a
+production build it does not work at all. It refuses honestly rather than faking
+a board, which is the right behaviour and still not a working feature.
+
+Four defects have been found by looking at the running app across the two
+passes, and all four are fixed on this branch — E-3 with a caveat named in §4.
+
+**§10 is the second pass** (a genuinely separate session, no session-D context),
+which re-ran every gate from scratch, re-derived the evidence rather than reading
+it, and found one further P1 that the first pass missed.
 
 ---
 
@@ -33,13 +39,18 @@ was deployed.
 
 ### A disclosure about independence
 
-The brief frames E as a new session that does not take D's report on trust. In
-practice **this is the same conversation that performed session D.** The
-independence is procedural, not organisational: a fresh worktree at D's commit,
-every gate re-run from scratch, every claim re-observed on a running screen, and
-the three defects below were found by looking rather than by reading D's notes.
-It is not the independence of a second pair of eyes, and it should not be
-described as such.
+Two passes, and they are not equally independent.
+
+**The first pass (§1-§9) was the same conversation that performed session D.**
+Its independence was procedural, not organisational: a fresh worktree at D's
+commit, every gate re-run, every claim re-observed on a running screen. It was
+not a second pair of eyes and was not described as one.
+
+**The second pass (§10) is a separate session** with no session-D context in it,
+which is the independence the brief asks for. It did not take this document on
+trust: it re-ran the gates, re-derived the numbers, and treated the claims below
+as things to check rather than things to read. Where it reproduced a figure, it
+says so and gives its own measurement.
 
 ---
 
@@ -416,28 +427,294 @@ merged or deployed, and no Vercel deployment was created.
 
 ## 9 · Six things worth looking at yourself
 
-Start the server first:
+Start a server first — this is the one the second pass used:
 
 ```bash
 cd /Users/edwardhwang/Desktop/Edward_world-sg-e
-npm run dev -- --port 3015
+npm run dev -- --port 3015          # then http://localhost:3015/?view=world
 ```
 
-1. **The serve.** `http://localhost:3015/?view=world` → walk right → `E` at
-   SPORTSGANG → TENNIS → ACCEPT → PRESS ENTER TO PLAY. Watch the ball leave the
-   racket. Compare with `evidence-e/tennis-serve-BEFORE-slowmo.gif`, which is
-   what it did before this pass.
-2. **The basketball at play size.** SPORTSGANG → BASKETBALL, hold and release.
-   Do not zoom: the question is whether it reads as a basketball at 27 px while
-   it spins.
-3. **Running, two fingers or two keys.** SPORTSGANG → RUNNING. Hold `→` and tap
-   `S` on and off. The spurt should start and stop without the run stopping, and
-   letting go of `S` alone should not let go of `→`.
-4. **Conceding golf.** SPORTSGANG → GOLF → CONCEDE, twice, and read the RANK
-   panel. It should say `NO FINISHED HOLE`, not `0 STROKES`.
-5. **The name box.** Hole out, press SUBMIT TO THE PUBLIC BOARD, and type more
-   than twenty characters. It should tell you while you type, and the submit
-   button should be unavailable rather than promising something else.
-6. **The way out.** Walk to the right-hand end of the world and press `E`. Then
-   press Escape and walk past the gate a few times — it should never open by
-   itself.
+1. **The serve.** Walk right → `E` at SPORTSGANG → TENNIS → PLAY A MATCH →
+   ACCEPT → press Enter. Watch the ball leave the racket rather than appear
+   above it. Compare with `evidence-e/tennis-serve-BEFORE-slowmo.gif`, which is
+   what it did before this branch.
+2. **ALEX's returns.** Same match, but watch *his* end. When he strikes, the
+   spark should be on the strings, not on a ball that has already travelled past
+   them. On roughly one return in seven it used to be visibly off; see §10.5.
+3. **The basketball at play size.** SPORTSGANG → BASKETBALL, hold and release.
+   Do not zoom — the question is whether it reads as a basketball at 27 px while
+   it spins. `evidence-e2/ball-desktop-magnified.png` is the same ball enlarged.
+4. **Running: stand still and hold `S`.** SPORTSGANG → RUNNING. The metres must
+   not move. Then hold `→` and tap `S` on and off — the spurt should start and
+   stop without the run stopping. Lane changes need the arrow *held*, not tapped.
+5. **Conceding golf, and the name box.** GOLF → CONCEDE twice, and read the RANK
+   panel: it must say `NO FINISHED HOLE`, not `0 STROKES`. Then hole out, press
+   SUBMIT TO THE PUBLIC BOARD and type more than twenty characters — it should
+   tell you while you type and disable the submit rather than promise something
+   else.
+6. **The way out.** Walk to the right-hand end and press `E`; then Escape and
+   walk past the gate a few times — it must never open by itself. With
+   `prefers-reduced-motion: reduce` the fireworks become one still frame.
+
+---
+
+## 10 · Second pass — an independent re-review
+
+A separate session, holding no session-D context, re-reviewed this branch. It
+did not take §1-§9 on trust. What follows is its own work.
+
+### 10.1 What was reviewed, and where
+
+| | |
+|---|---|
+| Reviewed SHA | `aab5c39` — the head of `qa/sg-e`, i.e. D's integration **plus** the first pass's own fixes |
+| Integration commit underneath | `97c4944` (`polish/sg-d-integration`), confirmed an ancestor |
+| Final SHA after this pass | `a385ce9` (see §10.7) |
+| cwd | `/Users/edwardhwang/Desktop/Edward_world-sg-e` |
+| Dev server | already running on `:3015`; `http://localhost:3015/?view=world` |
+| Production server | **`:3017`, started by this pass** — `npm run build` then `npx next start --port 3017`. A fresh port was used deliberately so that no other session's server was stopped. |
+| Node | v24.19.0 via `/opt/homebrew/opt/node@24/bin` (the shell's default is v26.7.0; `engines` says `24.x`, so gates were run on 24) |
+| Browser | Chrome **152.0.7977.83**, headless, driven over CDP by a dependency-free driver written for this pass |
+| Viewports | 1440×900 DPR 2 (desktop) · 390×844 DPR 3 mobile+touch, via `Emulation.setDeviceMetricsOverride` |
+
+**Both ports were confirmed to be serving this worktree** by reading each
+process's own working directory (`lsof -a -p <pid> -d cwd`), not by trusting the
+port number: pids 74796 (`:3015`) and 75605 (`:3016`) both report
+`/Users/edwardhwang/Desktop/Edward_world-sg-e`. No other session's server was
+stopped and no other session's files were touched.
+
+**A note on `:3016`.** The first pass's production server is still up, but this
+pass ran `npm run build`, which rewrote `.next` underneath it. `:3016` is
+therefore in a mixed state and **was not used for any check**; `:3017` was built
+and started from the code under review instead.
+
+**Browser tooling — what was actually available.** The chrome-devtools MCP could
+not be used: its profile was already held by a live Chrome (pid 7896) belonging
+to another session, and killing it was out of scope. The claude-in-chrome
+extension was not connected. Rather than claim a browser check that did not
+happen, this pass launched **its own isolated headless Chrome** and drove it
+over the DevTools Protocol directly. Everything in §10.4 was measured through
+that, in a real browser, against a real server.
+
+### 10.2 Gates, re-run from scratch
+
+| Gate | Result at `aab5c39` | Result at `a385ce9` |
+|---|---|---|
+| `npm run lint` | PASS, 0 problems | PASS |
+| `npm run typecheck` | PASS, exit 0 | PASS |
+| `npm test` | **44 files / 689 tests**, all passing | **45 files / 697 tests**, all passing |
+| `npm run build` | PASS | PASS, 11 routes |
+
+The first pass's headline count (44 / 689) **reproduced exactly**. No test was
+deleted, skipped, or loosened by this pass. One fixture constant moved and is
+accounted for in §10.5.
+
+### 10.3 Re-verifying the first pass's own claims
+
+The two claims most worth a second pair of eyes, because a report is the wrong
+place to grade its own homework:
+
+- **"The one assertion we touched was made narrower, not weaker."** Checked
+  empirically rather than by reading: the old and new conditions were run side by
+  side over the same 30 ticks. The old condition fires **once** — at tick 13,
+  where a SERVE at `elapsed 0.4500` of a `0.4600` duration is followed by a fresh
+  FOREHAND at `0.0000`. That is a swing which ran to its full length being
+  succeeded by the next shot, not a restart. The new condition excuses exactly
+  that one event and nothing else. **The claim holds.**
+- **`qa-e-schedule.test.ts` tests what it says.** Read, not trusted. It replays a
+  tick-indexed script through the real `createFixedStepper` at 60/30/120Hz and a
+  ragged schedule, compares with `toEqual` and not a delta, compares whole state
+  objects (`history`, `shotLog`, `ball`) rather than a scalar, and carries
+  self-guards that fail if the run was trivially empty. **Genuine.**
+
+**The bug class behind E-2 was checked for the other three sports.** A conceded
+run scoring well is only possible where the rank direction is `lower`. Tennis and
+basketball rank `higher`, so abandoning scores worse. Running ranks by elapsed
+time — `lower`, the dangerous direction — but its simulation reaches `DONE` only
+through `FINISHED`, i.e. by crossing the line, and `finishPlay` is called only
+when a sport reports itself, so there is no early-exit path to exploit. **The
+E-2 fix is correctly scoped to golf.**
+
+### 10.4 What was measured in the browser
+
+Every figure below is this pass's own measurement, from its own Chrome.
+
+| Requirement | Result |
+|---|---|
+| **Basketball** | Independently reproduced: **27×27 CSS px desktop, 15×15 mobile, width/height ratio exactly 1.0000** at both. The SVG carries **4 seam paths + 2 circles**. Magnified 10× at play size it reads as a basketball — orange sphere, curved great-circle seams, radial shading — and is plainly not a circle or a `+`. · `evidence-e2/ball-desktop-magnified.png`, `ball-mobile-magnified.png`, `basketball-*-stationary.png` |
+| **Running — arrows** | 200 → 189 m in 3 s at pace 62 % (cruise), stamina 100 %. |
+| **Running — spurt** | `→` + `S`: pace 100 %, stamina 100 → 12 %. Released: pace back to 62 %. |
+| **Running — standing + S** | **Distance unchanged at `128 M TO GO`, pace 0 %**, through 2 s of `S` alone; stamina recovered 53 → 100 %. No creep. |
+| **Running — lanes** | A *held* `↑` moves the runner `bottom` 22 % → 28 % after ~750 ms; a held `↓` returns it 28 % → **16 %** and clamps there. A momentary tap does not change lane — worth knowing, and the reason an earlier attempt in this pass read as a failure before it was chased down. · `evidence-e2/running-*.png` |
+| **Tennis — five swings** | All five were seen **on screen in ordinary play**: FOREHAND, SERVE, BACKHAND, SMASH and VOLLEY, read from `data-swing` on the two figures during a live match. |
+| **Golf — course** | Green, flagstick and a visible cup, distance markers to 250 m, and the full HUD: `SHOT 1`, `TOTAL STROKES 0`, `TO HOLE 300 M`, `LAST SHOT`, `CLUB DRIVER`, `RANGE 225 M`, `HOLE 1 · 300 M · PAR 4`. · `evidence-e2/golf-1-tee.png` |
+| **Golf — shot cycle** | Power bar → accuracy → contact, with `SOLID CONTACT` and `131 M · ON THE FAIRWAY` recorded, and `NO CONTACT` for a mistimed swing. Distances and stroke counts update separately. |
+| **Exit** | `EXIT · E TO LEAVE` at the right-hand end; walking past never opens it; `E` opens exactly the copy `Bye bye!` / `Hope to see you again, and have a great day!`, with `LOOK AROUND AGAIN`, `PROJECT INDEX` and `ESC · BACK TO THE WORLD`. Returning lands beside the gate. |
+| **Exit — fireworks** | Measured on the `sg-exit__sky` canvas (240×135 = 32,400 px): lit pixels **88 → 220 → 172 → 176 → 88 → 0 by t+4.2 s**. Peak **0.68 %** of the canvas. Independently reproduces the first pass's 232 px / 0.7 % / 4.2 s. |
+| **Exit — reduced motion** | With `prefers-reduced-motion: reduce`, the same canvas holds **528 lit pixels, identical across all seven samples over 4.2 s** — one still frame. Reproduces the first pass's figure exactly. |
+| **Exit — visitor count** | `/api/joins` was called **0 times** across the entire exit sequence, including the return. |
+| **Preserved surfaces** | On the **production** build (`:3017`): Edward's House (COLLECTION), Wardrobe, SportsGang, AFL Lab, Arcade/Soonpermario and the Exit all opened and closed cleanly, with the farewell copy intact. |
+
+**Honest limits on the above.** The reduced-motion check proves the sky canvas is
+a held still frame; this pass hooked `requestAnimationFrame` globally, so it
+cannot separately claim the fireworks module scheduled no frame of its own — the
+first pass's stronger claim was not re-derived. Mobile was CDP device emulation,
+not a real touchscreen. No GPU work was measured and **no FPS, frame-time or
+memory claim is made anywhere in this section.**
+
+### 10.5 E2-1 · P1 — ALEX's spark was drawn where the ball had already got to
+
+**Where:** `lib/game/minigames/tennis.ts`, `returnFromAlex`.
+
+**Found by:** asking a question the first pass did not — it traced *one player
+contact* tick by tick and concluded "contact position, reflection and spark are
+one event". That is true on Edward's side. It was never checked on ALEX's.
+
+**Expected:** the ball is struck where the swept hit test says the racket met it.
+The function's own comment says exactly that: *"Struck where the swept test says
+the racket met it, not wherever the ball had already reached by the end of the
+step."*
+
+**Actual:** the code did the second thing. It took `state.ball` — the integrated,
+end-of-step position — so `lastContact`, `impactX/impactY` (the spark) and the
+launch point of the return were all placed up to a whole step of travel past the
+strings. `t`, the swept parameter, was stored and never used to place anything.
+
+**Measured, over 84 of ALEX's returns across six matches:**
+
+| | |
+|---|---|
+| Contact placed past the strings | median **1.65**, max **5.53** court units |
+| For scale | the strike box half-width is 2.32 units, the ball's own radius 0.9 |
+| Drawn *outside* the striking side's box | **ALEX 12 of 84 (14 %)**, up to **1.87×** his box |
+| The same measurement for Edward | **0 of 78**, max exactly 1.00× — always touching |
+
+So on roughly one return in seven the spark was drawn on a ball visibly clear of
+the racket head, on one side of the net only. That is the late reflection the
+brief names, and it is a visible asymmetry rather than a physics nicety.
+
+**Fix:** the interpolation Edward's block already performs — the pre-integration
+ball position is passed in and the contact is placed at `t`. Both `lastContact`
+and the spark derive from that one value, so they move together.
+
+**Deliberately not changed:** ALEX's `judgeSwingTiming` still reads the
+end-of-step progress. That is a gameplay number, not a drawn position, and moving
+it would shift his shank rate. Recorded as a residual asymmetry, not a defect.
+
+**Consequences, named because they are real.** Correcting where the return
+launches from moves ALEX's arcs slightly:
+
+- **The smash window narrowed.** Sweeping every standing position from 8 to 44
+  puts the band that produces an overhead at **33-35 and 37-41 before, 37-41
+  after**. All five swings are still played in ordinary rallies; station 35
+  simply stopped being one of them, so `qa-e-tennis-serve.test.ts` moves its
+  up-court station **35 → 39**. That is a fixture constant. **Its assertions are
+  untouched and still demand all five swings.**
+- **Difficulty.** With 1, 2 or 3 frames of swing lag a scripted visitor's results
+  are **identical either side of the change** (1:5, 1:5, 2:5). Only frame-perfect
+  play benefits (2:5 → 5:2). Measured on one deterministic seed each, so this is
+  four data points, not a win rate.
+
+**New regression cover.** `tests/qa-e2-tennis-rally-integrity.test.ts` asserts
+over *whole matches* on all four frame schedules what the first pass observed on
+a single contact: the ball never goes through the floor, the serve toss never
+does either (the E-1 class), no contact is counted twice, the spark sits on the
+contact, and **no strike happens outside the striking side's own box** — ALEX's
+box being `STRIKE_HALF + REACH_BONUS`, which is a deliberate 0.6-unit handicap
+and is why holding him to Edward's box reports a phantom hit that is really his
+reach.
+
+### 10.6 GLOBAL_LEADERBOARD — checked against the deploy target
+
+```
+GLOBAL_LEADERBOARD = BLOCKED_CONFIG
+```
+
+This pass verified the board's behaviour against the **running servers and their
+real store**, through the same endpoint the client uses:
+
+| Check | Result |
+|---|---|
+| Dev `:3015` | `mode: LOCAL_ONLY`, `verification: "client-reported"` |
+| Production `:3017` | **`{"mode":"UNAVAILABLE","error":"BOARD_UNAVAILABLE"}`** |
+| Submit a 4-stroke round | `RECORDED`, rank 1 |
+| Same `runId` again | `DUPLICATE`, board unchanged |
+| Same player, a worse round | `NOT_BETTER`, no second row |
+| A second player also on 4 | both rank **1** |
+| A third player on 6 | ranks **3** — competition ranking, ties consume places |
+| An abandoned run | `NOT_COMPLETED`, refused |
+| The superseded rules version | `UNKNOWN_RULES`, refused |
+| A non-uuid `runId` / `anonId` | `BAD_RUN_ID` / `BAD_ANON_ID`, refused |
+| Display name | forced to `GUEST`; the client's `playerDisplayName` in the run payload is **not trusted** |
+| `isYou` | present only on the requesting anon id's own row |
+
+**What the first pass could not say, and this one can.** The deploy target was
+checked directly, read-only: `vercel env ls production` for
+`edwardhwang1223-1698s-projects/edwards-world` reports **"No Environment
+Variables found."** There is no `.env` locally either. So it is not merely that
+this machine lacks credentials — **the project this would deploy to has none
+set at all**, and a production deploy today would serve
+`BOARD_UNAVAILABLE` to every visitor. No credential was requested, printed or
+created, and nothing was provisioned or deployed.
+
+**Test data.** Three rows were written to the dev server's in-process store by
+the checks above. That store is per-process and dies with `:3015`; nothing was
+written to any durable or production store, because there is none.
+
+### 10.7 Commits from this pass
+
+| SHA | |
+|---|---|
+| `a385ce9` | `fix(tennis): spark ALEX's return where the strings met it` |
+
+Branched from `aab5c39`. `main` is untouched at `4c75644`. Nothing was pushed,
+merged or deployed, and no Vercel deployment was created.
+
+### 10.8 A process note worth recording
+
+`OWNERSHIP.md` says of session E: *"Writes only `docs/sportsgang-polish/` and new
+test files. E does not fix product code; E reports."* Both passes have edited
+product code — the first pass `tennis.ts` and the frozen `golf-result.ts`, this
+pass `tennis.ts`. That is on the explicit instruction of the brief, which asks QA
+to fix clear in-scope defects with minimal changes, and the freeze exists to stop
+sessions colliding *mid-flight*, which they no longer are. Flagged so the
+contradiction is a decision on the record rather than a thing nobody noticed.
+
+### 10.9 Advisor
+
+Run via the configured `advisor` tool, three times: after orientation and before
+any code was written, before changing simulation code, and before this report.
+Per `CONTRACT.md` the tool reports no model identity, so the backing model
+**cannot be verified from this environment**; the brief names Fable 5.1, recorded
+as intent rather than fact. Not `ADVISOR_NOT_RUN` — the tool ran.
+
+**Accepted:** that the reviewed SHA is `aab5c39` and this pass is therefore
+reviewing the first pass's fixes too; that severity for E2-1 had to be set from
+the *rendered frame* rather than the internal gap, which is what turned a
+physics nicety into a P1; that `judgeSwingTiming` was out of scope for the fix;
+that a failing tuning test is a decision to surface rather than a tolerance to
+widen; that the independence disclosure in §1 is false for this pass and had to
+be corrected rather than inherited; and that the deploy target's own env should
+be checked before settling GLOBAL_LEADERBOARD.
+
+**Corrected by the advisor before it reached this document:** a latent bug in
+this pass's own new test — it rebuilt the contact anchor assuming `contact.progress`
+is the blended progress, which is true for Edward but not for ALEX, whose block
+stores the end-of-step progress. Left uncorrected it would have failed after the
+fix and invited exactly the tolerance-widening the brief forbids.
+
+**Held:** nothing material.
+
+### 10.10 Still not run, after two passes
+
+- **A durable shared store**, and therefore any real public-board verification.
+- **A real touchscreen**, a real phone, and any browser but Chrome 152.
+- **Audio.** The music control's state was checked; no sound was heard.
+- **Performance, memory and GPU.** No profile was taken; no FPS claim is made.
+- **A person playing the golf hole by hand.** Both passes used scripted players.
+- **A full 3-shot hole-out in this pass** — the first pass holed out in 3 and
+  captured it (`evidence-e/golf-06-in-the-hole.png`); this pass confirmed the
+  shot cycle, the HUD arithmetic and the course furniture but did not re-hole it.
+- **A normal-speed video recording** of a tennis contact. Both passes captured
+  stepped frames and stills; neither produced a real-time recording, so any
+  claim resting on one is `VISUAL_NOT_VERIFIED`.
