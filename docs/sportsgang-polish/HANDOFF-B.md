@@ -175,7 +175,8 @@ Data is kept exact; only the display rounds.
 
 ```
 baseline at FOUNDATION_SHA   450 tests / 30 files
-now                          525 tests / 33 files      (+75 golf tests)
+now                          525 tests / 34 files      (+75 golf tests, +4 files)
+  golf-course 18 · golf-hole 31 · golf-art 13 · golf-component 13
 build                        compiles, 10 routes
 ```
 
