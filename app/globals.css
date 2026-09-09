@@ -5302,12 +5302,25 @@ p {
   background: var(--loc-cream);
 }
 
-/* A phone has less height to give the HUD, and the pad is the part that has to
-   stay thumb-sized. The gauges give up the room instead. */
-@media (max-width: 30rem) {
+/* On a phone an existing rule moves the whole HUD from above the court to
+   below it, so anything the HUD gains in height falls off the bottom of the
+   screen. The pad gives that height back by flattening the cross into one row:
+   three rows of keys plus their gaps is 123px, one row is 44px, and the 73px
+   the taller layout overflowed by is comfortably inside the difference.
+
+   Left and right sit on the outside, where a thumb holding a phone already
+   rests, with the two lane keys inboard — the same ordering the arrow keys
+   have. Every key keeps the 44px minimum tap target the landscape layout
+   already sets for `.sg-play__action`. */
+@media (max-width: 640px) {
+  .sg-run-pad {
+    grid-template-areas: "left up down right";
+    grid-template-columns: repeat(4, 1fr);
+  }
+
   .sg-run-pad__key {
     font-size: 0.9rem;
-    min-height: 2.4rem;
+    min-height: 2.75rem;
   }
 
   .sg-run-sprint {
