@@ -216,12 +216,23 @@ describe("a swing is chosen once and then kept", () => {
     expect(started).not.toBeNull();
 
     // Mashing must not restart the motion.
+    //
+    // "Restarted" means the clock of a swing that had not finished went
+    // backwards. A swing that ran to its full duration and was followed by a
+    // different one is not a restart — it is the next shot, and a held key is
+    // allowed to play it once the cooldown has expired. Session E made that
+    // distinction explicit: with the serve now launching on the frame the
+    // strings meet the ball, the serve's follow-through is still running when
+    // the rally begins, so a completed swing being succeeded by another is
+    // ordinary here and used to be impossible.
     let restarts = 0;
     for (let i = 0; i < 30; i += 1) {
       const before = state.playerRacket.swing;
       state = advanceTennis(state, press, DT);
       const now = state.playerRacket.swing;
-      if (now && before && now.elapsed < before.elapsed) restarts += 1;
+      if (!now || !before) continue;
+      const beforeFinished = before.elapsed + DT >= before.duration;
+      if (now.elapsed < before.elapsed && !beforeFinished) restarts += 1;
     }
     expect(restarts).toBe(0);
   });

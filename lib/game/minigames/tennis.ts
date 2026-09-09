@@ -331,6 +331,13 @@ const SERVE_SWING_AT = 0.42;
 /**
  * When the strings meet the ball — the swing start plus the middle of the
  * SERVE impact window, which is the same instant the rally is launched from.
+ *
+ * It is also when the SERVE phase ends, and it has to be: the toss is aimed at
+ * this moment (`TOSS_FLIGHT`), so anything else leaves the ball falling on
+ * past the racket and reappearing at the strings later. QA (session E) found
+ * the phase running to a separate `PACE.SERVE_SECONDS` of 0.9s, which is 14
+ * ticks after contact — long enough for the toss to reach y = -4, below the
+ * court surface, before the served ball appeared 19 units above it.
  */
 const SERVE_CONTACT_AT =
   SERVE_SWING_AT +
@@ -355,7 +362,8 @@ function tossVelocity() {
 }
 
 const PACE = {
-  SERVE_SECONDS: 0.9,
+  // The serve's length is not a free number: it is `SERVE_CONTACT_AT`, so the
+  // rally starts on the frame the strings meet the ball.
   POINT_SECONDS: 1.2,
   /** How long the win banner holds before the sport reports itself. */
   BANNER_SECONDS: 1.3,
@@ -1120,7 +1128,7 @@ export function advanceTennis(
     const server = state.server;
     const from = server === "PLAYER" ? state.playerX : state.alexX;
 
-    if (phaseTime < PACE.SERVE_SECONDS) {
+    if (phaseTime < SERVE_CONTACT_AT) {
       // The toss, and the swing that meets it. A serve whose ball simply
       // appears at contact height is the thing this pass exists to stop, so
       // the ball is thrown from the hand and travels under gravity to the
