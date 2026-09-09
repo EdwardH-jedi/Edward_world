@@ -1413,7 +1413,7 @@ export function advanceTennis(
       alexAfter,
     );
     if (t !== null) {
-      next = returnFromAlex(next, t, alexSwing, tick);
+      next = returnFromAlex(next, t, alexSwing, tick, { x: ball.x, y: ball.y });
     }
   }
 
@@ -1531,11 +1531,34 @@ function returnFromAlex(
   t: number,
   swing: SwingInFlight,
   tick: number,
+  /** Where the ball was before this step's integration — the swept test's origin. */
+  from: ContactAnchor,
 ): TennisState {
-  // Struck where the swept test says the racket met it, not wherever the ball
-  // had already reached by the end of the step.
+  /*
+   * Struck where the swept test says the racket met it, not wherever the ball
+   * had already reached by the end of the step.
+   *
+   * This is what the comment always claimed and what Edward's own contact block
+   * does, but the code took `state.ball` — the end-of-step position — so the
+   * spark, the reflection origin and `lastContact` were all placed up to a full
+   * step of travel past the strings. QA (session E, second pass) measured it
+   * over 84 of ALEX's returns: a median 1.65 and a maximum 5.53 court units
+   * beyond the contact, and on 12 of them the ball was *drawn clear of the
+   * racket head* — outside even ALEX's widened strike box — while Edward's own
+   * contacts were never drawn outside his. That is the late reflection the
+   * brief asks about, and it was only ever on this side of the net.
+   *
+   * `t` is the swept parameter the hit test returned, so this is the same
+   * interpolation Edward's block performs. `state.ball` here is always the
+   * integrated ball: Edward's strike leaves it at `x < NET_X` and this branch
+   * requires `x > NET_X`, so the two can never claim the same step.
+   */
   const travelled = state.ball;
-  const ball: TennisBall = { ...travelled, x: travelled.x, y: travelled.y };
+  const ball: TennisBall = {
+    ...travelled,
+    x: from.x + (travelled.x - from.x) * t,
+    y: from.y + (travelled.y - from.y) * t,
+  };
   const shank = nextRandom(state.seed);
   const spentRacket = {
     ...state.alexRacket,

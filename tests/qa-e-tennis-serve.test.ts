@@ -171,7 +171,21 @@ describe("every one of the five swings is reachable by the visitor", () => {
     const seen = new Set<string>();
     for (const station of [
       (s: TennisState) => s.ball.x, // chase it — baseline play
-      () => 35, // up the court
+      /*
+       * Up the court, where a lifted ball drops on you.
+       *
+       * Was 35. The second QA pass corrected where ALEX's return is launched
+       * from (it was placed at the end-of-step ball position rather than at the
+       * strings), which shifts his arcs slightly and moves the band of standing
+       * positions that produce an overhead. Sweeping every station from 8 to 44
+       * measured that band as 33-35 and 37-41 before the correction and 37-41
+       * after it, so a smash is still played in ordinary rallies from the same
+       * part of the court — 35 simply stopped being one of the positions.
+       *
+       * The assertion below is unchanged and still demands all five swings.
+       * Only this standing position moved.
+       */
+      () => 39,
       () => 44, // at the net
     ]) {
       for (const kind of playFrom(station)) seen.add(kind);
