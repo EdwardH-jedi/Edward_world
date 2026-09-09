@@ -47,6 +47,14 @@ export function RunningGame({ active, onFinish }: MinigameProps) {
   // it takes the map that puts `S` on its own channel instead of on `down`.
   const { consume, bind, clear } = useMinigameInput(active, { keyMap: RUNNING_KEY_MAP });
   const [state, setState] = useState<RunningState>(createRunningState);
+  /**
+   * Whether the spurt is *held*, which is not the same as whether it is
+   * working. Standing still, winding up from cruise, or staggering on an empty
+   * tank all leave the pace at or below cruise while the control is very much
+   * pressed. The button reports the control's own state, because that is what
+   * a control's pressed state means and what a screen reader is being told.
+   */
+  const [sprintHeld, setSprintHeld] = useState(false);
   const stateRef = useRef(state);
   const finished = useRef(false);
 
@@ -55,6 +63,7 @@ export function RunningGame({ active, onFinish }: MinigameProps) {
       const next = advanceRunning(stateRef.current, input, delta);
       stateRef.current = next;
       setState(next);
+      setSprintHeld(input.sprint === true);
 
       if (next.done && !finished.current) {
         finished.current = true;
@@ -79,6 +88,8 @@ export function RunningGame({ active, onFinish }: MinigameProps) {
   const pacerX =
     START_X + (getPacerDistance(state.elapsed) / RACE_METRES) * (FINISH_X - START_X);
 
+  // The runner's own tell is about effect: he only leans into it when the legs
+  // are actually answering. The button above is about the press.
   const spurting = state.pace > CRUISE_PACE + 0.05;
 
   return (
@@ -163,7 +174,7 @@ export function RunningGame({ active, onFinish }: MinigameProps) {
 
           <button
             aria-label="Hold to spurt, spending stamina"
-            aria-pressed={spurting}
+            aria-pressed={sprintHeld}
             className="sg-play__action sg-run-sprint"
             type="button"
             {...bind("sprint")}

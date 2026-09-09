@@ -179,8 +179,9 @@ Screenshots in `docs/sportsgang-polish/evidence-c/`.
 |---|---|
 | Reads as a basketball unaided, desktop | PASS — `basketball-desktop-detail-at-rest-27px.png` |
 | Reads as a basketball unaided, mobile | PASS — `…mobile-detail-at-rest-15px.png`, all four seams survive at 15px |
-| Panels readable while spinning | PASS — `…detail-in-flight-27px.png`: seams turned, shading still lit from the upper left |
-| At rest / in flight / at the rim | PASS — three desktop captures |
+| Panels readable while spinning | PASS — `…detail-in-flight-27px.png` and `…mobile-detail-in-flight-15px.png`: seams turned, shading still lit from the upper left at both sizes |
+| At rest / in flight / at the rim | PASS — **all three states captured at both viewports** |
+| Last shot does not snap back | PASS — `DONE` now counts as in flight, so the ball stays where it finished |
 | Size against the hoop | desktop ball 27px vs ring 51.8px = **1.92**; a real ball-to-rim is 1.88 |
 | Mobile size floor | ball 15px vs ring 20.7px = 1.38 — the `clamp()` floor engages below ~500px of court, deliberately |
 | Aspect ratio fixed | PASS — measured `width === height` exactly at both viewports; no ellipse |
@@ -215,10 +216,13 @@ Measured off the live gauges and the runner's inline position.
 | Finish and restart | PASS — replay starts at 0%, 100%, 200 M, position 8% |
 | Other-sport regression | PASS — golf played through with Space; `S` inert there, prompt unchanged |
 | Mobile controls | four-way pad + held SPRINT, keys 58×45px (above the 44px target) |
-| HUD, hints, `aria-label`s | updated to the real controls; SPRINT reflects `aria-pressed` |
+| HUD, hints, `aria-label`s | updated to the real controls |
+| SPRINT `aria-pressed` | PASS — reports the **press**, not its effect: `true` while held standing still (pace 0%) and while exhausted, `false` the moment it is let go |
 
 Console during play: clean apart from a pre-existing `/favicon.ico` 404 and the
-`setPointerCapture` error the harness itself provoked (REQUESTS C-3).
+`setPointerCapture` error the harness itself provoked (REQUESTS C-3). The
+evidence was recaptured after a reload so no screenshot carries the dev-tools
+issue badge that error raised.
 
 **A layout defect was found on screen and fixed.** On a phone an existing rule
 moves the whole HUD from above the court to below it; the three-row pad made the
@@ -245,7 +249,8 @@ bottom is now 839px against an 844px viewport. Fixed in C's own CSS block only.
 
 ## 5 · Advisor
 
-Run via the configured `advisor` tool, once before committing to an approach.
+Run via the configured `advisor` tool **twice**: once before committing to an
+approach, once with the work finished and the gates green.
 Per CONTRACT.md the tool takes no model parameter and reports no model identity,
 so **the backing model could not be verified from this environment**; the brief
 names Fable 5.1, recorded as intent, not as a verified fact. Not ADVISOR_NOT_RUN
@@ -269,10 +274,24 @@ What it changed:
 - Warned that the shared MCP Chrome profile might be held by another session and
   to record `NOT_RUN` rather than fabricate. It was free.
 
-I did not take its suggestion of a `PixelCanvas` raster ball; the size analysis
-(15px on a phone, below one CSS pixel per art pixel) pointed to SVG, and
-`sport-venue.tsx` already sets that precedent for this layer. Recorded here
-because it is a deliberate departure.
+The second review caught three things, all fixed before this handoff:
+
+- **`aria-pressed` on SPRINT was reporting effect, not press.** It was wired to
+  `pace > CRUISE_PACE`, so holding the control while standing still, while
+  winding up, or while exhausted reported `false` and left the button unlit —
+  an accessible state that lies exactly when the player most needs to know the
+  control is down. Now driven by a `sprintHeld` state read from `input.sprint`.
+  The runner's own `data-pushing` tell stays on pace, because that one really is
+  about effect.
+- **The last shot snapped back to the player's hands** on the `FEEDBACK → DONE`
+  tick, because `DONE` was not counted as in flight. Fixed.
+- **The mobile evidence was missing flight and rim**, which the brief asks for
+  at both viewports, and was not listed as `NOT_RUN` either. Captured.
+
+On the art: SVG was simply the right call here. The ball is 15 CSS px on a
+phone, below one CSS pixel per art pixel for any grid fine enough to carry a
+seam, and `sport-venue.tsx` already builds this layer from geometry for that
+same reason.
 
 ---
 

@@ -135,7 +135,12 @@ export function BasketballGame({ active, onFinish }: MinigameProps) {
   // How far the shot actually travels is the release strength, nothing else.
   const reach = getShotReach(state.release);
   const travel = Math.min(reach, 1.25);
-  const inFlight = state.phase === "SHOT" || state.phase === "FEEDBACK";
+  // `DONE` counts as in flight so the last shot does not snap back to the
+  // player's hands for the frame between the session ending and the RESULT
+  // panel taking over. The state still holds that shot's `flight` and
+  // `release`, so the ball simply stays where it finished.
+  const inFlight =
+    state.phase === "SHOT" || state.phase === "FEEDBACK" || state.phase === "DONE";
 
   // The ball is in the player's hands before the shot and on its arc after it,
   // so the court is never a basketball court without a basketball on it.
