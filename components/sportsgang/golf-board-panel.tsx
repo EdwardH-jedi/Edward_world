@@ -111,6 +111,22 @@ export function GolfBoardPanel({ run, attempts }: GolfBoardPanelProps) {
 
   const checked = checkNickname(draftName);
   const nameToPublish = checked.ok ? checked.name : GUEST_NAME;
+  /**
+   * A name that was typed and cannot be used.
+   *
+   * An empty box is not a mistake — it means GUEST, which is offered on its
+   * own button. A box with 25 characters in it *is* a mistake, and QA
+   * (session E) found it was only reported after pressing a button that had
+   * meanwhile relabelled itself `SUBMIT AS GUEST`: the label promised
+   * something the press then refused to do. Saying so while it is being typed
+   * is both earlier and honest.
+   */
+  const draftUnusable = draftName.trim() !== "" && !checked.ok;
+  const liveNameError =
+    nameError ??
+    (!checked.ok && draftName.trim() !== ""
+      ? describeNicknameRejection(checked.reason)
+      : null);
 
   const confirmSubmit = useCallback(
     async (withName: boolean) => {
@@ -265,8 +281,9 @@ export function GolfBoardPanel({ run, attempts }: GolfBoardPanelProps) {
 
       {phase.kind === "NAMING" ? (
         <NicknameDialog
-          error={nameError}
+          error={liveNameError}
           nameToPublish={nameToPublish}
+          nameUnusable={draftUnusable}
           onCancel={() => {
             setNameError(null);
             setPhase({ kind: "IDLE" });
@@ -288,6 +305,8 @@ export function GolfBoardPanel({ run, attempts }: GolfBoardPanelProps) {
 interface NicknameDialogProps {
   value: string;
   nameToPublish: string;
+  /** Something is typed in the box that cannot be published. */
+  nameUnusable: boolean;
   error: string | null;
   onChange: (value: string) => void;
   onCancel: () => void;
@@ -307,6 +326,7 @@ interface NicknameDialogProps {
 function NicknameDialog({
   value,
   nameToPublish,
+  nameUnusable,
   error,
   onChange,
   onCancel,
@@ -374,14 +394,21 @@ function NicknameDialog({
         <div className="sg-name__actions">
           <button
             className="loc-button loc-button--primary"
+            disabled={nameUnusable}
             onClick={onSubmitWithName}
             type="button"
           >
             SUBMIT AS {nameToPublish}
           </button>
-          <button className="loc-button" onClick={onSubmitAsGuest} type="button">
-            SUBMIT AS {GUEST_NAME}
-          </button>
+          {/* Only worth offering separately once something is typed. With an
+              empty box the button above already reads SUBMIT AS GUEST, and two
+              identical buttons side by side are a puzzle. With an unusable
+              name it is the way out, so it stays. */}
+          {value.trim() === "" ? null : (
+            <button className="loc-button" onClick={onSubmitAsGuest} type="button">
+              SUBMIT AS {GUEST_NAME}
+            </button>
+          )}
           <button className="loc-button" onClick={onCancel} type="button">
             NOT NOW
           </button>

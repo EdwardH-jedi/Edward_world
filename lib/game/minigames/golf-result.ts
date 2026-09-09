@@ -224,8 +224,19 @@ export function toSportResult(run: GolfRunResultV1): SportResult {
   const holed = run.status === "completed";
   return {
     rank: {
-      value: run.totalStrokes,
-      display: strokeLabel(run.totalStrokes),
+      /**
+       * An abandoned hole is not a score.
+       *
+       * `totalStrokes` on a conceded run is however many shots were played
+       * before giving up — nought if the visitor conceded on the tee — and
+       * with `better: "lower"` that is a better mark than any round anyone
+       * can actually finish. QA (session E) saw the visit standings read
+       * `GOLF · 0 STROKES · BEST THIS VISIT` after two concessions. The run
+       * is still recorded and still counts as an attempt; it just cannot
+       * become the best.
+       */
+      value: holed ? run.totalStrokes : Number.POSITIVE_INFINITY,
+      display: holed ? strokeLabel(run.totalStrokes) : "NO FINISHED HOLE",
       better: "lower",
     },
     heading: holed ? "HOLED OUT" : "RUN ABANDONED",
