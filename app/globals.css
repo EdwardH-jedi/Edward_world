@@ -5233,3 +5233,86 @@ p {
 }
 
 /* @end C */
+
+/* @owner:C running — steering pad and held spurt
+   The runner's own `bottom` is set inline from the simulation's lane, so the
+   frozen `.sg-play__runner` rule keeps owning everything else about it. */
+.sg-run-controls {
+  align-items: stretch;
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Four keys on a cross, so a thumb finds a direction without looking. The two
+   that matter most — left and right, which are the race — get the middle row
+   to themselves and the width that goes with it. */
+.sg-run-pad {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 0.25rem;
+  grid-template-areas:
+    ". up ."
+    "left . right"
+    ". down .";
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.sg-run-pad__key {
+  background: transparent;
+  border: 1px solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8rem;
+  line-height: 1;
+  min-height: 2rem;
+  padding: 0.35rem 0;
+  /* Stops a drag off the key turning into a page scroll mid-race, and stops a
+     double tap being read as a zoom. */
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-run-pad__key--up { grid-area: up; }
+.sg-run-pad__key--down { grid-area: down; }
+.sg-run-pad__key--left { grid-area: left; }
+.sg-run-pad__key--right { grid-area: right; }
+
+/* The spurt sits apart from the pad rather than in it: it is a different kind
+   of control — held, not aimed — and a thumb on it must never be near enough to
+   a direction key to catch one by accident. */
+.sg-run-sprint {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  flex: 0 0 7rem;
+  flex-direction: column;
+  gap: 0.2rem;
+  justify-content: center;
+  width: auto;
+}
+
+.sg-run-sprint span {
+  font-size: 0.42rem;
+  letter-spacing: 0.2em;
+  opacity: 0.7;
+}
+
+/* Held, by either a finger or the S key. */
+.sg-run-sprint[aria-pressed="true"] {
+  background: var(--loc-cream);
+}
+
+/* A phone has less height to give the HUD, and the pad is the part that has to
+   stay thumb-sized. The gauges give up the room instead. */
+@media (max-width: 30rem) {
+  .sg-run-pad__key {
+    font-size: 0.9rem;
+    min-height: 2.4rem;
+  }
+
+  .sg-run-sprint {
+    flex-basis: 5.5rem;
+  }
+}
+
+/* @end C */

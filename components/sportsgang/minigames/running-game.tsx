@@ -1,57 +1,91 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Gauge } from "@/components/sportsgang/minigames/meter";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
 import { edwardRoutines, opponentRoutines, PLAYER_ART_SIZE } from "@/lib/pixel/sportsgang";
 import type { MinigameProps } from "@/components/sportsgang/minigames/types";
-import { useMinigameInput } from "@/components/sportsgang/minigames/use-minigame-input";
+import { useFixedStepGameLoop } from "@/components/sportsgang/minigames/use-fixed-step-loop";
+import {
+  RUNNING_KEY_MAP,
+  useMinigameInput,
+} from "@/components/sportsgang/minigames/use-minigame-input";
 import {
   advanceRunning,
   createRunningState,
   CRUISE_PACE,
+  getPacerDistance,
   getRunningResult,
   RACE_METRES,
-  TOP_SPEED_MPS,
   type RunningState,
 } from "@/lib/game/minigames/running";
-import { useGameLoop } from "@/lib/motion/use-game-loop";
 
 const START_X = 8;
 const FINISH_X = 88;
 
+/**
+ * How far a lane moves a runner up or down the screen, in court percent.
+ *
+ * The track's own lane lines sit at 34% and 66% of the surface, and the runners
+ * stand on 22%. Six percent either side keeps the whole width the player can
+ * use inside the lines that are drawn, so moving across the track lands the
+ * runner in a lane rather than in the crowd. It is a shallow band on purpose:
+ * this is a side-on track, so the width is a hint of depth, not a second axis
+ * as large as the first.
+ */
+const LANE_SPREAD = 6;
+const RUNNER_BOTTOM = 22;
+
+/** Where a lane position puts a figure, in court percent from the bottom. */
+function bottomForLane(lane: number) {
+  return RUNNER_BOTTOM - lane * LANE_SPREAD;
+}
+
 export function RunningGame({ active, onFinish }: MinigameProps) {
-  const { consume, bind } = useMinigameInput(active);
+  // Running is the one sport that needs to steer and spurt at the same time, so
+  // it takes the map that puts `S` on its own channel instead of on `down`.
+  const { consume, bind, clear } = useMinigameInput(active, { keyMap: RUNNING_KEY_MAP });
   const [state, setState] = useState<RunningState>(createRunningState);
   const stateRef = useRef(state);
   const finished = useRef(false);
 
-  useGameLoop(active, (delta) => {
-    const input = consume();
-    const next = advanceRunning(stateRef.current, input, delta);
-    stateRef.current = next;
-    setState(next);
+  const step = useCallback(
+    (delta: number, input: Parameters<typeof advanceRunning>[1]) => {
+      const next = advanceRunning(stateRef.current, input, delta);
+      stateRef.current = next;
+      setState(next);
 
-    if (next.done && !finished.current) {
-      finished.current = true;
-      onFinish(getRunningResult(next));
-    }
-  });
+      if (next.done && !finished.current) {
+        finished.current = true;
+        onFinish(getRunningResult(next));
+      }
+    },
+    [onFinish],
+  );
+
+  // One clock, and one suspension path for the clock and the held keys
+  // together. Without `onSuspend` a key held while the tab is hidden would
+  // still be held on return, and the runner would come back already moving.
+  useFixedStepGameLoop(active, consume, step, { onSuspend: clear });
 
   const progress = state.distance / RACE_METRES;
   const runnerX = START_X + progress * (FINISH_X - START_X);
 
   // A pacer holding cruise the whole way, so the player can see what an even
-  // pace looks like. Scripted, deterministic, and not presented as a rival.
-  const pacerDistance = Math.min(state.elapsed * CRUISE_PACE * TOP_SPEED_MPS, RACE_METRES);
-  const pacerX = START_X + (pacerDistance / RACE_METRES) * (FINISH_X - START_X);
+  // pace looks like. Scripted, deterministic, and not presented as a rival —
+  // and read off the simulation's own elapsed time, so it cannot drift onto a
+  // second clock and jump when the tab comes back.
+  const pacerX =
+    START_X + (getPacerDistance(state.elapsed) / RACE_METRES) * (FINISH_X - START_X);
+
+  const spurting = state.pace > CRUISE_PACE + 0.05;
 
   return (
     <div className="sg-play sg-play--running">
       <div
         className="sg-play__runner sg-play__runner--pacer"
-        style={{ left: `${pacerX}%` }}
+        style={{ bottom: `${bottomForLane(0)}%`, left: `${pacerX}%` }}
       >
         <PixelCanvas
           artHeight={PLAYER_ART_SIZE.height}
@@ -64,13 +98,15 @@ export function RunningGame({ active, onFinish }: MinigameProps) {
       </div>
       <div
         className="sg-play__runner sg-play__runner--player"
-        data-pushing={state.pace > CRUISE_PACE + 0.05 || undefined}
-        style={{ left: `${runnerX}%` }}
+        data-pushing={spurting || undefined}
+        style={{ bottom: `${bottomForLane(state.lane)}%`, left: `${runnerX}%` }}
       >
         <PixelCanvas
           artHeight={PLAYER_ART_SIZE.height}
           artWidth={PLAYER_ART_SIZE.width}
           draw={edwardRoutines.ready}
+          // Faces the way he is actually going, so turning round reads.
+          flipX={state.heading === -1}
           frame={0}
           unit={PIXEL_UNIT}
         />
@@ -85,16 +121,60 @@ export function RunningGame({ active, onFinish }: MinigameProps) {
           <Gauge label="STAMINA" value={state.stamina} />
         </div>
 
-        <div className="sg-play__pair">
-          <button className="sg-play__action" type="button" {...bind("up")}>
-            PUSH
-          </button>
-          <button className="sg-play__action sg-play__action--quiet" type="button" {...bind("down")}>
-            EASE
+        {/* Touch gets the same two things the keyboard has and can hold both at
+            once: a pad for the four directions, and a spurt that lasts as long
+            as a finger is on it. They are separate channels, so a finger coming
+            off one cannot cancel the other. */}
+        <div className="sg-run-controls">
+          <div className="sg-run-pad">
+            <button
+              aria-label="Move up a lane"
+              className="sg-run-pad__key sg-run-pad__key--up"
+              type="button"
+              {...bind("up")}
+            >
+              ↑
+            </button>
+            <button
+              aria-label="Run left, back down the track"
+              className="sg-run-pad__key sg-run-pad__key--left"
+              type="button"
+              {...bind("left")}
+            >
+              ←
+            </button>
+            <button
+              aria-label="Run right, towards the finish"
+              className="sg-run-pad__key sg-run-pad__key--right"
+              type="button"
+              {...bind("right")}
+            >
+              →
+            </button>
+            <button
+              aria-label="Move down a lane"
+              className="sg-run-pad__key sg-run-pad__key--down"
+              type="button"
+              {...bind("down")}
+            >
+              ↓
+            </button>
+          </div>
+
+          <button
+            aria-label="Hold to spurt, spending stamina"
+            aria-pressed={spurting}
+            className="sg-play__action sg-run-sprint"
+            type="button"
+            {...bind("sprint")}
+          >
+            SPRINT
+            <span>HOLD</span>
           </button>
         </div>
+
         <p className="sg-play__hint">
-          W / ↑ TO PUSH · S / ↓ TO EASE · ABOVE CRUISE COSTS STAMINA
+          ← → TO RUN · ↑ ↓ FOR THE LANES · HOLD S TO SPURT · LET GO TO EASE OFF
         </p>
       </div>
     </div>
