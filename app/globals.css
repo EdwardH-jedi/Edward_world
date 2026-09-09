@@ -5952,6 +5952,22 @@ p {
   color: var(--loc-cream);
 }
 
+/*
+ * When the public board is on screen, the per-visit panel moves out from
+ * behind it and sits underneath.
+ *
+ * The two are deliberately separate things — one is best-per-player across
+ * everyone, the other is this visitor's own attempts — and they were reading
+ * as one smudged panel because both are absolutely positioned near the top.
+ * The selector is anchored on this session's own class and only matches when
+ * the board is rendered, so the frozen `.sg-rank` rule is untouched and every
+ * other sport's RANK beat is exactly where it was.
+ */
+.sg-board ~ .sg-rank {
+  bottom: 4%;
+  top: auto;
+}
+
 /* ── The nickname box ───────────────────────────────────────────────────── */
 
 .sg-name {
@@ -6028,6 +6044,18 @@ p {
 }
 
 /* ── The world's right-hand exit ────────────────────────────────────────── */
+
+/* The gate is the only interactable that stands at the camera's right-hand
+   clamp, so it is the only one whose centred prompt has nothing to its right
+   to overflow into — measured at 1440x900, the chip ran 6px past the viewport.
+   Anchoring this one prompt to the gate's right post instead of its centre
+   keeps it on screen without moving the gate off the end of the world or
+   touching the shared rule every other object uses. */
+.world-object[data-object-id="world-exit"] .world-object__prompt {
+  left: auto;
+  right: 0;
+  transform: none;
+}
 
 /* The fireworks sit behind the words and are decorative: `aria-hidden`, no
    pointer events, and never the thing that has to be read. */

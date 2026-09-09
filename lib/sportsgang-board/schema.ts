@@ -27,7 +27,6 @@ import {
 import {
   checkNickname,
   displayNameFor,
-  GUEST_NAME,
 } from "@/lib/sportsgang-board/nickname";
 
 /** Largest submission body the route will read, in bytes. */
@@ -42,7 +41,7 @@ export interface GolfSubmission {
    */
   readonly anonId: string;
   /** What the visitor agreed to be shown as, or absent for `GUEST`. */
-  readonly displayName?: string;
+  readonly displayName?: string | null;
 }
 
 /**
@@ -133,7 +132,9 @@ export function validateSubmission(
     return reject("BAD_RUN_ID", "runId is not a uuid");
   }
 
-  if (displayName !== undefined) {
+  // Absent and null both mean "no name given", which is GUEST. Only a name
+  // that was actually offered and cannot be used is an error.
+  if (displayName !== undefined && displayName !== null) {
     if (typeof displayName !== "string") {
       return reject("BAD_NICKNAME", "displayName is not a string");
     }
@@ -253,7 +254,7 @@ export function validateSubmission(
       longestDriveM: run.longestDriveM,
       // Normalised on the server too. What a visitor agreed to publish and
       // what appears on the board have to be the same string.
-      displayName: displayName === undefined ? GUEST_NAME : displayNameFor(displayName),
+      displayName: displayNameFor(displayName),
     },
   };
 }
