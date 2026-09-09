@@ -277,6 +277,20 @@ describe("power and timing decide the shot, and nothing else does", () => {
     expect(GOLF_TUNING.noContactStrike).toBeLessThan(1);
   });
 
+  it("runs no further than the range its own club advertises", () => {
+    // The range beside the club is the estimator; the shot is the simulation.
+    // If they disagree the player is being told a number nobody used.
+    let state = createGolfHoleState();
+    const player: Player = { power: 0.97, contactTolerance: 0.03 };
+    while (state.phase !== "SHOT_END") {
+      state = advanceGolfHole(state, inputFor(state, player, 0), DT);
+    }
+    const advertised = estimateShotDistanceM(GOLF_COURSE, "DRIVER", state.power, "TEE");
+    expect(state.lastShotM).toBeLessThanOrEqual(advertised);
+    // And not so far under it that the estimate is decorative.
+    expect(state.lastShotM).toBeGreaterThan(advertised * 0.9);
+  });
+
   it("aims relative to the flag, so a held key really moves the line", () => {
     let state = createGolfHoleState();
     expect(state.aimDeg).toBe(0);
@@ -363,6 +377,17 @@ describe("one hole, played to the end", () => {
     expect(wild.state.penaltyStrokes).toBeGreaterThan(0);
     // Stroke and distance: the score went up, the ball did not move forward.
     expect(wild.state.totalStrokes).toBeGreaterThan(wild.state.shotCount);
+  });
+
+  it("does not turn a ball already in the cup into an abandoned run", () => {
+    let state = createGolfHoleState();
+    while (state.phase !== "HOLED") {
+      state = advanceGolfHole(state, inputFor(state, GOOD, 0), DT);
+    }
+    // Leaving while the ball is sitting in the hole finished the hole.
+    const left = abandonGolfHole(state);
+    expect(left.status).toBe("completed");
+    expect(getGolfHoleResult(left).heading).toBe("HOLED OUT");
   });
 
   it("holes out, and says so, when the ball actually goes in", () => {

@@ -231,11 +231,17 @@ function distanceFromHoleToSegment(from: GolfPoint, to: GolfPoint) {
  * cup's radius, **and** it was travelling slowly enough to fall in rather than
  * across. Nothing about the camera, the screen or how close it looks is
  * consulted.
+ *
+ * `rollRetention` is the share of landing speed that survives the bounce. It
+ * belongs to the club and is applied here, in the one place a ball lands, so
+ * the range printed beside the club and the distance the shot actually runs
+ * are the same calculation.
  */
 export function stepBallMotion(
   course: GolfCourse,
   motion: BallMotion,
   dt: number,
+  rollRetention = 1,
 ): BallMotion {
   if (motion.holed || motion.atRest) return motion;
 
@@ -255,8 +261,8 @@ export function stepBallMotion(
         x: motion.x + vx * dt * fraction,
         y: motion.y + vy * dt * fraction,
         z: 0,
-        vx,
-        vy,
+        vx: vx * rollRetention,
+        vy: vy * rollRetention,
         vz: 0,
         airborne: false,
         holed: false,
@@ -366,18 +372,9 @@ export function estimateShotDistanceM(
     },
   };
 
-  let landingSpeed = 0;
   const dt = 1 / 60;
   for (let step = 0; step < 60 * 60 && !motion.atRest; step += 1) {
-    const wasAirborne = motion.airborne;
-    const next = stepBallMotion(estimateCourse, motion, dt);
-    if (wasAirborne && !next.airborne) {
-      // The bounce: only a share of the landing speed becomes roll.
-      landingSpeed = Math.hypot(next.vx, next.vy) * club.rollRetention;
-      motion = { ...next, vx: landingSpeed, vy: 0 };
-      continue;
-    }
-    motion = next;
+    motion = stepBallMotion(estimateCourse, motion, dt, club.rollRetention);
   }
   return motion.x;
 }
@@ -517,6 +514,9 @@ function finishRun(state: GolfHoleState, status: GolfRunStatus): GolfHoleState {
  */
 export function abandonGolfHole(state: GolfHoleState): GolfHoleState {
   if (state.phase === "RESULT") return state;
+  // The ball is in the cup and the run is only waiting on a dwell. Leaving now
+  // finished the hole; reporting it abandoned would lose a hole that was holed.
+  if (state.phase === "HOLED") return finishRun(state, "completed");
   return finishRun(state, "abandoned");
 }
 
@@ -734,7 +734,12 @@ export function advanceGolfHole(
         swingTime < GOLF_SWING.impactAtSeconds + GOLF_SWING.followThroughSeconds
           ? "FOLLOW_THROUGH"
           : "FINISH";
-      const ball = stepBallMotion(GOLF_COURSE, state.ball, dt);
+      const ball = stepBallMotion(
+        GOLF_COURSE,
+        state.ball,
+        dt,
+        GOLF_CLUBS[state.club].rollRetention,
+      );
       const moving: GolfHoleState = {
         ...base,
         ball,
