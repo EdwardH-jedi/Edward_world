@@ -5209,3 +5209,71 @@ p {
 
   .sg-tennis__verdict { opacity: 1; }
 }
+
+/* @owner:A tennis — swing poses, the serve toss, and the diagnostic overlay.
+   Appended as its own block so B and C can append theirs without a conflict;
+   nothing above this line is touched. */
+
+/* The toss reads as the same ball, dimmer, because it is not live yet. */
+.sg-tennis__ball--toss {
+  opacity: 0.85;
+  z-index: 1;
+}
+
+/* Each swing gets its own weight shift. The racket itself is drawn by the
+   sprite — this is the body leaning into it, which is what the old single
+   `scale(1.08)` was standing in for. */
+.sg-tennis__figure[data-swing] canvas {
+  transform: translateX(-50%);
+}
+.sg-tennis__figure[data-swing="FOREHAND"] canvas,
+.sg-tennis__figure[data-swing="BACKHAND"] canvas {
+  transform: translateX(-50%) scale(1.04);
+}
+.sg-tennis__figure[data-swing="VOLLEY"] canvas {
+  transform: translateX(-50%) scale(1.02);
+}
+.sg-tennis__figure[data-swing="SERVE"] canvas,
+.sg-tennis__figure[data-swing="SMASH"] canvas {
+  transform: translateX(-50%) scale(1.08);
+}
+
+/* Diagnostic overlay. Rendered only when `debug` is passed, which nothing in
+   the application does — the venue mounts the game with `active` and
+   `onFinish` and nothing else. */
+.sg-tennis-debug__box {
+  border: 1px solid rgb(201 138 82 / 90%);
+  position: absolute;
+  pointer-events: none;
+  z-index: 4;
+}
+.sg-tennis-debug__anchor {
+  background: #c98a52;
+  height: 0.8%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.8%;
+  z-index: 5;
+}
+.sg-tennis-debug__ball {
+  background: #6f8892;
+  height: 0.6%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.6%;
+  z-index: 5;
+}
+.sg-tennis-debug__read {
+  background: rgb(34 31 26 / 92%);
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.5rem;
+  left: 0;
+  letter-spacing: 0.04em;
+  margin: 0;
+  padding: 0.2rem 0.4rem;
+  position: absolute;
+  top: 0;
+  z-index: 6;
+}
+/* @end A */

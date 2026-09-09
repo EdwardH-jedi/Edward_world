@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1810" height="224" viewBox="0 0 1810 224">
+<rect width="1810" height="224" fill="#12100d"/>
+<text x="4" y="14" fill="#efe7d3" font-family="monospace" font-size="11">Tennis contact, one simulation tick per cell — ball (cream), racket anchor (orange), strike zone (dashed), player (blue)</text>
+<g transform="translate(0,22)">
+<g transform="translate(0,0)">
+  <rect width="250" height="190" fill="#1e1b17" stroke="#3a352d"/>
+  <line x1="0" y1="156" x2="250" y2="156" stroke="#57473a" stroke-width="2"/>
+  <line x1="124" y1="156" x2="124" y2="130" stroke="#8a8175" stroke-width="2"/>
+  <rect x="61.62731481481487" y="113.74197530864197"
+        width="11.583333333333332" height="41.38333333333333"
+        fill="none" stroke="#c98a52" stroke-dasharray="3 2"/>
+  <circle cx="67.41898148148154" cy="134.43364197530866" r="3" fill="#c98a52"/>
+  <circle cx="66.46750401593758" cy="124.8578267973856" r="3.5" fill="#f2e4a8"/>
+  <rect x="57.15509259259265" y="142" width="4" height="14" fill="#6f8892"/>
+  <text x="6" y="14" fill="#efe7d3" font-family="monospace" font-size="9">tick 336</text>
+  <text x="6" y="26" fill="#b5ab97" font-family="monospace" font-size="8">FOREHAND p=0.22</text>
+  <text x="6" y="172" fill="#b5ab97" font-family="monospace" font-size="8">ball 26.6,7.2</text>
+  <text x="6" y="182" fill="#c98a52" font-family="monospace" font-size="8">anchor 27.0,5.0</text>
+  
+</g>
+<g transform="translate(260,0)">
+  <rect width="250" height="190" fill="#1e1b17" stroke="#3a352d"/>
+  <line x1="0" y1="156" x2="250" y2="156" stroke="#57473a" stroke-width="2"/>
+  <line x1="124" y1="156" x2="124" y2="130" stroke="#8a8175" stroke-width="2"/>
+  <rect x="59.71064814814821" y="111.73580246913582"
+        width="11.583333333333332" height="41.38333333333333"
+        fill="none" stroke="#c98a52" stroke-dasharray="3 2"/>
+  <circle cx="65.50231481481488" cy="132.42746913580248" r="3" fill="#c98a52"/>
+  <circle cx="65.01613911961812" cy="125.38168191721131" r="3.5" fill="#f2e4a8"/>
+  <rect x="55.23842592592598" y="142" width="4" height="14" fill="#6f8892"/>
+  <text x="6" y="14" fill="#efe7d3" font-family="monospace" font-size="9">tick 337</text>
+  <text x="6" y="26" fill="#b5ab97" font-family="monospace" font-size="8">FOREHAND p=0.28</text>
+  <text x="6" y="172" fill="#b5ab97" font-family="monospace" font-size="8">ball 26.0,7.1</text>
+  <text x="6" y="182" fill="#c98a52" font-family="monospace" font-size="8">anchor 26.2,5.4</text>
+  
+</g>
+<g transform="translate(520,0)">
+  <rect width="250" height="190" fill="#1e1b17" stroke="#3a352d"/>
+  <line x1="0" y1="156" x2="250" y2="156" stroke="#57473a" stroke-width="2"/>
+  <line x1="124" y1="156" x2="124" y2="130" stroke="#8a8175" stroke-width="2"/>
+  <rect x="57.7978395061729" y="109.72962962962964"
+        width="11.583333333333332" height="41.38333333333333"
+        fill="none" stroke="#c98a52" stroke-dasharray="3 2"/>
+  <circle cx="63.58950617283956" cy="130.4212962962963" r="3" fill="#c98a52"/>
+  <circle cx="63.564774223298656" cy="126.23053703703701" r="3.5" fill="#f2e4a8"/>
+  <rect x="53.58796296296302" y="142" width="4" height="14" fill="#6f8892"/>
+  <text x="6" y="14" fill="#efe7d3" font-family="monospace" font-size="9">tick 338</text>
+  <text x="6" y="26" fill="#b5ab97" font-family="monospace" font-size="8">FOREHAND p=0.33</text>
+  <text x="6" y="172" fill="#b5ab97" font-family="monospace" font-size="8">ball 25.4,6.9</text>
+  <text x="6" y="182" fill="#c98a52" font-family="monospace" font-size="8">anchor 25.4,5.9</text>
+  
+</g>
+<g transform="translate(780,0)">
+  <rect width="250" height="190" fill="#1e1b17" stroke="#d8a24a"/>
+  <line x1="0" y1="156" x2="250" y2="156" stroke="#57473a" stroke-width="2"/>
+  <line x1="124" y1="156" x2="124" y2="130" stroke="#8a8175" stroke-width="2"/>
+  <rect x="55.97633744855973" y="107.72345679012346"
+        width="11.583333333333332" height="41.38333333333333"
+        fill="none" stroke="#c98a52" stroke-dasharray="3 2"/>
+  <circle cx="61.768004115226404" cy="128.41512345679013" r="3" fill="#c98a52"/>
+  <circle cx="63.390610435740314" cy="126.3713996514161" r="3.5" fill="#f2e4a8"/>
+  <rect x="52.203703703703766" y="142" width="4" height="14" fill="#6f8892"/>
+  <text x="6" y="14" fill="#efe7d3" font-family="monospace" font-size="9">tick 339</text>
+  <text x="6" y="26" fill="#b5ab97" font-family="monospace" font-size="8">FOREHAND p=0.39</text>
+  <text x="6" y="172" fill="#b5ab97" font-family="monospace" font-size="8">ball 25.4,6.8</text>
+  <text x="6" y="182" fill="#c98a52" font-family="monospace" font-size="8">anchor 24.7,6.4</text>
+  <text x="6" y="40" fill="#d8a24a" font-family="monospace" font-size="9">HIT t=0.12 LATE</text>
+</g>
+<g transform="translate(1040,0)">
+  <rect width="250" height="190" fill="#1e1b17" stroke="#3a352d"/>
+  <line x1="0" y1="156" x2="250" y2="156" stroke="#57473a" stroke-width="2"/>
+  <line x1="124" y1="156" x2="124" y2="130" stroke="#8a8175" stroke-width="2"/>
+  <rect x="54.42103909465026" y="105.71728395061729"
+        width="11.583333333333332" height="41.38333333333333"
+        fill="none" stroke="#c98a52" stroke-dasharray="3 2"/>
+  <circle cx="60.212705761316926" cy="126.40895061728395" r="3" fill="#c98a52"/>
+  <circle cx="65.60028062984294" cy="116.80239278883582" r="3.5" fill="#f2e4a8"/>
+  <rect x="51.08564814814821" y="142" width="4" height="14" fill="#6f8892"/>
+  <text x="6" y="14" fill="#efe7d3" font-family="monospace" font-size="9">tick 340</text>
+  <text x="6" y="26" fill="#b5ab97" font-family="monospace" font-size="8">FOREHAND p=0.44</text>
+  <text x="6" y="172" fill="#b5ab97" font-family="monospace" font-size="8">ball 26.2,9.0</text>
+  <text x="6" y="182" fill="#c98a52" font-family="monospace" font-size="8">anchor 24.1,6.8</text>
+  
+</g>
+<g transform="translate(1300,0)">
+  <rect width="250" height="190" fill="#1e1b17" stroke="#3a352d"/>
+  <line x1="0" y1="156" x2="250" y2="156" stroke="#57473a" stroke-width="2"/>
+  <line x1="124" y1="156" x2="124" y2="130" stroke="#8a8175" stroke-width="2"/>
+  <rect x="52.21373456790129" y="100.50123456790124"
+        width="11.583333333333332" height="41.38333333333333"
+        fill="none" stroke="#c98a52" stroke-dasharray="3 2"/>
+  <circle cx="58.005401234567955" cy="121.1929012345679" r="3" fill="#c98a52"/>
+  <circle cx="67.80995082394557" cy="107.55838592625554" r="3.5" fill="#f2e4a8"/>
+  <rect x="50.23379629629635" y="142" width="4" height="14" fill="#6f8892"/>
+  <text x="6" y="14" fill="#efe7d3" font-family="monospace" font-size="9">tick 341</text>
+  <text x="6" y="26" fill="#b5ab97" font-family="monospace" font-size="8">FOREHAND p=0.50</text>
+  <text x="6" y="172" fill="#b5ab97" font-family="monospace" font-size="8">ball 27.1,11.2</text>
+  <text x="6" y="182" fill="#c98a52" font-family="monospace" font-size="8">anchor 23.2,8.0</text>
+  
+</g>
+<g transform="translate(1560,0)">
+  <rect width="250" height="190" fill="#1e1b17" stroke="#3a352d"/>
+  <line x1="0" y1="156" x2="250" y2="156" stroke="#57473a" stroke-width="2"/>
+  <line x1="124" y1="156" x2="124" y2="130" stroke="#8a8175" stroke-width="2"/>
+  <rect x="50.1706104252401" y="94.92853223593964"
+        width="11.583333333333332" height="41.38333333333333"
+        fill="none" stroke="#c98a52" stroke-dasharray="3 2"/>
+  <circle cx="55.96227709190677" cy="115.62019890260632" r="3" fill="#c98a52"/>
+  <circle cx="70.0196210180482" cy="98.63937906367525" r="3.5" fill="#f2e4a8"/>
+  <rect x="49.648148148148195" y="142" width="4" height="14" fill="#6f8892"/>
+  <text x="6" y="14" fill="#efe7d3" font-family="monospace" font-size="9">tick 342</text>
+  <text x="6" y="26" fill="#b5ab97" font-family="monospace" font-size="8">FOREHAND p=0.56</text>
+  <text x="6" y="172" fill="#b5ab97" font-family="monospace" font-size="8">ball 28.0,13.2</text>
+  <text x="6" y="182" fill="#c98a52" font-family="monospace" font-size="8">anchor 22.4,9.3</text>
+  
+</g>
+</g>
+</svg>
