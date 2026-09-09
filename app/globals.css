@@ -5209,3 +5209,27 @@ p {
 
   .sg-tennis__verdict { opacity: 1; }
 }
+
+/* @owner:C basketball — the ball itself
+   Sizing only. Position, the 1:1 box and the `translate(-50%, 50%)` that puts
+   the simulation's ball centre at the element's centre all stay on the frozen
+   `.sg-play__ball` rule above, so the arc, the ring and the judging are
+   measured against exactly what they were before. Scoped to `.sg-ball`, which
+   only basketball carries: the tennis and golf balls are untouched. */
+.sg-ball {
+  /* The court is `min(92vw, 900px)`, and the ring inside it is 5.76% of that.
+     3% puts the ball at just under half the ring's width, which is where a
+     basketball sits against a real hoop. On a phone that percentage would come
+     out near 10px, too small for four seams to survive, so it is floored — the
+     floor is reached only below about 500px of court, and takes the ball to
+     roughly three quarters of the ring rather than past it. */
+  width: clamp(15px, 3%, 30px);
+}
+
+.sg-ball__art {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* @end C */
