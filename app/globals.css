@@ -5209,3 +5209,410 @@ p {
 
   .sg-tennis__verdict { opacity: 1; }
 }
+
+/* @owner:B golf — one hole
+   Appended as its own block and prefixed `.sg-golf-*` / `.sg-golf__*`, so a
+   merge with the other sports touches nothing shared. The 162 existing `.sg-`
+   rules are not edited.
+
+   Geometry note: the HUD sits above the play box and the controls below it,
+   exactly as tennis does. That is not decoration — it is what keeps the cup,
+   which is drawn on the ground line inside the box, from ever being covered
+   by a panel, a button or the flag's cloth. */
+
+.sg-golf__scene {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+.sg-golf__scene:focus-visible {
+  outline: 2px solid var(--loc-orange);
+  outline-offset: 2px;
+}
+
+.sg-golf__ground {
+  background: linear-gradient(180deg, #93a06c 0%, #7d8b5c 40%, #6d7a4f 100%);
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+/* Distance posts stand on the ball's own ground line, so the camera moving
+   under them is the thing that reads as travel. */
+.sg-golf__marker {
+  height: 9%;
+  position: absolute;
+  width: 0;
+}
+
+.sg-golf__marker::before {
+  background: rgb(87 83 74 / 55%);
+  content: "";
+  inset: 0 auto 0 0;
+  position: absolute;
+  width: 1px;
+}
+
+.sg-golf__marker span {
+  color: rgb(52 50 42 / 85%);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.5rem;
+  left: 0;
+  letter-spacing: 0.1em;
+  position: absolute;
+  top: calc(100% + 2px);
+  transform: translateX(-50%);
+}
+
+/* The putting surface, and the cup cut into it. Both are sized from the
+   camera's span in metres, so walking up to the hole makes it bigger on
+   screen the way walking up to a hole does. */
+.sg-golf__green {
+  aspect-ratio: 3.4;
+  background: #a8b47c;
+  border-radius: 50%;
+  box-shadow: inset 0 -2px 0 rgb(109 122 79 / 60%);
+  min-width: 10px;
+  position: absolute;
+  transform: translate(-50%, 50%);
+}
+
+.sg-golf__hole {
+  aspect-ratio: 2.2;
+  background: #17140f;
+  border-radius: 50%;
+  box-shadow: 0 -1px 0 rgb(240 235 216 / 45%);
+  min-width: 5px;
+  position: absolute;
+  transform: translate(-50%, 50%);
+}
+
+/* Anchored by the base of its own pin, with the cloth flying right — so the
+   flag marks the cup without standing in front of it. */
+.sg-golf__flag {
+  height: 26%;
+  position: absolute;
+}
+
+.sg-golf__flag canvas {
+  display: block;
+  height: 100%;
+  image-rendering: pixelated;
+  width: auto;
+}
+
+.sg-golf__trail {
+  aspect-ratio: 1;
+  background: var(--loc-cream);
+  border-radius: 50%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.35%;
+}
+
+.sg-golf__shadow {
+  aspect-ratio: 3;
+  background: rgb(40 44 28 / 100%);
+  border-radius: 50%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 1%;
+}
+
+.sg-golf__ball {
+  aspect-ratio: 1;
+  background: var(--loc-glow, #f7f1e2);
+  border-radius: 50%;
+  box-shadow: inset -1px -1px 0 #c4baa3;
+  min-width: 4px;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.6%;
+}
+
+.sg-golf__ball[data-airborne] {
+  box-shadow: inset -1px -1px 0 #c4baa3, 0 0 0 1px rgb(255 255 255 / 35%);
+}
+
+/* Positioned by the club head of its own impact pose, as a share of its own
+   box — so the club meets the ball at any rendered size. */
+.sg-golf__figure {
+  height: 32%;
+  position: absolute;
+}
+
+.sg-golf__figure canvas {
+  display: block;
+  height: 100%;
+  image-rendering: pixelated;
+  width: auto;
+}
+
+.sg-golf__readout {
+  color: #2b2823;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  margin: 0;
+  position: absolute;
+  text-shadow: 0 1px 0 rgb(239 231 211 / 70%);
+  top: 6%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* ── The course map, always up ─────────────────────────────────────────────
+   Seen from above, because line is the one thing a side-on view cannot show:
+   the ball's sideways error is its position across this strip. */
+.sg-golf__map {
+  background: rgb(34 31 26 / 88%);
+  border: 1px solid #57534a;
+  bottom: calc(100% + 0.35rem);
+  height: 1.15rem;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(92vw, 30rem);
+}
+
+.sg-golf__map-fairway {
+  background: #6d7a4f;
+  height: 45%;
+  left: 4%;
+  position: absolute;
+  top: 27.5%;
+  width: 91%;
+}
+
+.sg-golf__map-green {
+  background: #a8b47c;
+  border-radius: 50%;
+  height: 80%;
+  position: absolute;
+  right: 1.5%;
+  top: 10%;
+  width: 6%;
+}
+
+.sg-golf__map-flag {
+  background: var(--loc-orange);
+  height: 40%;
+  position: absolute;
+  right: 3.6%;
+  top: 30%;
+  width: 2px;
+}
+
+.sg-golf__map-ball {
+  background: var(--loc-cream);
+  border-radius: 50%;
+  height: 4px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 4px;
+}
+
+.sg-golf__map-label {
+  color: #8d8575;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.4rem;
+  left: 0.4rem;
+  letter-spacing: 0.12em;
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ── HUD ───────────────────────────────────────────────────────────────── */
+.sg-golf__hud {
+  background: rgb(34 31 26 / 92%);
+  border: 1px solid #57534a;
+  bottom: calc(100% + 1.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  left: 50%;
+  padding: 0.6rem 0.9rem;
+  pointer-events: auto;
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(92vw, 30rem);
+}
+
+.sg-golf__line {
+  align-items: baseline;
+  color: #8d8575;
+  display: flex;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.45rem;
+  gap: 0.5rem;
+  justify-content: space-between;
+  letter-spacing: 0.16em;
+  margin: 0;
+}
+
+.sg-golf__line strong {
+  color: var(--loc-cream);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+}
+
+.sg-golf__stats {
+  display: grid;
+  gap: 0.3rem 0.7rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.sg-golf__stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.sg-golf__stats dt {
+  color: #7d766a;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.4rem;
+  letter-spacing: 0.14em;
+}
+
+.sg-golf__stats dd {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+/* A penalty raises the score without giving you another ball, so the two
+   numbers have to be able to disagree on screen as well as in the record. */
+.sg-golf__stats dd[data-penalised] {
+  color: var(--loc-orange);
+}
+
+.sg-golf__prompt {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  margin: 0;
+  text-align: center;
+}
+
+.sg-golf__aim {
+  color: var(--loc-orange);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.16em;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Controls ──────────────────────────────────────────────────────────── */
+.sg-golf__controls {
+  bottom: -3.2rem;
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  left: 50%;
+  pointer-events: auto;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.sg-golf__button {
+  background: #3a352c;
+  border: 1px solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 0.8rem;
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-golf__button:disabled {
+  color: #6d675c;
+  opacity: 0.55;
+}
+
+.sg-golf__button--action {
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
+  color: #241f18;
+  min-width: 8rem;
+}
+
+.sg-golf__button--quiet {
+  background: transparent;
+  color: #a29a8a;
+  font-size: 0.5rem;
+}
+
+.sg-golf__hint {
+  bottom: -5.2rem;
+  color: #a29a8a;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.5rem;
+  left: 50%;
+  letter-spacing: 0.12em;
+  margin: 0;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Short landscape puts the panels beside the hole rather than above it, the
+   same way the shared layout already does for the other sports. */
+@media (max-height: 500px) and (max-width: 950px) and (orientation: landscape) {
+  .sg-golf__hud,
+  .sg-golf__map {
+    bottom: auto;
+    left: calc(100% + 1rem);
+    transform: none;
+    width: 16rem;
+  }
+
+  .sg-golf__hud { top: -2.5rem; }
+  .sg-golf__map { top: 9.5rem; }
+
+  .sg-golf__controls {
+    bottom: auto;
+    flex-wrap: wrap;
+    left: calc(100% + 1rem);
+    top: 11.5rem;
+    transform: none;
+    width: 16rem;
+  }
+
+  .sg-golf__hint {
+    bottom: auto;
+    left: calc(100% + 1rem);
+    top: 15.5rem;
+    transform: none;
+    white-space: normal;
+    width: 16rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .sg-golf__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-golf__button--action { min-width: 6rem; }
+}
+
+/* Reduced motion takes the shake and the cloth's ripple, and nothing that
+   decides a shot: the power bar, the contact window and the strike are
+   identical either way. */
+@media (prefers-reduced-motion: reduce) {
+  .sg-golf__trail { opacity: 0.25 !important; }
+}
+/* @end B */
