@@ -41,7 +41,7 @@ export function ProjectSummary({
   onExit,
   onReplay,
   replayLabel = "REPLAY",
-  caseStudyLabel = "VIEW CASE STUDY",
+  caseStudyLabel = "PROJECT DETAILS",
   children,
 }: ProjectSummaryProps) {
   const project = getProjectById(projectId);

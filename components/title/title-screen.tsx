@@ -63,12 +63,16 @@ export function TitleScreen({ onEnter, onOpenIndex }: TitleScreenProps) {
           </h1>
         </div>
 
+        <p className="title-purpose">
+          A software and AI portfolio you can explore.
+        </p>
+
         <button className="title-enter" onClick={onEnter} type="button">
           [ PRESS ENTER ]
         </button>
 
         <button className="title-skip" onClick={onOpenIndex} type="button">
-          SKIP TO INDEX →
+          VIEW PROJECTS →
         </button>
       </div>
     </main>

@@ -17,7 +17,6 @@ import { sprite } from "@/lib/pixel/raster";
  */
 
 export const EDWARD_ART_SIZE = { width: 12, height: 16 } as const;
-export const TOMODACHI_ART_SIZE = { width: 12, height: 11 } as const;
 
 /** Poses the world actually asks for. `walk` doubles as the standing side idle. */
 export type EdwardPose = "walk" | "front" | "back" | "inspect";
@@ -160,7 +159,14 @@ const EDWARD_INSPECT: SpriteRows = [
 /* ── Drawing ────────────────────────────────────────────────────────────── */
 
 /** Art pixels of travel per walk frame. Tied to distance, not to time. */
-const WALK_FRAME_DISTANCE = 5;
+/**
+ * Art pixels travelled per walk-cycle frame.
+ *
+ * Scaled with the walking speed (5 at 280px/s, 8 at 480) so the legs keep
+ * their original ~15 steps a second. Left at 5 the speed rise alone would have
+ * turned the walk into a sprint without anyone choosing that.
+ */
+const WALK_FRAME_DISTANCE = 8;
 
 /**
  * Selects a walk frame from distance travelled so the feet stay in step with
@@ -218,38 +224,34 @@ export const edwardPoses: Readonly<Record<EdwardPose, ArtRoutine>> = {
 /** The side walk cycle, for the surfaces that only ever walk him left and right. */
 export const drawEdward: ArtRoutine = edwardPoses.walk;
 
-/* ── TOMODACHI ──────────────────────────────────────────────────────────── */
+/* ── Anchoring ──────────────────────────────────────────────────────────── */
 
-const TOMODACHI_MAP: SpriteMap = {
-  b: palette.crtShell,
-  z: palette.cream,
-  s: palette.char,
-  E: palette.cream,
-  o: palette.cream,
-  e: palette.cream,
-  m: palette.stone3,
-  f: palette.hair,
-};
-
-/** Chunky beige CRT, one small eye and one big. Never dominates the frame. */
-const TOMODACHI_ROWS: SpriteRows = [
-  ".bbbbbbbbbb.",
-  "bzzzzzzzzzzb",
-  "bzsssssssszb",
-  "bzsEEE..e.zb",
-  "bzsEoE....zb",
-  "bzsEEE.mm.zb",
-  "bzzzzzzzzzzb",
-  ".bbbbbbbbbb.",
-  "..f......f..",
-  "..f......f..",
-  ".fff....fff.",
-];
-
-export const drawTomodachi: ArtRoutine = (draw, frame) => {
-  // Idles with a one pixel bob, so it reads as alive without pulling focus.
-  const bob = frame % 4 < 2 ? 0 : 1;
-  sprite(draw, 0, bob, TOMODACHI_ROWS, TOMODACHI_MAP);
-  if (frame % 5 === 0) draw(3, 3 + bob, 3, 3, palette.char);
-  if (frame % 7 === 0) draw(8, 3 + bob, 1, 1, palette.char);
-};
+/**
+ * Where a character sprite sits inside its *gameplay* footprint.
+ *
+ * The two are not the same rectangle and must not be assumed to be. `size` in
+ * `data/world.ts` is the hitbox — the only rectangle movement, world bounds,
+ * the camera and proximity ever read. This returns the rectangle the art is
+ * drawn into: anchored feet-down and centred horizontally, so art on a taller
+ * or wider grid grows upward and outward from the same standing point instead
+ * of shifting where the player actually is.
+ *
+ * With today's 12x16 art at unit 4 both offsets are zero and this is a no-op.
+ * It exists so that swapping in art on another grid stays a data change.
+ */
+export function getAvatarAnchor(
+  art: { readonly width: number; readonly height: number },
+  hitbox: { readonly width: number; readonly height: number },
+  unit: number,
+) {
+  const width = art.width * unit;
+  const height = art.height * unit;
+  return {
+    width,
+    height,
+    // Snapped to the art grid: a half-art-pixel offset would put the whole
+    // sprite off the grid the rest of the world is drawn on.
+    left: Math.round((hitbox.width - width) / 2 / unit) * unit,
+    top: hitbox.height - height,
+  };
+}

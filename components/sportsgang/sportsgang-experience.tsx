@@ -42,7 +42,12 @@ import {
   VENUE_ART_SIZE,
   type PlayerFrame,
 } from "@/lib/pixel/sportsgang";
-import { DEFAULT_SPORT, type SportsgangSport, type SportsgangStage } from "@/types/sportsgang";
+import {
+  DEFAULT_SPORT,
+  SPORT_OPPONENTS,
+  type SportsgangSport,
+  type SportsgangStage,
+} from "@/types/sportsgang";
 
 interface SportsgangExperienceProps {
   onExit: () => void;
@@ -209,14 +214,34 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key !== "Escape") return;
-      event.preventDefault();
-      onExit();
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onExit();
+        return;
+      }
+
+      if (
+        event.key === "Enter" &&
+        !event.defaultPrevented &&
+        !event.repeat &&
+        (stage === "MATCH_FOUND" || stage === "MEET")
+      ) {
+        // Focused controls keep their native activation, including Accept and
+        // Play. The shortcut only advances from the scene itself.
+        if (
+          event.target instanceof Element &&
+          event.target.closest(
+            'a[href], button, input, select, textarea, [contenteditable]:not([contenteditable="false"]), [role="button"], [role="link"]',
+          )
+        ) return;
+        event.preventDefault();
+        setStage((current) => nextSportsgangStage(current));
+      }
     }
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onExit]);
+  }, [onExit, stage]);
 
   // Move focus to whatever the visitor is being asked to do next.
   useEffect(() => {
@@ -273,9 +298,15 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
 
   const activeSport = sport ?? DEFAULT_SPORT;
   const Minigame = MINIGAMES[activeSport];
-  const showCourtPlayers = ["MEET", "PLAY", "RESULT", "RANK", "COMPLETE"].includes(
-    stage,
-  );
+  const opponent = SPORT_OPPONENTS[activeSport];
+  /**
+   * Tennis is played rather than watched, so while its match is running the
+   * mini-game owns both figures on the court and the venue's static pair steps
+   * out of the way. Every other stage — and every other sport — is unchanged.
+   */
+  const playingMatch = stage === "PLAY" && activeSport === "TENNIS";
+  const showCourtPlayers =
+    ["MEET", "PLAY", "RESULT", "RANK", "COMPLETE"].includes(stage) && !playingMatch;
 
   const finishPlay = useCallback(
     (sportResult: SportResult) => {
@@ -349,7 +380,9 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
       </button>
 
       <p aria-live="polite" className="loc-announcer">
-        {STAGE_CAPTIONS[stage]}
+        {stage === "MATCH_FOUND" && opponent
+          ? `Match found: Edward versus ${opponent.name}`
+          : STAGE_CAPTIONS[stage]}
       </p>
 
       {stage === "ENTER" ? (
@@ -358,14 +391,16 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
 
       {stage === "MEET" ? (
         <div className="loc-beat">
-          <p className="loc-beat__text">PLAYER 02 IS READY · {activeSport}</p>
+          <p className="loc-beat__text">
+            {opponent?.name ?? "PLAYER 02"} IS READY · {activeSport}
+          </p>
           <button
             className="loc-button loc-button--primary"
             onClick={advance}
             ref={readyRef}
             type="button"
           >
-            [ NOD AND START ]
+            {opponent ? "[ PRESS ENTER TO PLAY ]" : "[ NOD AND START ]"}
           </button>
         </div>
       ) : null}

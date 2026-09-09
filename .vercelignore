@@ -1,0 +1,22 @@
+# Kept out of the deployment upload. Nothing here is used to build or serve
+# the app; the Vercel CLI does not apply this repo's .gitignore, so the
+# local-workspace entries below have to be named again.
+
+# Restated alongside the CLI's own defaults, so the list is explicit.
+.git
+.next
+node_modules
+.env
+.env.*
+.vercel
+
+# Local agent/session workspace state — never part of the product.
+.remember
+.claude
+design/support.js
+
+# Local build caches.
+*.tsbuildinfo
+
+# QA capture artifacts from the review passes (documentation images only).
+docs/visual-polish

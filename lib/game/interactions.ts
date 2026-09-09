@@ -1,4 +1,4 @@
-import type { InteractionAction, Player, WorldObject } from "@/types/world";
+import type { Interactable, InteractionAction, Player, WorldObject } from "@/types/world";
 
 function horizontalGap(player: Player, object: WorldObject) {
   const playerLeft = player.position.x;
@@ -16,6 +16,7 @@ export function findNearestInteractable(
   objects: readonly WorldObject[],
 ) {
   return objects
+    .filter((object): object is WorldObject & Interactable => object.interaction !== undefined)
     .map((object) => ({ object, distance: horizontalGap(player, object) }))
     .filter(({ object, distance }) => distance <= object.interactionRange)
     .sort((a, b) => a.distance - b.distance)[0]?.object;
@@ -27,8 +28,6 @@ export function getInteractionPrompt(action: InteractionAction) {
     case "OPEN_LOCATION":
     case "OPEN_INFO":
       return "E TO ENTER";
-    case "TALK":
-      return "E TO TALK";
     case "READ":
       return "E TO READ";
   }

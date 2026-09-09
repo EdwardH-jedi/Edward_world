@@ -16,11 +16,11 @@ export function InteractionDialog({ action, onClose }: InteractionDialogProps) {
     if (!project) return null;
 
     return (
-      <AccessibleDialog title={project.displayName} onClose={onClose}>
+      <AccessibleDialog className="world-dialog" title={project.displayName} onClose={onClose}>
         <p className="eyebrow">{project.category}</p>
         <p>{project.shortDescriptor}</p>
         <div className="dialog__links">
-          <Link href={project.caseStudyUrl}>Case study placeholder</Link>
+          <Link href={project.caseStudyUrl}>Project details</Link>
           {project.githubUrl ? (
             <a href={project.githubUrl} rel="noreferrer" target="_blank">
               GitHub
@@ -34,21 +34,11 @@ export function InteractionDialog({ action, onClose }: InteractionDialogProps) {
   // Locations are opened as full experiences by the router, never as a dialog.
   if (action.type === "OPEN_LOCATION") return null;
 
-  if (action.type === "TALK") {
-    return (
-      <AccessibleDialog title={action.speaker} onClose={onClose}>
-        {action.lines.map((line) => (
-          <p key={line}>{line}</p>
-        ))}
-      </AccessibleDialog>
-    );
-  }
-
   const title = action.heading;
   const body = action.type === "READ" ? action.text : action.body;
 
   return (
-    <AccessibleDialog title={title} onClose={onClose}>
+    <AccessibleDialog className="world-dialog" title={title} onClose={onClose}>
       <p>{body}</p>
     </AccessibleDialog>
   );

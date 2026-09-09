@@ -1,3 +1,12 @@
+# QA Report — 2026-08-28
+
+> **Historical record of one QA pass.** Findings and statuses are as of
+> 2026-08-28 and have not been re-checked since. Several items listed under
+> *Remaining Issues* have been addressed in the meantime — the resume and
+> case-study routes have since been built from verified repository facts — and
+> the world it was run against still contained a wandering NPC that was later
+> removed. For current status see [`PROJECT_STATUS.md`](./PROJECT_STATUS.md).
+
 ### Fixed
 
 - **Arcade scheduled many completion timers.** The platformer RAF callback called

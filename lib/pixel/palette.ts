@@ -43,6 +43,13 @@ export const palette = {
   midHill: "#A9A188",
   treeline: "#5A664C",
   crtShell: "#C9BC9C",
+  // The bedroom wall. Edward's real room is mint, and the room is not
+  // recognisable without it — so the board gains a mint family rather than the
+  // wall being recoloured into an existing brown. All three sit at the same low
+  // saturation as `green` and `blue`, which is what keeps the board a board.
+  mint: "#A9C0B4",
+  mint2: "#8DA697",
+  mint3: "#6D8478",
   // Edward's own colours. Kept as desaturated as the rest of the board: the
   // "navy" outerwear is a slate that reads cool against the cream sky and
   // dark against the grass, without introducing a saturated hue.

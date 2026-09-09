@@ -32,6 +32,7 @@ pnpm-debug.log*
 
 # Local workspace state
 /.remember/
+/.claude/
 /design/support.js
 
 # OS and editor metadata

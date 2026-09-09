@@ -1,5 +1,5 @@
 import { HILL_GROUND_Y, TOWN_GROUND_Y } from "@/lib/game/terrain";
-import type { Building, NPC, Player, Sign, WorldObject } from "@/types/world";
+import type { Building, Player, Sign, WorldObject } from "@/types/world";
 
 /**
  * World geometry for the approved visual pass.
@@ -26,7 +26,16 @@ export const initialPlayer: Player = {
     y: HILL_GROUND_Y - PLAYER_SIZE.height,
   },
   size: { ...PLAYER_SIZE },
-  speed: 280,
+  /**
+   * Walking speed, in CSS pixels per second.
+   *
+   * Set from the crossing time rather than picked. At 280 a 1280px viewport
+   * took 4.56 seconds to cross and the whole world took 13.7 — long enough
+   * that a visitor looking for a project spends it holding a key. At 480 the
+   * same screen takes 2.67s and the world 8.0. Input latency was already one
+   * frame, so this is the only thing that was making the walk feel slow.
+   */
+  speed: 480,
   facing: "right",
 };
 
@@ -79,34 +88,10 @@ export const buildings: readonly Building[] = [
   {
     kind: "building",
     id: "construction-area",
-    label: "Construction Area",
+    label: "Scaffolding",
     position: { x: 3_360, y: TOWN_GROUND_Y - 152 },
     size: { width: 336, height: 152 },
-    interactionRange: 72,
-    interaction: {
-      type: "OPEN_INFO",
-      heading: "Under Construction",
-      body: "New experiments will be added here without changing the world engine.",
-    },
-  },
-] as const;
-
-export const npcs: readonly NPC[] = [
-  {
-    kind: "npc",
-    id: "tomodachi",
-    label: "TOMODACHI",
-    position: { x: 664, y: HILL_GROUND_Y - 44 },
-    size: { width: 48, height: 44 },
-    interactionRange: 82,
-    interaction: {
-      type: "TALK",
-      speaker: "TOMODACHI",
-      lines: [
-        "Welcome to Edward's World.",
-        "The buildings are projects. The index is the fast route.",
-      ],
-    },
+    interactionRange: 0,
   },
 ] as const;
 
@@ -128,6 +113,5 @@ export const signs: readonly Sign[] = [
 
 export const worldObjects: readonly WorldObject[] = [
   ...buildings,
-  ...npcs,
   ...signs,
 ];

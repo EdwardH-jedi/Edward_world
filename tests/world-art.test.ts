@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { buildings, initialPlayer, npcs, signs, WORLD_CONFIG } from "@/data/world";
+import { buildings, initialPlayer, signs, WORLD_CONFIG } from "@/data/world";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
 import { BACKDROP_ART_SIZE } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt } from "@/lib/pixel/buildings";
 import {
   EDWARD_ART_SIZE,
   edwardPoses,
+  getAvatarAnchor,
   getWalkFrame,
-  TOMODACHI_ART_SIZE,
 } from "@/lib/pixel/characters";
 import { palette } from "@/lib/pixel/palette";
 import type { Raster } from "@/lib/pixel/raster";
@@ -36,13 +36,54 @@ describe("art grid alignment", () => {
     }
   });
 
-  it("sizes the character and sign art to their world footprints", () => {
-    expect(EDWARD_ART_SIZE.width * PIXEL_UNIT).toBe(initialPlayer.size.width);
-    expect(EDWARD_ART_SIZE.height * PIXEL_UNIT).toBe(initialPlayer.size.height);
-    expect(TOMODACHI_ART_SIZE.width * PIXEL_UNIT).toBe(npcs[0].size.width);
-    expect(TOMODACHI_ART_SIZE.height * PIXEL_UNIT).toBe(npcs[0].size.height);
+  it("sizes the sign art to its world footprint", () => {
     expect(signpostArt.size.width * PIXEL_UNIT).toBe(signs[0].size.width);
     expect(signpostArt.size.height * PIXEL_UNIT).toBe(signs[0].size.height);
+  });
+});
+
+describe("player footprint", () => {
+  /**
+   * The hitbox is the contract, not a consequence of the art. Movement, world
+   * bounds, the camera and proximity read `initialPlayer.size` and nothing
+   * else, so it is pinned as a literal here: replacing the avatar art must
+   * never be able to move it.
+   */
+  it("pins the gameplay footprint as a literal, independent of the art", () => {
+    expect(initialPlayer.size).toEqual({ width: 48, height: 64 });
+  });
+
+  it("anchors the art feet-down and centred on that footprint", () => {
+    const anchor = getAvatarAnchor(EDWARD_ART_SIZE, initialPlayer.size, PIXEL_UNIT);
+    expect(anchor.width).toBe(EDWARD_ART_SIZE.width * PIXEL_UNIT);
+    expect(anchor.height).toBe(EDWARD_ART_SIZE.height * PIXEL_UNIT);
+    expect(anchor.top + anchor.height).toBe(initialPlayer.size.height);
+  });
+
+  it("is a no-op for today's 12x16 art, which fills the footprint exactly", () => {
+    expect(getAvatarAnchor(EDWARD_ART_SIZE, initialPlayer.size, PIXEL_UNIT)).toEqual({
+      width: initialPlayer.size.width,
+      height: initialPlayer.size.height,
+      left: 0,
+      top: 0,
+    });
+  });
+
+  it("grows a larger avatar upward and outward from the same standing point", () => {
+    // The 16x24 grid the character asset spec recommends, checked before any
+    // art exists for it: feet stay on the footprint's bottom edge and the
+    // extra width splits evenly, so the player does not move when art lands.
+    const anchor = getAvatarAnchor({ width: 16, height: 24 }, initialPlayer.size, PIXEL_UNIT);
+    expect(anchor).toEqual({ width: 64, height: 96, left: -8, top: -32 });
+    expect(anchor.top + anchor.height).toBe(initialPlayer.size.height);
+    expect(anchor.left * 2 + anchor.width).toBe(initialPlayer.size.width);
+  });
+
+  it("keeps the anchor offset on the art grid for any art size", () => {
+    for (let width = 8; width <= 24; width += 1) {
+      const anchor = getAvatarAnchor({ width, height: 20 }, initialPlayer.size, PIXEL_UNIT);
+      expect(Number.isInteger(anchor.left / PIXEL_UNIT), `width ${width}`).toBe(true);
+    }
   });
 });
 

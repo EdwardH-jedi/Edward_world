@@ -42,7 +42,9 @@ export function SportVenue({
   opponentFrame,
   showPlayers,
 }: SportVenueProps) {
-  // Running draws its own moving figures, so the static pair steps aside.
+  // Running and tennis both draw their own moving figures, so the static pair
+  // steps aside for them; `showPlayers` is what decides *when* for tennis,
+  // because it only owns the court while a match is actually being played.
   const showStaticPlayers = showPlayers && sport !== "RUNNING";
 
   return (

@@ -111,9 +111,11 @@ describe("every sport reports something rankable", () => {
       }),
       getTennisResult({
         ...createTennisState(),
-        playerPoints: 2,
-        opponentPoints: 1,
-        history: ["PERFECT", "GOOD", "MISS"],
+        playerPoints: 5,
+        alexPoints: 3,
+        perfects: 4,
+        longestRally: 11,
+        matchWinner: "PLAYER",
         done: true,
       }),
       getBasketballResult({

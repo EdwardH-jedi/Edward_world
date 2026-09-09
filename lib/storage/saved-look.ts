@@ -21,13 +21,13 @@ function announceChange() {
   window.dispatchEvent(new Event(SAVED_LOOK_EVENT));
 }
 
-/** The raw stored string. Stable between reads, so it is safe as a snapshot. */
-export function readSavedLookRaw(): string | null {
-  if (typeof window === "undefined") return null;
+/** Stable snapshot: null means empty; undefined means storage cannot be read. */
+export function readSavedLookRaw(): string | null | undefined {
+  if (typeof window === "undefined") return undefined;
   try {
     return window.localStorage.getItem(SAVED_LOOK_KEY);
   } catch {
-    return null;
+    return undefined;
   }
 }
 
@@ -85,12 +85,14 @@ export function writeSavedLook(outfit: Outfit) {
   }
 }
 
+/** A failed removal must never be presented as a forgotten look. */
 export function clearSavedLook() {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined") return false;
   try {
     window.localStorage.removeItem(SAVED_LOOK_KEY);
     announceChange();
+    return true;
   } catch {
-    // Nothing to do: the look simply stays where it is.
+    return false;
   }
 }

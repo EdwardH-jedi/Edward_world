@@ -12,6 +12,7 @@ interface AccessibleDialogProps {
   onClose: () => void;
   children: ReactNode;
   className?: string;
+  headerActions?: ReactNode;
 }
 
 const FOCUSABLE =
@@ -90,6 +91,7 @@ export function AccessibleDialog({
   onClose,
   children,
   className = "",
+  headerActions,
 }: AccessibleDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   useDialogFocus({ containerRef: dialogRef, onClose });
@@ -106,6 +108,7 @@ export function AccessibleDialog({
       >
         <div className="dialog__header">
           <h2 id="dialog-title">{title}</h2>
+          {headerActions}
           <button aria-label={`Close ${title}`} onClick={onClose} type="button">
             Close
           </button>

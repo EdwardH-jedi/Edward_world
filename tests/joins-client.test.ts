@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   getJoinTotal,
+  JOIN_SESSION_KEY,
   recordJoinOnce,
   resetJoinClientForTests,
   subscribeToJoinTotal,
 } from "@/lib/joins/client";
 import { formatJoinLine, formatOrdinal } from "@/lib/joins/ordinal";
+import { readJoinTotal, recordJoin } from "@/lib/joins/response";
 import {
   createRestJoinStore,
+  createUnavailableJoinStore,
   getJoinStore,
   isDurableJoinStoreConfigured,
   JOIN_KEY,
@@ -15,6 +18,31 @@ import {
 } from "@/lib/joins/store";
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+/**
+ * A `sessionStorage` stand-in. Vitest runs these in the `node` environment
+ * (see vitest.config.ts), where there is no such global at all — which is
+ * itself worth exercising, so tests opt in to this rather than getting it
+ * for free.
+ */
+function createSessionStorageDouble(seed: Record<string, string> = {}) {
+  const entries = new Map(Object.entries(seed));
+  return {
+    getItem: (key: string) => entries.get(key) ?? null,
+    setItem: (key: string, value: string) => {
+      entries.set(key, value);
+    },
+    removeItem: (key: string) => {
+      entries.delete(key);
+    },
+    clear: () => entries.clear(),
+    key: (index: number) => [...entries.keys()][index] ?? null,
+    get length() {
+      return entries.size;
+    },
+    entries,
+  };
+}
 
 describe("ordinals", () => {
   it("uses st/nd/rd where English does", () => {
@@ -108,6 +136,104 @@ describe("recording one visitor's join", () => {
     expect(getJoinTotal()).toBeNull();
   });
 
+  it("remembers the position it was given, so a refresh does not count twice", async () => {
+    const storage = createSessionStorageDouble();
+    vi.stubGlobal("sessionStorage", storage);
+    const spy = stubFetch(() => ok(7));
+
+    recordJoinOnce();
+    await flush();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(storage.getItem(JOIN_SESSION_KEY)).toBe("7");
+
+    // A refresh: the module is evaluated afresh and its latch is gone, but
+    // the tab's storage is not. A re-import is the honest simulation — the
+    // exported reset seam deliberately clears storage too.
+    vi.resetModules();
+    const reloaded = await import("@/lib/joins/client");
+    reloaded.recordJoinOnce();
+    await flush();
+
+    // Same ordinal, and no second join recorded.
+    expect(reloaded.getJoinTotal()).toBe(7);
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("publishes the remembered position to subscribers without waiting on the network", async () => {
+    vi.stubGlobal("sessionStorage", createSessionStorageDouble({ [JOIN_SESSION_KEY]: "31" }));
+    const spy = stubFetch(() => ok(999));
+    let calls = 0;
+    const stop = subscribeToJoinTotal(() => {
+      calls += 1;
+    });
+
+    recordJoinOnce();
+    // Deliberately no flush: a remembered position is available synchronously.
+    expect(getJoinTotal()).toBe(31);
+    expect(calls).toBe(1);
+    expect(spy).not.toHaveBeenCalled();
+    stop();
+  });
+
+  it("treats junk in session storage as no memory at all and joins normally", async () => {
+    for (const junk of ["", "0", "-4", "2.5", "banana", "NaN"]) {
+      resetJoinClientForTests();
+      vi.unstubAllGlobals();
+      const storage = createSessionStorageDouble({ [JOIN_SESSION_KEY]: junk });
+      vi.stubGlobal("sessionStorage", storage);
+      const spy = stubFetch(() => ok(5));
+
+      recordJoinOnce();
+      await flush();
+
+      expect(spy, junk).toHaveBeenCalledTimes(1);
+      expect(getJoinTotal(), junk).toBe(5);
+      expect(storage.getItem(JOIN_SESSION_KEY), junk).toBe("5");
+    }
+  });
+
+  it("still counts the join when session storage is missing entirely", async () => {
+    // The node test environment has no `sessionStorage`; this is the shape of
+    // a browser that has disabled it.
+    const spy = stubFetch(() => ok(3));
+    recordJoinOnce();
+    await flush();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(getJoinTotal()).toBe(3);
+  });
+
+  it("still counts the join when session storage throws on every access", async () => {
+    // Safari in private browsing throws rather than returning null.
+    vi.stubGlobal("sessionStorage", {
+      getItem: () => {
+        throw new Error("SecurityError");
+      },
+      setItem: () => {
+        throw new Error("QuotaExceededError");
+      },
+      removeItem: () => {
+        throw new Error("SecurityError");
+      },
+    });
+    const spy = stubFetch(() => ok(8));
+    recordJoinOnce();
+    await flush();
+    expect(spy).toHaveBeenCalledTimes(1);
+    expect(getJoinTotal()).toBe(8);
+  });
+
+  it("does not remember a position the counter refused to give", async () => {
+    const storage = createSessionStorageDouble();
+    vi.stubGlobal("sessionStorage", storage);
+    stubFetch(() =>
+      Promise.resolve(new Response(JSON.stringify({ error: "nope" }), { status: 500 })),
+    );
+    recordJoinOnce();
+    await flush();
+    expect(getJoinTotal()).toBeNull();
+    expect(storage.getItem(JOIN_SESSION_KEY)).toBeNull();
+  });
+
   it("refuses a total that is not a countable position", async () => {
     for (const bad of [0, -3, 2.5, "12", null]) {
       resetJoinClientForTests();
@@ -179,7 +305,40 @@ describe("the durable store", () => {
     await expect(store.read()).rejects.toThrow(/not a count/);
   });
 
-  it("falls back to the in-memory counter when nothing is provisioned", async () => {
+  it("gives up rather than resolving when the request never comes back", async () => {
+    const store = createRestJoinStore({
+      url: "https://kv.example.com",
+      token: "t",
+      fetchImpl: (_input, init) =>
+        new Promise((_resolve, reject) => {
+          // Mirror what `fetch` does with an aborted signal, so the timeout
+          // built into the store is what actually ends this call.
+          init?.signal?.addEventListener("abort", () =>
+            reject(new DOMException("aborted", "AbortError")),
+          );
+        }),
+    });
+    await expect(store.increment()).rejects.toThrow();
+  }, 10_000);
+
+  it("sends the token as a bearer header and never in the URL", async () => {
+    let seenUrl = "";
+    let seenAuth: string | null = null;
+    const store = createRestJoinStore({
+      url: "https://kv.example.com",
+      token: "super-secret",
+      fetchImpl: async (input, init) => {
+        seenUrl = String(input);
+        seenAuth = new Headers(init?.headers).get("authorization");
+        return new Response(JSON.stringify({ result: 1 }), { status: 200 });
+      },
+    });
+    await store.increment();
+    expect(seenAuth).toBe("Bearer super-secret");
+    expect(seenUrl).not.toContain("super-secret");
+  });
+
+  it("counts in memory when nothing is provisioned outside production", async () => {
     delete process.env.KV_REST_API_URL;
     delete process.env.KV_REST_API_TOKEN;
     delete process.env.UPSTASH_REDIS_REST_URL;
@@ -188,6 +347,65 @@ describe("the durable store", () => {
     const store = getJoinStore();
     expect(await store.increment()).toBe(1);
     expect(await store.increment()).toBe(2);
+  });
+
+  it("refuses to count at all when production is missing its configuration", async () => {
+    delete process.env.KV_REST_API_URL;
+    delete process.env.KV_REST_API_TOKEN;
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    vi.stubEnv("NODE_ENV", "production");
+    resetJoinStoreForTests();
+    try {
+      const store = getJoinStore();
+      // Never a fabricated "1st player" on every cold instance.
+      await expect(store.increment()).rejects.toThrow(/KV_REST_API_URL/);
+      await expect(store.read()).rejects.toThrow(/KV_REST_API_URL/);
+    } finally {
+      vi.unstubAllEnvs();
+      resetJoinStoreForTests();
+    }
+  });
+
+  it("turns an unavailable store into a 500 and no total, not a crash", async () => {
+    const store = createUnavailableJoinStore();
+
+    const read = await readJoinTotal(store);
+    expect(read.status).toBe(500);
+    const readBody = (await read.json()) as { error?: unknown; total?: unknown };
+    expect(typeof readBody.error).toBe("string");
+    expect(readBody.total).toBeUndefined();
+
+    const write = await recordJoin(store);
+    expect(write.status).toBe(500);
+    const writeBody = (await write.json()) as { error?: unknown; total?: unknown };
+    expect(typeof writeBody.error).toBe("string");
+    expect(writeBody.total).toBeUndefined();
+  });
+
+  it("prefers the marketplace pair but accepts a direct Upstash one", () => {
+    delete process.env.KV_REST_API_URL;
+    delete process.env.KV_REST_API_TOKEN;
+    process.env.UPSTASH_REDIS_REST_URL = "https://direct.upstash.io";
+    process.env.UPSTASH_REDIS_REST_TOKEN = "token";
+    try {
+      expect(isDurableJoinStoreConfigured()).toBe(true);
+    } finally {
+      delete process.env.UPSTASH_REDIS_REST_URL;
+      delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    }
+  });
+
+  it("treats a half-configured environment as unconfigured", () => {
+    delete process.env.KV_REST_API_TOKEN;
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    process.env.KV_REST_API_URL = "https://kv.example.com";
+    try {
+      expect(isDurableJoinStoreConfigured()).toBe(false);
+    } finally {
+      delete process.env.KV_REST_API_URL;
+    }
   });
 
   it("binds the durable store when the environment provides one", () => {

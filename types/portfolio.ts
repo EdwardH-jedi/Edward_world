@@ -17,6 +17,14 @@ export type WorldBuildingId =
   | "arcade"
   | "construction-area";
 
+export interface ProjectDetails {
+  problem: string;
+  implementation: readonly string[];
+  decision: string;
+  currentState: string;
+  worldRepresentation: string;
+}
+
 export interface PortfolioProject {
   id: PortfolioProjectId;
   slug: string;
@@ -26,16 +34,17 @@ export interface PortfolioProject {
   githubUrl?: string;
   caseStudyUrl: string;
   worldBuildingId: WorldBuildingId;
+  /** Concise, source-verified account of the original project and its demo. */
+  details: ProjectDetails;
   /**
-   * The project's real, shipped stack. Canonical: any surface that shows a
+   * The project's implemented stack. Canonical: any surface that shows a
    * stack reads it from here rather than restating it. Optional because it is
    * only filled in for projects whose stack has actually been verified.
    */
   techStack?: readonly string[];
   /**
-   * The repository's own description of itself, verbatim. Case studies quote
-   * this rather than paraphrasing it: a project stated in its own words is a
-   * fact, and prose written around it would not be.
+   * The repository's own concise description, retained alongside the
+   * source-verified implementation account in `details`.
    */
   repositorySummary?: string;
   /**

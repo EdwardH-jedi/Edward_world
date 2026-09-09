@@ -46,9 +46,27 @@ export type SportsgangSport = (typeof SPORTSGANG_SPORTS)[number];
 /** Sport shown first, and the one the phone focuses on arrival. */
 export const DEFAULT_SPORT: SportsgangSport = "TENNIS";
 
+/**
+ * The person the app finds you.
+ *
+ * Only tennis has a real opponent so far — the sport you can actually play a
+ * match against. The others keep the anonymous PLAYER 02 they already had,
+ * because giving them a name would promise a person who is not there yet.
+ */
+export interface SportsgangOpponent {
+  readonly name: string;
+  readonly skill: string;
+}
+
+export const SPORT_OPPONENTS: Readonly<
+  Partial<Record<SportsgangSport, SportsgangOpponent>>
+> = {
+  TENNIS: { name: "ALEX", skill: "INTERMEDIATE" },
+};
+
 /** What each sport is called in the world, and how it is played. */
 export const SPORT_BLURBS: Readonly<Record<SportsgangSport, string>> = {
-  TENNIS: "TIME YOUR RETURNS",
+  TENNIS: "PLAY A MATCH",
   BASKETBALL: "HOLD AND RELEASE",
   RUNNING: "MANAGE YOUR PACE",
   GOLF: "POWER THEN CONTACT",

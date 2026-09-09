@@ -25,7 +25,6 @@ export type InteractionAction =
   | { type: "OPEN_PROJECT"; projectId: PortfolioProjectId }
   | { type: "OPEN_LOCATION"; locationId: WorldLocationId }
   | { type: "OPEN_INFO"; heading: string; body: string }
-  | { type: "TALK"; speaker: string; lines: readonly string[] }
   | { type: "READ"; heading: string; text: string };
 
 export interface Interactable {
@@ -40,17 +39,13 @@ interface WorldObjectBase {
   size: WorldSize;
 }
 
-export interface Building extends WorldObjectBase, Interactable {
+export type Building = WorldObjectBase & {
   kind: "building";
   id: WorldBuildingId;
-}
-
-export interface NPC extends WorldObjectBase, Interactable {
-  kind: "npc";
-}
+} & (Interactable | { interactionRange: 0; interaction?: never });
 
 export interface Sign extends WorldObjectBase, Interactable {
   kind: "sign";
 }
 
-export type WorldObject = Building | NPC | Sign;
+export type WorldObject = Building | Sign;

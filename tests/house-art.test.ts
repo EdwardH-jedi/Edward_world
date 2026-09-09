@@ -1,18 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
-  drawClothingRail,
-  drawComputer,
-  drawDrawers,
-  drawGamingRig,
+  drawBedCorner,
+  drawBookshelf,
+  drawClarinet,
+  drawCloset,
+  drawCollection,
+  drawDeskPc,
   drawHouseRoom,
-  drawStudyDesk,
-  drawWallMap,
+  drawJersey,
+  drawSportsCorner,
   HOUSE_ART_SIZE,
   HOUSE_FLOOR_Y,
   HOUSE_STAND_Y,
   HOUSE_THING_BOUNDS,
   type HouseThingId,
-  houseThingCentre,
+  houseThingDistance,
 } from "@/lib/pixel/house";
 import { palette } from "@/lib/pixel/palette";
 import { clipRaster, type Raster } from "@/lib/pixel/raster";
@@ -36,12 +38,13 @@ function recordingRaster() {
 
 const PALETTE_COLORS: ReadonlySet<string> = new Set<string>(Object.values(palette));
 const THING_IDS: readonly HouseThingId[] = [
-  "map",
-  "desk",
-  "computer",
-  "papers",
-  "rail",
-  "rig",
+  "collection",
+  "clarinet",
+  "jersey",
+  "sports",
+  "pc",
+  "closet",
+  "window",
 ];
 
 /** Every reveal state the room can be caught in, including mid-animation. */
@@ -83,6 +86,13 @@ describe("palette discipline", () => {
       }
     }
   });
+
+  it("paints the wall the mint the real room is painted", () => {
+    const wall = room(0, 0).find(
+      (call) => call.width === HOUSE_ART_SIZE.width && call.color === palette.mint,
+    );
+    expect(wall).toBeDefined();
+  });
 });
 
 describe("the room stays inside its own walls", () => {
@@ -99,22 +109,30 @@ describe("the room stays inside its own walls", () => {
     }
   });
 
+  /**
+   * A runaway-loop guard, not a design budget. The room draws about 655 rects —
+   * two shelving units, a full bookshelf, two skylines and the dithered cabinet
+   * glass — so the ceiling sits well clear of that and only catches a loop that
+   * has stopped terminating.
+   */
   it("keeps the whole room bounded regardless of frame", () => {
     for (const frame of [0, 9, 100_000]) {
       const calls = room(frame, 1);
       expect(calls.length).toBeGreaterThan(0);
-      expect(calls.length).toBeLessThan(900);
+      expect(calls.length).toBeLessThan(1_000);
     }
   });
 
   it("renders every routine at frame zero without throwing", () => {
     const { draw } = recordingRaster();
-    expect(() => drawWallMap(draw, 0)).not.toThrow();
-    expect(() => drawStudyDesk(draw, 0, 0)).not.toThrow();
-    expect(() => drawComputer(draw, 0, 0)).not.toThrow();
-    expect(() => drawDrawers(draw, 0)).not.toThrow();
-    expect(() => drawClothingRail(draw)).not.toThrow();
-    expect(() => drawGamingRig(draw, 0, 0)).not.toThrow();
+    expect(() => drawCollection(draw, 0)).not.toThrow();
+    expect(() => drawClarinet(draw, 0)).not.toThrow();
+    expect(() => drawBookshelf(draw)).not.toThrow();
+    expect(() => drawJersey(draw)).not.toThrow();
+    expect(() => drawSportsCorner(draw)).not.toThrow();
+    expect(() => drawDeskPc(draw, 0, 0)).not.toThrow();
+    expect(() => drawCloset(draw, 0)).not.toThrow();
+    expect(() => drawBedCorner(draw, 0, 0)).not.toThrow();
     expect(() => drawHouseRoom(draw, 0)).not.toThrow();
   });
 
@@ -126,7 +144,7 @@ describe("the room stays inside its own walls", () => {
   });
 });
 
-describe("the six things", () => {
+describe("the seven things", () => {
   it("places every hotspot inside the room", () => {
     for (const id of THING_IDS) {
       const bounds = HOUSE_THING_BOUNDS[id];
@@ -148,125 +166,160 @@ describe("the six things", () => {
     }
   });
 
-  it("reports a centre inside each thing's own bounds", () => {
+  it("reads as zero distance anywhere in front of a thing", () => {
     for (const id of THING_IDS) {
       const bounds = HOUSE_THING_BOUNDS[id];
-      const centre = houseThingCentre(id);
-      expect(centre).toBeGreaterThan(bounds.x);
-      expect(centre).toBeLessThan(bounds.x + bounds.width);
+      expect(houseThingDistance(id, bounds.x)).toBe(0);
+      expect(houseThingDistance(id, bounds.x + bounds.width / 2)).toBe(0);
+      expect(houseThingDistance(id, bounds.x + bounds.width)).toBe(0);
+    }
+  });
+
+  it("measures to the edge, so a wide thing is not harder to reach", () => {
+    const cabinet = HOUSE_THING_BOUNDS.collection;
+    expect(houseThingDistance("collection", cabinet.x - 6)).toBe(6);
+    expect(
+      houseThingDistance("collection", cabinet.x + cabinet.width + 9),
+    ).toBe(9);
+  });
+
+  it("leaves a walkable gap between every pair of neighbours", () => {
+    const ordered = [...THING_IDS].sort(
+      (a, b) => HOUSE_THING_BOUNDS[a].x - HOUSE_THING_BOUNDS[b].x,
+    );
+    for (let index = 1; index < ordered.length; index += 1) {
+      const previous = HOUSE_THING_BOUNDS[ordered[index - 1]];
+      const current = HOUSE_THING_BOUNDS[ordered[index]];
+      expect(current.x - (previous.x + previous.width)).toBeGreaterThan(0);
     }
   });
 });
-
-/** The widest span of calls painted in one colour. */
-function spanOf(calls: readonly Call[], color: string) {
-  const matching = calls.filter((call) => call.color === color);
-  if (matching.length === 0) return null;
-  return {
-    left: Math.min(...matching.map((call) => call.x)),
-    right: Math.max(...matching.map((call) => call.x + call.width)),
-  };
-}
 
 function colorsOf(calls: readonly Call[]) {
   return new Set(calls.map((call) => call.color));
 }
 
+/** Every call painted in one colour. */
+function inColor(calls: readonly Call[], color: string) {
+  return calls.filter((call) => call.color === color);
+}
+
 describe("looking at something opens it", () => {
-  it("widens the map panel as it unfolds, and never narrows it", () => {
-    const widths = REVEAL_STEPS.map((value) => {
+  it("narrows the reflection in the cabinet glass as the lights come up", () => {
+    const reflected = REVEAL_STEPS.map((value) => {
       const { calls, draw } = recordingRaster();
-      drawWallMap(draw, value);
-      const paper = spanOf(calls, palette.cream);
-      expect(paper).not.toBeNull();
-      return paper!.right - paper!.left;
+      drawCollection(draw, value);
+      return inColor(calls, palette.mint3).reduce(
+        (total, call) => total + call.width,
+        0,
+      );
     });
-    for (let index = 1; index < widths.length; index += 1) {
-      expect(widths[index]).toBeGreaterThanOrEqual(widths[index - 1]);
+    for (let index = 1; index < reflected.length; index += 1) {
+      expect(reflected[index]).toBeLessThanOrEqual(reflected[index - 1]);
     }
-    expect(widths[widths.length - 1]).toBeGreaterThan(widths[0]);
+    expect(reflected[reflected.length - 1]).toBe(0);
+    expect(reflected[0]).toBeGreaterThan(0);
   });
 
-  it("shows the route only once the map is open enough to carry it", () => {
-    const { calls: shut, draw: drawShut } = recordingRaster();
-    drawWallMap(drawShut, 0);
-    const { calls: open, draw: drawOpen } = recordingRaster();
-    drawWallMap(drawOpen, 1);
-    expect(colorsOf(shut).has(palette.orange)).toBe(false);
-    expect(colorsOf(open).has(palette.orange)).toBe(true);
+  it("turns the cabinet's strip lights on only once it is looked at", () => {
+    const { calls: dark, draw: drawDark } = recordingRaster();
+    drawCollection(drawDark, 0);
+    const { calls: lit, draw: drawLit } = recordingRaster();
+    drawCollection(drawLit, 1);
+    expect(colorsOf(dark).has(palette.warm)).toBe(false);
+    expect(colorsOf(lit).has(palette.warm)).toBe(true);
   });
 
-  it("pulls the drawer further out the further it is opened", () => {
-    const positions = REVEAL_STEPS.map((value) => {
+  it("lifts the clarinet clear of its stand, and never pushes it down", () => {
+    const heights = REVEAL_STEPS.map((value) => {
       const { calls, draw } = recordingRaster();
-      drawDrawers(draw, value);
-      return spanOf(calls, palette.brown)!.left;
+      drawClarinet(draw, value);
+      return Math.min(...inColor(calls, palette.ink).map((call) => call.y));
     });
-    for (let index = 1; index < positions.length; index += 1) {
-      expect(positions[index]).toBeLessThanOrEqual(positions[index - 1]);
+    for (let index = 1; index < heights.length; index += 1) {
+      expect(heights[index]).toBeLessThanOrEqual(heights[index - 1]);
     }
-    expect(positions[positions.length - 1]).toBeLessThan(positions[0]);
-  });
-
-  it("lifts paper out of the drawer only once it is open", () => {
-    const { calls: shut, draw: drawShut } = recordingRaster();
-    drawDrawers(drawShut, 0);
-    const { calls: open, draw: drawOpen } = recordingRaster();
-    drawDrawers(drawOpen, 1);
-    const shutPaper = shut.filter((call) => call.color === palette.cream);
-    const openPaper = open.filter((call) => call.color === palette.cream);
-    // Shut, the only paper on show is the tray on top of the cabinet; open,
-    // there is paper standing up out of the drawer below it as well.
-    expect(Math.max(...openPaper.map((call) => call.y + call.height))).toBeGreaterThan(
-      Math.max(...shutPaper.map((call) => call.y + call.height)),
-    );
+    expect(heights[heights.length - 1]).toBeLessThan(heights[0]);
   });
 
   it("brings the monitor up dark, then bright, then with something on it", () => {
     const stages = [0, 0.25, 1].map((value) => {
       const { calls, draw } = recordingRaster();
-      drawComputer(draw, 0, value);
+      drawDeskPc(draw, 0, value);
       return colorsOf(calls);
     });
-    expect(stages[0].has(palette.blue3)).toBe(false);
+    expect(stages[0].has(palette.navy2)).toBe(false);
     expect(stages[0].has(palette.glow)).toBe(false);
     // The power-on flash, before the picture arrives.
     expect(stages[1].has(palette.glow)).toBe(true);
-    expect(stages[1].has(palette.blue3)).toBe(false);
-    expect(stages[2].has(palette.blue3)).toBe(true);
+    expect(stages[1].has(palette.navy2)).toBe(false);
+    expect(stages[2].has(palette.navy2)).toBe(true);
   });
 
-  it("wakes the gaming screen without ever drawing a rank on it", () => {
-    const { calls: asleep, draw: drawAsleep } = recordingRaster();
-    drawGamingRig(drawAsleep, 0, 0);
-    const { calls: awake, draw: drawAwake } = recordingRaster();
-    drawGamingRig(drawAwake, 0, 1);
-    expect(colorsOf(asleep).has(palette.blue3)).toBe(false);
-    expect(colorsOf(awake).has(palette.blue3)).toBe(true);
-    // Nothing in this room spells anything: no glyph routine is reachable from
-    // the rig, so a rank can only ever come from `leagueRank`, in the card.
-    expect(awake.every((call) => call.width >= 1 && call.height >= 1)).toBe(true);
+  it("never draws a rank on the monitor — the card carries the words", () => {
+    const { calls, draw } = recordingRaster();
+    drawDeskPc(draw, 0, 1);
+    // No glyph routine is reachable from the desk, so nothing on the screen can
+    // ever spell a tier. The only readable characters in the room are the two
+    // on the shirt, and they are a squad number.
+    expect(calls.every((call) => call.width >= 1 && call.height >= 1)).toBe(true);
+    const { calls: shirt, draw: drawShirt } = recordingRaster();
+    drawJersey(drawShirt);
+    expect(inColor(shirt, palette.navy).length).toBeGreaterThan(6);
   });
 
-  it("leaves the rail alone — not everything in the room needs to move", () => {
-    const { calls: first, draw: drawFirst } = recordingRaster();
-    drawClothingRail(drawFirst);
-    const { calls: second, draw: drawSecond } = recordingRaster();
-    drawClothingRail(drawSecond);
-    expect(second).toEqual(first);
+  it("slides the rail along, and keeps every garment over the floor stack", () => {
+    const lefts = REVEAL_STEPS.map((value) => {
+      const { calls, draw } = recordingRaster();
+      drawCloset(draw, value);
+      return Math.max(...inColor(calls, palette.brown).map((call) => call.x));
+    });
+    for (let index = 1; index < lefts.length; index += 1) {
+      expect(lefts[index]).toBeGreaterThanOrEqual(lefts[index - 1]);
+    }
+    expect(lefts[lefts.length - 1]).toBeGreaterThan(lefts[0]);
+
+    const { calls, draw } = recordingRaster();
+    drawCloset(draw, 1);
+    const bounds = HOUSE_THING_BOUNDS.closet;
+    for (const call of calls) {
+      expect(call.x + call.width).toBeLessThanOrEqual(bounds.x + bounds.width);
+    }
+  });
+
+  it("lights more of the city as the window is looked out of", () => {
+    const windows = REVEAL_STEPS.map((value) => {
+      const { calls, draw } = recordingRaster();
+      drawBedCorner(draw, 0, value);
+      return inColor(calls, palette.warm).length;
+    });
+    for (let index = 1; index < windows.length; index += 1) {
+      expect(windows[index]).toBeGreaterThanOrEqual(windows[index - 1]);
+    }
+    expect(windows[windows.length - 1]).toBeGreaterThan(windows[0]);
+  });
+
+  it("leaves the shirt, the gear and the bookshelf alone", () => {
+    for (const routine of [drawJersey, drawSportsCorner, drawBookshelf]) {
+      const { calls: first, draw: drawFirst } = recordingRaster();
+      routine(drawFirst);
+      const { calls: second, draw: drawSecond } = recordingRaster();
+      routine(drawSecond);
+      expect(second).toEqual(first);
+    }
   });
 
   it("clamps a reveal that arrives out of range", () => {
     const { calls: open, draw: drawOpen } = recordingRaster();
-    drawWallMap(drawOpen, 1);
+    drawCloset(drawOpen, 1);
     const { calls: over, draw: drawOver } = recordingRaster();
-    drawWallMap(drawOver, 4);
+    drawCloset(drawOver, 4);
     expect(over).toEqual(open);
 
     const { calls: shut, draw: drawShut } = recordingRaster();
-    drawDrawers(drawShut, 0);
+    drawCollection(drawShut, 0);
     const { calls: under, draw: drawUnder } = recordingRaster();
-    drawDrawers(drawUnder, -2);
+    drawCollection(drawUnder, -2);
     expect(under).toEqual(shut);
   });
 });

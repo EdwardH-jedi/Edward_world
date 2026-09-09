@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { MusicToggle } from "@/components/audio/music-control";
 import { AccessibleDialog } from "@/components/ui/accessible-dialog";
 import { contact } from "@/data/personal";
 import { projects } from "@/data/projects";
+import type { PortfolioProject } from "@/types/portfolio";
 
 interface PortfolioIndexProps {
   onClose: () => void;
@@ -27,15 +29,20 @@ const ROLE: Readonly<Record<string, string>> = {
  */
 export function PortfolioIndex({ onClose }: PortfolioIndexProps) {
   return (
-    <AccessibleDialog className="index-dialog" title="Portfolio Index" onClose={onClose}>
+    <AccessibleDialog
+      className="index-dialog"
+      title="Portfolio Index"
+      onClose={onClose}
+      headerActions={<MusicToggle inline />}
+    >
       <p className="index-lede">
         {contact.name} — {contact.location}. Four projects, the code behind each
-        of them, and the written version. The interactive world is optional.
+        of them, and their engineering details. The interactive world is optional.
       </p>
 
       <p className="index-label">Selected work</p>
       <ol className="index-work">
-        {projects.map((project, position) => (
+        {projects.map((project: PortfolioProject, position) => (
           <li key={project.id}>
             <span className="index-work__number">
               {String(position + 1).padStart(2, "0")}
@@ -44,6 +51,9 @@ export function PortfolioIndex({ onClose }: PortfolioIndexProps) {
               <h3>{project.displayName}</h3>
               <p className="index-work__role">{ROLE[project.id] ?? project.category}</p>
               <p className="index-work__descriptor">{project.shortDescriptor}</p>
+              {project.framingNote ? (
+                <p className="index-work__framing">{project.framingNote}</p>
+              ) : null}
               {project.techStack ? (
                 <ul className="index-work__stack">
                   {project.techStack.map((entry) => (
@@ -53,7 +63,7 @@ export function PortfolioIndex({ onClose }: PortfolioIndexProps) {
               ) : null}
             </div>
             <div className="index-work__links">
-              <Link href={project.caseStudyUrl}>Case study</Link>
+              <Link href={project.caseStudyUrl}>Project details</Link>
               {project.githubUrl ? (
                 <a href={project.githubUrl} rel="noreferrer" target="_blank">
                   GitHub
@@ -66,7 +76,7 @@ export function PortfolioIndex({ onClose }: PortfolioIndexProps) {
 
       <div className="index-direct">
         <Link className="index-direct__item" href="/resume">
-          <span>Resume</span>
+          <span>Background &amp; contact</span>
           <span aria-hidden="true">↗</span>
         </Link>
         <a
@@ -104,8 +114,25 @@ export function PortfolioIndex({ onClose }: PortfolioIndexProps) {
           University.
         </p>
         <p className="index-about__more">
-          The longer version is discoverable inside the world, in Edward&apos;s
-          House.
+          Explore Edward&apos;s House for personal interests, collections and
+          life outside software. The professional timeline is in{" "}
+          <Link href="/resume">Background &amp; contact</Link>.
+        </p>
+      </section>
+
+      <section className="index-about" aria-labelledby="world-engineering-title">
+        <h3 id="world-engineering-title">Under the hood</h3>
+        <p>
+          Edward&apos;s World uses Next.js App Router and TypeScript, with pixel
+          artwork drawn in code on Canvas. Movement advances by elapsed time;
+          game rules and the demonstration forecasting pipeline live in pure
+          functions that can be tested independently of rendering.
+        </p>
+        <p className="index-about__more">
+          Shared keyboard and pointer controls support play, while dialogs
+          manage focus and restore it on close. A Web Audio engine adjusts
+          music across surfaces. Automated tests cover movement, game states,
+          persistence and audio behavior.
         </p>
       </section>
 

@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMinigameInput } from "@/components/sportsgang/minigames/use-minigame-input";
 import { useDialogFocus } from "@/components/ui/accessible-dialog";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
-import { chapters, contact, leagueRank } from "@/data/personal";
 import { getProjectById } from "@/data/projects";
 import { movePlayerX } from "@/lib/game/movement";
 import { animateElement, motionPresets } from "@/lib/motion/animate-element";
@@ -20,7 +19,7 @@ import {
   HOUSE_THING_BOUNDS,
   type HouseReveal,
   type HouseThingId,
-  houseThingCentre,
+  houseThingDistance,
 } from "@/lib/pixel/house";
 
 interface HouseExperienceProps {
@@ -28,9 +27,9 @@ interface HouseExperienceProps {
 }
 
 /** Art pixels of walking per second. Slow enough to notice the room. */
-const WALK_SPEED = 46;
-/** How close Edward's centre has to be before a thing is within reach. */
-const REACH = 20;
+const WALK_SPEED = 56;
+/** How close Edward has to stand to the *edge* of a thing to be in reach. */
+const REACH = 14;
 /** The unfold, the power-on and the drawer all move in four chunky steps. */
 const REVEAL_STEP = 0.25;
 const REVEAL_MS = 70;
@@ -43,67 +42,105 @@ interface Thing {
   readonly closeLabel: string;
   /** Paper things get a paper card; screens get a screen. */
   readonly surface: "paper" | "screen";
+  /** What the object says. One or two lines — this is a room, not an About page. */
+  readonly lines: readonly string[];
 }
 
 /**
- * Six things in a room.
+ * Seven things in a bedroom.
  *
- * Nothing here is an About page. Every answer is attached to an object you
- * walk up to, and the objects are the ones that would be in the room anyway.
+ * Nothing here is an About page. Every answer is attached to an object you walk
+ * up to, and the objects are the ones that would be in the room anyway — the
+ * shelf of collected things, the instrument on its stand, the shirt on the
+ * wall, the gear in the corner, the machine, the rail, the window.
  */
 const THINGS: readonly Thing[] = [
   {
-    id: "map",
-    label: "MAP",
-    heading: "KOREA → SYDNEY",
-    closeLabel: "FOLD IT BACK",
-    surface: "paper",
-  },
-  {
-    id: "desk",
-    label: "DESK",
-    heading: "STUDY",
+    id: "collection",
+    label: "COLLECTION",
+    heading: "THINGS I KEEP",
     closeLabel: "PUT IT BACK",
     surface: "paper",
+    lines: [
+      "I\u2019ve always liked collecting things \u2014 LEGO, figures, random souvenirs, anything with a story.",
+    ],
   },
   {
-    id: "computer",
-    label: "COMPUTER",
-    heading: "WHAT I BUILD",
-    closeLabel: "STEP AWAY",
-    surface: "screen",
-  },
-  {
-    id: "papers",
-    label: "DRAWER",
-    heading: "RESUME",
-    closeLabel: "SHUT THE DRAWER",
+    id: "clarinet",
+    label: "CLARINET",
+    heading: "EIGHT YEARS",
+    closeLabel: "SET IT DOWN",
     surface: "paper",
+    lines: [
+      "I played clarinet for eight years.",
+      "That probably explains why I keep putting clarinet into the music I like.",
+    ],
   },
   {
-    id: "rail",
-    label: "RAIL",
-    heading: "CLOTHES",
-    closeLabel: "PUT IT BACK",
+    id: "jersey",
+    label: "JERSEY",
+    heading: "THE SHIRT",
+    closeLabel: "LEAVE IT UP",
     surface: "paper",
+    lines: [
+      "#67 \u2014 Sydney University Korean Football Team.",
+      "Football is one of the things that keeps me away from the desk.",
+    ],
   },
   {
-    id: "rig",
-    label: "GAMING PC",
+    id: "sports",
+    label: "SPORTS",
+    heading: "FOUR SPORTS",
+    closeLabel: "LEAN IT BACK",
+    surface: "paper",
+    lines: [
+      "Since moving to Australia I\u2019ve been playing golf, tennis, badminton and football.",
+      "I\u2019m much better at starting hobbies than staying still.",
+    ],
+  },
+  {
+    id: "pc",
+    label: "PC",
     heading: "OFF THE CLOCK",
     closeLabel: "STEP AWAY",
     surface: "screen",
+    lines: ["Mostly coding.", "Sometimes queueing mid on OCE."],
+  },
+  {
+    id: "closet",
+    label: "CLOSET",
+    heading: "CLOTHES",
+    closeLabel: "SLIDE IT BACK",
+    surface: "paper",
+    lines: ["I probably spend more money on clothes than I should."],
+  },
+  {
+    id: "window",
+    label: "WINDOW",
+    heading: "LATE",
+    closeLabel: "LOOK AWAY",
+    surface: "paper",
+    lines: ["A lot of ideas started late at night with this view."],
   },
 ];
 
+/** What the summoner card on the PC screen says. Static, and staying static. */
+const CLIENT_FIELDS: readonly (readonly [string, string])[] = [
+  ["GAME", "LEAGUE"],
+  ["ROLE", "MID"],
+  ["NAME", "GPT#G041"],
+  ["REGION", "OCE"],
+];
+
 /**
- * Screens stay on once they have been woken. Everything else goes back the way
- * it was found — which is the difference between a room someone has walked
- * through and a room where every drawer is hanging open.
+ * The screen stays on once it has been woken, and the cabinet lights stay on
+ * once they have been found. Everything else goes back the way it was — which
+ * is the difference between a room someone has walked through and a room where
+ * every drawer is hanging open.
  */
 const LATCHING: ReadonlySet<HouseThingId> = new Set<HouseThingId>([
-  "computer",
-  "rig",
+  "pc",
+  "collection",
 ]);
 
 /** A percentage of the room strip, for placing DOM over the art. */
@@ -137,7 +174,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
     const centre = edwardX + EDWARD_ART_SIZE.width / 2;
     const candidate = THINGS.map((thing) => ({
       thing,
-      distance: Math.abs(houseThingCentre(thing.id) - centre),
+      distance: houseThingDistance(thing.id, centre),
     }))
       .filter(({ distance }) => distance <= REACH)
       .sort((a, b) => a.distance - b.distance)[0];
@@ -396,108 +433,35 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
             </h2>
           </div>
 
-          {open.id === "map" ? (
-            <ol className="hs-chapters">
-              {chapters.map((chapter) => (
-                <li key={chapter.id}>
-                  <p className="hs-chapters__place">
-                    {chapter.place}
-                    <span>{chapter.years}</span>
-                  </p>
-                  {chapter.detail.map((line) => (
-                    <p className="hs-chapters__line" key={line}>
-                      {line}
-                    </p>
-                  ))}
-                </li>
-              ))}
-            </ol>
+          {open.id === "jersey" ? (
+            <p className="hs-jersey">
+              <span className="hs-jersey__number">67</span>
+              <span className="hs-jersey__name">SOON HYUN HWANG</span>
+            </p>
           ) : null}
 
-          {open.id === "desk" ? (
-            <div className="hs-body">
-              <p>
-                University of Sydney, 2022 – 2026. Bachelor of Advanced
-                Computing, Computer Science.
-              </p>
-              <p>
-                Before that: a research internship at Seoul National University
-                in Materials Science &amp; Engineering, and a school capstone
-                that ended up being an Arduino contactless coffee machine.
-              </p>
-            </div>
-          ) : null}
+          <div className="hs-body">
+            {open.lines.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </div>
 
-          {open.id === "computer" ? (
-            <div className="hs-body">
-              <p>
-                Four projects in this world, and the code behind all of them is
-                public. Most recently: computer vision and field deployment at
-                Sensorway — Ecopro in Hungary, around 750 sensors, Docker, data
-                pipelines, a live rollout.
-              </p>
-              <div className="hs-links">
-                <a
-                  className="loc-button loc-button--primary"
-                  href={contact.github}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  GITHUB
-                </a>
-                <a
-                  className="loc-button"
-                  href={contact.linkedin}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  LINKEDIN
-                </a>
-              </div>
-            </div>
-          ) : null}
-
-          {open.id === "papers" ? (
-            <div className="hs-body">
-              <p>
-                {contact.name} — {contact.location}.
-              </p>
-              <p>The written version, for people who would rather read it.</p>
-              <div className="hs-links">
-                <Link className="loc-button loc-button--primary" href="/resume">
-                  RESUME
-                </Link>
-                <a className="loc-button" href={`mailto:${contact.email}`}>
-                  {contact.email}
-                </a>
-              </div>
-            </div>
-          ) : null}
-
-          {open.id === "rail" ? (
-            <div className="hs-body">
-              <p>
-                Clothes are a real interest, not a side note — enough of one to
-                have built an archive for them.
-              </p>
-              {wardrobe ? (
-                <div className="hs-links">
-                  <Link className="loc-button" href={wardrobe.caseStudyUrl}>
-                    WARDROBE
-                  </Link>
+          {open.id === "pc" ? (
+            <dl className="hs-client">
+              {CLIENT_FIELDS.map(([field, value]) => (
+                <div key={field}>
+                  <dt>{field}</dt>
+                  <dd>{value}</dd>
                 </div>
-              ) : null}
-            </div>
+              ))}
+            </dl>
           ) : null}
 
-          {open.id === "rig" ? (
-            <div className="hs-body">
-              <p>League of Legends, mostly.</p>
-              <p className="hs-placeholder">
-                {leagueRank
-                  ? `Current rank: ${leagueRank}.`
-                  : "Rank not published here yet — this corner is waiting for a real number rather than a made-up one."}
-              </p>
+          {open.id === "closet" && wardrobe ? (
+            <div className="hs-links">
+              <Link className="loc-button" href={wardrobe.caseStudyUrl}>
+                WARDROBE
+              </Link>
             </div>
           ) : null}
 

@@ -12,7 +12,7 @@ import {
  * V4 replaces the fixed six-second intro: the ritual now has a stage that
  * waits for the visitor, so a single total for the whole sequence stopped
  * meaning anything. What is still worth holding to a budget is the scripted
- * part — everything the world performs on its own — and that is eight seconds.
+ * part — everything the world performs on its own — which totals 9.8 seconds.
  */
 export const INTRO_STAGE_TIMINGS: Readonly<Record<TimedIntroStage, number>> = {
   PAN: 1_800,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildings, npcs, signs, WORLD_CONFIG } from "@/data/world";
+import { buildings, signs, WORLD_CONFIG } from "@/data/world";
 import {
   DIRT_START_X,
   getGroundY,
@@ -43,7 +43,7 @@ describe("ground profile", () => {
 
 describe("world geometry", () => {
   it("stands every object exactly on its ground line", () => {
-    for (const object of [...buildings, ...npcs, ...signs]) {
+    for (const object of [...buildings, ...signs]) {
       const groundY = getGroundYForFootprint(object.position.x, object.size.width);
       expect(object.position.y + object.size.height).toBe(groundY);
     }
@@ -53,7 +53,7 @@ describe("world geometry", () => {
     expect(WORLD_CONFIG.width % PIXEL_UNIT).toBe(0);
     expect(WORLD_CONFIG.height % PIXEL_UNIT).toBe(0);
 
-    for (const object of [...buildings, ...npcs, ...signs]) {
+    for (const object of [...buildings, ...signs]) {
       expect(object.position.x % PIXEL_UNIT).toBe(0);
       expect(object.position.y % PIXEL_UNIT).toBe(0);
       expect(object.size.width % PIXEL_UNIT).toBe(0);

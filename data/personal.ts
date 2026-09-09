@@ -63,12 +63,3 @@ export const contact = {
   linkedin: "https://linkedin.com/in/soon-hyun-hwang-7212a42b7",
   github: "https://github.com/EdwardH-jedi",
 } as const;
-
-/**
- * A hook, not a claim.
- *
- * Edward plays League of Legends. The rank is his to supply — until he does,
- * this stays null and the room says the shelf is empty rather than inventing a
- * tier. Wire a real value here, or a fetch that fills it, when there is one.
- */
-export const leagueRank: string | null = null;

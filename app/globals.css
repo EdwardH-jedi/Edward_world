@@ -6,7 +6,25 @@
   --muted: #6b6a64;
   --line: #b8b6ad;
   --accent: #244fd8;
-  --focus: #ef7c1c;
+
+  /*
+   * The focus ring is two tones, not one hue.
+   *
+   * A single orange ring was the old answer, and it failed twice. On the cream
+   * document pages #ef7c1c was the loudest thing on the screen; on the world's
+   * orange buttons (#c98a52) it was a slightly brighter orange touching an
+   * orange — a hue difference doing a job that hue alone cannot do, and one
+   * that disappears entirely for a visitor who does not separate those two
+   * oranges.
+   *
+   * These two are a light/dark pair drawn from the palette the world already
+   * uses (the charcoal and cream of the intro and dialogue chrome). Both rings
+   * are always drawn, so whatever the ring lands on — cream page, dark panel,
+   * orange button — one of the two contrasts against it and the other reads as
+   * the edge. That is luminance, not colour, which is what keeps it legible.
+   */
+  --focus-inner: #2b2823;
+  --focus-outer: #efe7d3;
 }
 
 * {
@@ -44,11 +62,31 @@ a:hover {
   color: var(--accent);
 }
 
+/*
+ * The controls a keyboard actually moves between get both rings: 2px of
+ * charcoal hugging the element, then 2px of cream just outside it. The inner
+ * ring is what separates the indicator from an orange button; the outer ring
+ * is what carries it on the dark world chrome.
+ *
+ * `box-shadow` for the inner ring is safe here because no button or link in
+ * this sheet carries a base shadow — the chunky pixel bevels belong to balls,
+ * panels and the phone chassis, none of which are focusable.
+ */
 button:focus-visible,
-a:focus-visible,
+a:focus-visible {
+  box-shadow: 0 0 0 2px var(--focus-inner);
+  outline: 2px solid var(--focus-outer);
+  outline-offset: 2px;
+}
+
+/*
+ * Containers that only ever take focus programmatically keep a single ring.
+ * They are not tab stops, and several of them (`.dialog` most visibly) own a
+ * base `box-shadow` that a second ring here would overwrite.
+ */
 [tabindex="-1"]:focus-visible {
-  outline: 3px solid var(--focus);
-  outline-offset: 3px;
+  outline: 2px solid var(--focus-outer);
+  outline-offset: 2px;
 }
 
 /*
@@ -84,7 +122,8 @@ p {
   display: flex;
   gap: 0.5rem;
   position: fixed;
-  right: 1rem;
+  /* Clear of the music control, which is pinned to the corner itself. */
+  right: 4.25rem;
   top: 1rem;
   z-index: 20;
 }
@@ -314,6 +353,36 @@ p {
   text-shadow: 0 2px 0 rgb(239 231 211 / 50%);
 }
 
+.title-purpose {
+  bottom: calc(100% + 0.75rem);
+  color: #efe7d3;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: clamp(0.78rem, 1.1vw, 0.875rem);
+  left: 50%;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 100%;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  width: max-content;
+}
+
+.doc-copy {
+  max-width: 38rem;
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+.index-work__framing {
+  border-left: 2px solid currentColor;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  margin: 0.6rem 0 0;
+  max-width: 34rem;
+  padding-left: 0.7rem;
+}
+
 /* Sits low, over the dark earth, so cream type reads against it. */
 .title-enter {
   animation: title-blink 1.4s step-end infinite;
@@ -372,8 +441,57 @@ p {
 }
 
 @media (max-width: 640px) {
-  .title-copy { top: 11%; }
+  .title-copy { top: 11%; width: 94%; }
   .title-welcome { letter-spacing: 0.4em; }
+  .title-wordmark {
+    font-size: clamp(1.1rem, 4.7vw, 1.8rem);
+    margin-top: 0.5rem;
+    white-space: nowrap;
+  }
+}
+
+/* Keep shortcuts outside the artwork and the name slab's touch region. */
+@media (max-width: 640px), (pointer: coarse) {
+  .intro-actions,
+  .title-skip {
+    bottom: auto;
+    right: 0;
+    top: calc(100% + 0.75rem);
+  }
+  .intro-skip,
+  .title-skip { min-height: 44px; }
+}
+
+@media (max-height: 500px) and (max-width: 950px) {
+  .intro-stage,
+  .title-stage {
+    max-height: calc(100dvh - 9rem);
+    width: min(96vw, calc((100dvh - 9rem) * 16 / 9));
+  }
+  .intro-actions,
+  .title-skip {
+    bottom: auto;
+    right: 0;
+    top: calc(100% + 0.5rem);
+  }
+  .title-copy { top: 8%; width: 94%; }
+  .title-wordmark {
+    font-size: 1.1rem;
+    margin-top: 0.35rem;
+    white-space: nowrap;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1100px) {
+  .intro-stage {
+    max-height: calc(100dvh - 9rem);
+    width: min(96vw, calc((100dvh - 9rem) * 16 / 9));
+  }
+  .intro-actions {
+    bottom: auto;
+    right: 0;
+    top: calc(100% + 0.5rem);
+  }
 }
 
 .primary-button {
@@ -416,10 +534,15 @@ p {
 
 /* The visitor's own arrival, stated once and quietly. Sits with the other
    world chrome rather than over the play area, and is absent entirely when
-   the counter has nothing true to say. */
+   the counter has nothing true to say.
+
+   `--world-muted`, not `--muted`: the latter is tuned for the cream document
+   pages and lands at 3:1 on this dark bar, which is under AA for text this
+   small. This is the token the neighbouring EXPLORE hint already uses on the
+   same surface; the smaller type is what keeps the line secondary. */
 .world-join {
   animation: world-join-settle 600ms ease-out both;
-  color: var(--muted, #7e7763);
+  color: var(--world-muted);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.62rem;
   letter-spacing: 0.16em;
@@ -437,7 +560,9 @@ p {
 }
 
 @media (max-width: 640px) {
-  .world-join { font-size: 0.55rem; right: 1rem; top: 3.4rem; }
+  /* Tucked left of the music control, which owns the corner itself at this
+     width. The line stays right-aligned; it simply stops at the button. */
+  .world-join { font-size: 0.55rem; right: 4.5rem; top: 3.4rem; }
 }
 
 .world-instructions {
@@ -528,11 +653,6 @@ p {
   transform: translateX(-50%);
   white-space: nowrap;
   z-index: 2;
-}
-
-.world-object--npc .world-object__label {
-  background: rgb(43 40 35 / 78%);
-  color: #c9bc9c;
 }
 
 .world-object__prompt {
@@ -986,7 +1106,7 @@ p {
   position: absolute;
   top: 44%;
   transform: translate(-50%, -50%);
-  width: min(96vw, 1500px);
+  width: min(96vw, 1700px);
   z-index: 1;
 }
 
@@ -1158,43 +1278,57 @@ p {
   max-width: 40rem;
 }
 
-.hs-placeholder {
-  border-left: 2px solid #57534a;
-  color: var(--loc-muted) !important;
-  font-size: 0.8rem !important;
-  padding-left: 0.7rem;
-}
-
-.hs-chapters {
-  display: grid;
-  gap: 0.85rem;
-  list-style: none;
-  margin: 0.9rem 0 0;
-  padding: 0;
-}
-
-.hs-chapters__place {
-  align-items: baseline;
-  color: inherit;
+/* The shirt, said properly. The room can only draw the number; the name is a
+   name, and four art pixels tall is not where a name goes. */
+.hs-jersey {
+  align-items: center;
+  background: #23211c;
+  border: 1px solid #57534a;
+  color: var(--loc-cream);
   display: flex;
+  gap: 0.9rem;
+  margin: 0.9rem 0 0;
+  padding: 0.7rem 0.9rem;
+}
+
+.hs-jersey__number {
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.hs-jersey__name {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.62rem;
-  gap: 0.7rem;
-  letter-spacing: 0.12em;
-  margin: 0 0 0.25rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
 }
 
-.hs-chapters__place span {
-  color: #8a6a44;
-  font-size: 0.5rem;
+/* The four fields the monitor is showing, as the client would list them. */
+.hs-client {
+  display: grid;
+  gap: 0.35rem 1.4rem;
+  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+  margin: 1rem 0 0;
 }
 
-.hs-chapters__line {
-  color: #5f5949;
-  font-family: var(--font-archivo), Arial, sans-serif;
-  font-size: 0.82rem;
-  line-height: 1.5;
-  margin: 0;
+.hs-client div {
+  border-top: 1px solid #3a3a3a;
+  padding-top: 0.35rem;
+}
+
+.hs-client dt {
+  color: var(--loc-muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.46rem;
+  letter-spacing: 0.2em;
+}
+
+.hs-client dd {
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  margin: 0.2rem 0 0;
 }
 
 .hs-links {
@@ -2535,18 +2669,18 @@ p {
   border-bottom: 2px solid var(--wd-edge);
   color: var(--wd-ink);
   display: flex;
-  font-size: 0.5rem;
+  font-size: 0.6875rem;
   gap: 0.6rem;
   justify-content: space-between;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.06em;
   margin: 0;
   padding-bottom: 0.25rem;
 }
 
 .wd-bay__name span {
-  color: var(--wd-faint);
-  font-size: 0.44rem;
-  letter-spacing: 0.14em;
+  color: var(--wd-edge);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
 }
 
 /* ── The rail ────────────────────────────────────────────────────────────── */
@@ -2601,15 +2735,16 @@ p {
 }
 
 .wd-hanging__name {
-  font-size: 0.44rem;
-  letter-spacing: 0.08em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
   text-align: center;
 }
 
 .wd-hanging__tag {
-  color: var(--loc-orange);
-  font-size: 0.4rem;
-  letter-spacing: 0.14em;
+  color: var(--wd-edge);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
 }
 
 .wd-hanging[data-archived] canvas {
@@ -2640,8 +2775,9 @@ p {
 }
 
 .wd-table__name {
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
   margin: 0 0 0.5rem;
 }
 
@@ -2658,14 +2794,16 @@ p {
 }
 
 .wd-meta dt {
-  color: var(--wd-faint);
-  font-size: 0.42rem;
-  letter-spacing: 0.16em;
+  color: var(--wd-edge);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
 }
 
 .wd-meta dd {
-  font-size: 0.52rem;
-  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
   margin: 0;
 }
 
@@ -2682,17 +2820,18 @@ p {
 }
 
 .wd-table__state {
-  color: var(--loc-orange);
-  font-size: 0.5rem;
-  letter-spacing: 0.18em;
+  color: var(--wd-edge);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
   margin: 0;
   padding: 0.2rem 0;
 }
 
 .wd-empty {
-  color: var(--wd-faint);
-  font-size: 0.5rem;
-  letter-spacing: 0.1em;
+  color: var(--wd-edge);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
   line-height: 1.6;
   margin: auto;
   max-width: 15rem;
@@ -2706,6 +2845,7 @@ p {
   display: grid;
   gap: 0;
   grid-template-rows: repeat(4, minmax(3.4rem, auto));
+  min-height: 0;
 }
 
 .wd-shelf {
@@ -2723,10 +2863,10 @@ p {
 }
 
 .wd-shelf__label {
-  color: var(--wd-faint);
+  color: var(--wd-edge);
   flex: none;
-  font-size: 0.42rem;
-  letter-spacing: 0.16em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
   margin: 0;
   padding-top: 0.2rem;
   width: 3.6rem;
@@ -2759,9 +2899,10 @@ p {
   cursor: pointer;
   display: flex;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.42rem;
+  font-size: 0.6875rem;
   gap: 0.35rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.01em;
+  line-height: 1.3;
   min-height: 44px;
   padding: 0.15rem 0.4rem 0.15rem 0.2rem;
 }
@@ -2818,10 +2959,11 @@ p {
   border: 1px dashed #a9997f;
   color: var(--wd-faint);
   display: grid;
-  font-size: 0.42rem;
+  font-size: 0.6875rem;
   gap: 0.4rem;
   grid-template-columns: 3.4rem 1fr auto;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
   min-height: 26px;
   padding: 0.1rem 0.15rem 0.1rem 0.35rem;
 }
@@ -2861,9 +3003,10 @@ p {
 }
 
 .wd-save__hint {
-  color: var(--wd-faint);
-  font-size: 0.42rem;
-  letter-spacing: 0.14em;
+  color: var(--wd-edge);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -2883,8 +3026,9 @@ p {
 
 .wd-saved__name {
   border-bottom: 2px solid var(--wd-edge);
-  font-size: 0.5rem;
-  letter-spacing: 0.22em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
   margin: 0;
   padding-bottom: 0.25rem;
 }
@@ -2905,16 +3049,19 @@ p {
 }
 
 .wd-saved__empty {
-  color: #8b8069;
-  font-size: 0.44rem;
-  letter-spacing: 0.16em;
+  color: var(--wd-edge);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  line-height: 1.5;
+  text-align: center;
   margin: 0;
 }
 
 .wd-saved__note {
-  color: var(--wd-faint);
-  font-size: 0.42rem;
-  letter-spacing: 0.14em;
+  color: var(--wd-edge);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  line-height: 1.5;
   margin: 0;
 }
 
@@ -2922,13 +3069,16 @@ p {
 .loc-button.wd-saved__forget {
   align-self: start;
   border-color: transparent;
+  color: var(--wd-edge);
+  font-size: 0.6875rem;
+  min-height: 44px;
   padding: 0.35rem 0;
   text-decoration: underline;
 }
 
 .loc-button.wd-saved__forget:hover {
   background: transparent;
-  color: var(--loc-orange);
+  color: var(--wd-ink);
 }
 
 /* ── The ending ──────────────────────────────────────────────────────────── */
@@ -2949,8 +3099,8 @@ p {
 
 .wd-summary__line {
   color: var(--loc-muted);
-  font-size: 0.55rem;
-  letter-spacing: 0.12em;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
   line-height: 1.7;
   margin: 0 0 0.4rem;
 }
@@ -2978,19 +3128,10 @@ p {
 }
 
 @media (max-width: 1100px) {
-  .wd-bays {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-  }
-
-  .wd-studio {
-    padding-right: 12.4rem;
-  }
-}
-
-@media (max-width: 860px) {
   /* The room stops being a wall of bays and becomes a scroll in loop order. */
   .wd-room {
+    /* The scroll can travel beyond the backdrop's viewport-sized rectangle. */
+    background: var(--wd-wall);
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -3088,6 +3229,80 @@ p {
 
   .wd-shelf__label {
     width: 3rem;
+  }
+}
+
+.wd-content {
+  display: contents;
+}
+
+/* Only the ending becomes a flowing composition. Its scroll viewport starts
+   below the utilities, keeping the frame and summary clear even while scrolling. */
+@media (max-width: 1100px), (max-height: 600px) {
+  .wd-room[data-complete] .wd-content {
+    align-content: start;
+    background: var(--wd-wall);
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 19.5rem));
+    inset: 4rem 0 0;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 0.9rem 0.9rem 1.5rem;
+    position: absolute;
+  }
+
+  .wd-room[data-complete] {
+    overflow: hidden;
+  }
+
+  .wd-room[data-complete] .wd-saved {
+    align-self: start;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+    order: 0;
+    padding: 0;
+    position: static;
+    width: min(100%, 15rem);
+  }
+
+  .wd-room[data-complete] .wd-final {
+    align-self: center;
+    grid-column: 2;
+    grid-row: 1;
+    height: 11rem;
+    justify-self: center;
+    left: auto;
+    position: relative;
+    top: auto;
+    width: min(100%, 14rem);
+  }
+
+  .wd-room[data-complete] .loc-caption {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+    left: auto;
+    line-height: 1.5;
+    max-width: 100%;
+    position: relative;
+    text-align: center;
+    top: auto;
+    transform: none;
+    white-space: normal;
+  }
+
+  .wd-room[data-complete] .loc-summary {
+    bottom: auto;
+    grid-column: 1 / -1;
+    grid-row: 3;
+    left: auto;
+    max-height: none;
+    overflow: visible;
+    position: relative;
+    transform: none;
+    width: 100%;
   }
 }
 
@@ -3878,6 +4093,90 @@ p {
   margin-top: 1.25rem;
 }
 
+/* ── World dialogue ──────────────────────────────────────────────────────────
+   What a signpost says. This is the same `.dialog` shell the
+   Index uses, dressed in the world's own panel language — the charcoal, the
+   hairline border and the mono lettering every location panel already has —
+   so a conversation inside the game does not open a website over it. The
+   world stays visible behind it: it is the world talking. */
+.overlay-backdrop:has(.world-dialog) {
+  /* Low on the frame, the way a text box sits under a scene, so whoever is
+     speaking stays in view above it instead of underneath it. */
+  align-items: flex-end;
+  background: rgb(24 24 22 / 38%);
+  padding-bottom: 16vh;
+}
+
+.world-dialog {
+  --world-char: #2b2823;
+  --world-cream: #efe7d3;
+  --world-orange: #c98a52;
+  --world-muted: #9c9482;
+
+  background: rgb(34 31 26 / 94%);
+  border: 1px solid #57534a;
+  box-shadow: 0.5rem 0.5rem 0 rgb(24 24 22 / 45%);
+  color: var(--world-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  max-width: 34rem;
+  padding: 1.1rem 1.4rem 1.3rem;
+}
+
+.world-dialog .dialog__header {
+  align-items: center;
+  border-bottom-color: #57534a;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+}
+
+.world-dialog .dialog__header h2 {
+  color: var(--world-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.world-dialog .dialog__header button {
+  background: transparent;
+  border: 1px solid #57534a;
+  color: var(--world-muted);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  padding: 0.45rem 0.7rem;
+  text-transform: uppercase;
+}
+
+.world-dialog .dialog__header button:hover {
+  background: var(--world-cream);
+  color: var(--world-char);
+}
+
+.world-dialog p {
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  line-height: 1.7;
+  margin-bottom: 0.55rem;
+}
+
+.world-dialog p:last-child {
+  margin-bottom: 0;
+}
+
+.world-dialog .eyebrow {
+  color: var(--world-muted);
+}
+
+.world-dialog a {
+  color: var(--world-cream);
+}
+
+.world-dialog a:hover {
+  color: var(--world-orange);
+}
+
 .index-dialog {
   --index-paper: #f4eedf;
   --index-ink: #26231e;
@@ -3892,20 +4191,43 @@ p {
 }
 
 .index-dialog .dialog__header {
+  align-items: center;
   border-bottom-color: var(--index-rule);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.65rem;
 }
 
 .index-dialog .dialog__header h2 {
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+  margin-right: auto;
+}
+
+.index-dialog .dialog__header button {
+  background: transparent;
+  border-color: transparent;
+  color: var(--index-quiet);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.7rem;
+  gap: 0.35rem;
+  margin: 0;
+  min-height: 44px;
+  padding: 0.45rem;
+  white-space: nowrap;
+}
+
+.index-dialog .dialog__header button:hover {
+  color: var(--index-ink);
+  text-decoration: underline;
 }
 
 .index-lede {
   color: var(--index-ink);
   font-size: 1.02rem;
   line-height: 1.6;
-  margin: 0 0 2rem;
+  margin: 0 0 1.25rem;
   max-width: 40rem;
 }
 
@@ -3950,8 +4272,8 @@ p {
 .index-work__role {
   color: var(--index-quiet);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.16em;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
   margin: 0.3rem 0 0;
 }
 
@@ -3973,10 +4295,10 @@ p {
 
 .index-work__stack li {
   border: 1px solid var(--index-rule);
-  color: var(--index-quiet);
+  color: #6b6254;
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
   padding: 0.2rem 0.45rem;
 }
 
@@ -3991,8 +4313,8 @@ p {
 .index-work__links a {
   color: var(--index-ink);
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.64rem;
-  letter-spacing: 0.1em;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -4074,6 +4396,10 @@ p {
 @media (max-width: 760px) {
   .index-dialog { padding: 1.4rem 1.2rem 1.2rem; }
 
+  .index-dialog .dialog__header h2 { font-size: 0.95rem; }
+
+  .index-lede { font-size: 0.95rem; line-height: 1.5; }
+
   .index-work > li {
     grid-template-columns: 2rem 1fr;
     gap: 0.8rem;
@@ -4090,6 +4416,11 @@ p {
   .index-work__body h3 { font-size: 1.3rem; }
 
   .index-direct { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-height: 500px) {
+  .index-dialog { padding-block: 0.8rem; }
+  .index-lede { margin-bottom: 0.8rem; }
 }
 
 .placeholder-note {
@@ -4194,6 +4525,38 @@ p {
   font-size: 1.05rem;
   line-height: 1.6;
   max-width: 38rem;
+}
+
+.doc-evidence {
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 0.25rem;
+}
+
+.doc-evidence__stack {
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.72rem;
+  gap: 0.2rem 0.85rem;
+  line-height: 1.6;
+  list-style: none;
+  padding: 0;
+}
+
+.doc-evidence > a {
+  color: var(--foreground);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  text-underline-offset: 0.2em;
+  width: fit-content;
+}
+
+.doc-evidence > a:hover,
+.doc-evidence > a:focus-visible {
+  color: var(--accent);
 }
 
 /*
@@ -4433,6 +4796,18 @@ p {
   }
 }
 
+/* A continuous utility gutter keeps the fixed music button outside the
+   document column even when a paragraph scrolls through the top of the page. */
+@media (max-width: 800px) {
+  .doc-page {
+    padding-inline: 1rem calc(4rem + env(safe-area-inset-right, 0px));
+  }
+
+  body:has(.doc-page) > .music-control {
+    right: calc(0.5rem + env(safe-area-inset-right, 0px));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -4442,4 +4817,395 @@ p {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ── Music control ───────────────────────────────────────────────────────────
+   Mounted from the root layout, so it is reachable on the world, the Index,
+   `/resume` and every case study alike. It sits in the corner the WORLD/INDEX
+   nav was moved off, at a full 44px tap target, and says only what it is: a
+   note, struck through when the world is silent. */
+
+.music-control {
+  align-items: center;
+  background: var(--surface);
+  display: flex;
+  font-size: 1rem;
+  height: 2.75rem;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  position: fixed;
+  right: 1rem;
+  top: 1rem;
+  width: 2.75rem;
+  z-index: 20;
+}
+
+/* Off reads as off at a glance, without becoming a second kind of button. */
+.music-control[aria-pressed="false"] {
+  color: var(--muted);
+}
+
+.music-control[aria-pressed="true"] {
+  background: var(--foreground);
+  color: var(--surface);
+}
+
+.music-control--inline {
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0 0.75rem;
+  position: static;
+  width: auto;
+}
+
+.music-control:disabled {
+  border-style: dashed;
+  color: var(--muted);
+  cursor: default;
+}
+
+.music-control:disabled:hover {
+  color: var(--muted);
+}
+
+/* Shared compact navigation: exit left, view switch centre-right, music right.
+   Reserve disjoint hit regions in every interior, including short landscape. */
+@media (max-width: 640px), (max-height: 500px) and (max-width: 950px) {
+  .world-index-control {
+    gap: 0.25rem;
+    right: calc(3.75rem + env(safe-area-inset-right, 0px));
+    top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  }
+
+  .world-index-control button {
+    font-size: 0.65rem;
+    letter-spacing: 0.04em;
+    min-height: 44px;
+    padding: 0.45rem 0.5rem;
+  }
+
+  .loc-exit {
+    font-size: 0.55rem;
+    left: calc(0.5rem + env(safe-area-inset-left, 0px));
+    letter-spacing: 0.04em;
+    min-height: 44px;
+    padding: 0.45rem 0.5rem;
+    top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  }
+
+  .music-control:not(.music-control--inline) {
+    right: calc(0.5rem + env(safe-area-inset-right, 0px));
+    top: calc(0.5rem + env(safe-area-inset-top, 0px));
+  }
+}
+
+/* ── Tennis match ────────────────────────────────────────────────────────────
+   The playable match, drawn inside `.sg-play` — which already shares the
+   venue court's geometry exactly. Every position below is a percentage the
+   simulation produced: `left` is its `x`, and `bottom` is 22% (the surface)
+   plus its `y`, which is measured in the same band the net is drawn in. A ball
+   that clears the net in the simulation clears the one you can see. */
+
+.sg-tennis__court {
+  inset: 0;
+  position: absolute;
+}
+
+.sg-tennis__court:focus-visible {
+  outline: none;
+}
+
+.sg-tennis__figure {
+  bottom: 22%;
+  height: 20%;
+  position: absolute;
+  transition: none;
+  will-change: left;
+}
+
+.sg-tennis__figure canvas {
+  height: 100%;
+  transform: translateX(-50%);
+  width: auto;
+}
+
+/* The racket arm. A transform on the sprite only — the simulation's idea of
+   where this player is standing never moves. */
+.sg-tennis__figure[data-swinging] canvas {
+  transform: translateX(-50%) scale(1.08);
+}
+
+.sg-tennis__ball {
+  /* Drawn on the same grid as everything around it: an eight-sided pixel ball
+     with a one-step dark rim, not a browser circle. The rim is what keeps it
+     readable against the cream sky, which the pale felt alone vanished into. */
+  --sg-ball: polygon(
+    25% 0, 75% 0, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0 75%, 0 25%
+  );
+
+  aspect-ratio: 1;
+  background: #2b2823;
+  clip-path: var(--sg-ball);
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 1.8%;
+  z-index: 2;
+}
+
+.sg-tennis__ball::before {
+  background: #f2e4a8;
+  clip-path: var(--sg-ball);
+  content: "";
+  inset: 3px;
+  position: absolute;
+}
+
+/* Squashed for a frame or two on contact. Reads as impact at any speed. */
+.sg-tennis__ball[data-struck] {
+  transform: translate(-50%, 50%) scale(1.5, 0.7);
+}
+
+.sg-tennis__shadow {
+  background: rgb(40 30 18 / 55%);
+  bottom: 21%;
+  height: 1%;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 2.2%;
+}
+
+.sg-tennis__spark {
+  background: var(--loc-cream);
+  height: 2.4%;
+  position: absolute;
+  transform: translate(-50%, 50%) rotate(45deg);
+  width: 2.4%;
+  z-index: 2;
+}
+
+.sg-tennis__hud {
+  /* The panel is not decoration. This sits over the venue's cream sky, and
+     cream lettering on it was very nearly invisible — the score is the one
+     thing a match must never make you hunt for. */
+  align-items: center;
+  background: rgb(34 31 26 / 92%);
+  border: 1px solid #57534a;
+  bottom: calc(100% + 1.1rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  left: 50%;
+  padding: 0.6rem 1.1rem;
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(92vw, 22rem);
+}
+
+.sg-tennis__score {
+  align-items: baseline;
+  color: var(--loc-cream);
+  display: flex;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.7rem;
+  gap: 0.5rem;
+  letter-spacing: 0.16em;
+  margin: 0;
+  text-shadow: 0 2px 0 rgb(34 31 26 / 70%);
+}
+
+.sg-tennis__score strong {
+  font-size: 1.25rem;
+  font-weight: 400;
+}
+
+/* The number that just changed lifts, once. */
+.sg-tennis__score strong[data-scored] {
+  animation: sg-tennis-scored 460ms ease-out;
+  color: var(--loc-orange);
+}
+
+@keyframes sg-tennis-scored {
+  0% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-6px) scale(1.3); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.sg-tennis__colon { color: #7d766a; }
+
+.sg-tennis__prompt {
+  color: #b5ab97;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  margin: 0;
+  text-align: center;
+}
+
+.sg-tennis__prompt[data-match-point] {
+  animation: sg-tennis-pulse 900ms ease-in-out infinite;
+  color: var(--loc-orange);
+}
+
+@keyframes sg-tennis-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.sg-tennis__verdict {
+  animation: sg-tennis-verdict 700ms ease-out forwards;
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 1rem;
+  left: 50%;
+  letter-spacing: 0.08em;
+  margin: 0;
+  pointer-events: none;
+  position: absolute;
+  text-shadow: 0 3px 0 rgb(34 31 26 / 60%);
+  top: 6%;
+  transform: translateX(-50%);
+}
+
+.sg-tennis__verdict[data-quality="PERFECT"] { color: var(--loc-orange); }
+.sg-tennis__verdict[data-quality="EARLY"],
+.sg-tennis__verdict[data-quality="LATE"] { color: #8f8574; }
+
+@keyframes sg-tennis-verdict {
+  0% { opacity: 0; transform: translate(-50%, 8px); }
+  25% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -10px); }
+}
+
+.sg-tennis__controls {
+  bottom: calc(-3.2rem);
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  left: 50%;
+  pointer-events: auto;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.sg-tennis__button {
+  background: rgb(34 31 26 / 92%);
+  border: 1px solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  min-height: 2.75rem;
+  min-width: 2.75rem;
+  padding: 0 0.9rem;
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-tennis__button--swing {
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
+  color: #241f18;
+}
+
+.sg-tennis__hint {
+  bottom: -5.4rem;
+  color: #a29a8a;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.5rem;
+  left: 50%;
+  letter-spacing: 0.12em;
+  margin: 0;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Short landscape has room beside the court, not above it. Keep the venue
+   and simulation display at the same aspect ratio, with unscaled controls
+   in their own column. No court or level coordinates change. */
+@media (max-height: 500px) and (max-width: 950px) and (orientation: landscape) {
+  .sg-court,
+  .sg-play {
+    --loc-court-width: calc(100vw - 19rem);
+    left: 1rem;
+  }
+
+  .sg-play__hud,
+  .sg-tennis__hud {
+    bottom: auto;
+    left: calc(100% + 1rem);
+    top: -2.5rem;
+    transform: none;
+    width: 16rem;
+  }
+
+  .sg-play__hud { padding: 0.75rem; }
+  .sg-play__action { min-height: 44px; }
+  .sg-tennis__hud { padding: 0.6rem; }
+
+  .sg-tennis__controls {
+    bottom: auto;
+    left: calc(100% + 1rem);
+    top: 3rem;
+    transform: none;
+    width: 16rem;
+  }
+
+  .sg-tennis__hint {
+    background: rgb(34 31 26 / 92%);
+    bottom: auto;
+    color: #b5ab97;
+    left: calc(100% + 1rem);
+    padding: 0.5rem;
+    top: 6.4rem;
+    transform: none;
+    white-space: normal;
+    width: 16rem;
+  }
+
+  /* The existing measured stage scale fits the unchanged 640x360 level.
+     Reserve the top navigation and bottom touch controls outside its frame. */
+  .ar-screen {
+    --ar-screen-width: min(94vw, calc((100dvh - 9rem) * 16 / 9));
+    margin-left: calc(var(--ar-screen-width) / -2);
+    top: 4rem;
+    width: var(--ar-screen-width);
+  }
+}
+
+/* The matched player's card, in the phone. */
+.sg-phone__profile {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+}
+
+.sg-phone__profile > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sg-phone__profile dt {
+  color: #7d766a;
+  font-size: 0.46rem;
+  letter-spacing: 0.16em;
+}
+
+.sg-phone__profile dd {
+  color: var(--loc-cream);
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-tennis__score strong[data-scored],
+  .sg-tennis__prompt[data-match-point],
+  .sg-tennis__verdict {
+    animation: none;
+  }
+
+  .sg-tennis__verdict { opacity: 1; }
 }

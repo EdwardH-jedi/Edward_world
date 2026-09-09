@@ -4,6 +4,7 @@ import type { RefObject } from "react";
 import {
   DEFAULT_SPORT,
   SPORT_BLURBS,
+  SPORT_OPPONENTS,
   SPORTSGANG_SPORTS,
   type SportsgangSport,
   type SportsgangStage,
@@ -53,6 +54,7 @@ export function PixelPhone({
   onAccept,
 }: PixelPhoneProps) {
   const showSlot = SLOT_STAGES.has(stage) || stage === "COURT_TRANSITION";
+  const opponent = sport ? SPORT_OPPONENTS[sport] : undefined;
 
   return (
     <div className="sg-phone" data-stage={stage} ref={phoneRef}>
@@ -99,12 +101,31 @@ export function PixelPhone({
 
           {stage === "MATCH_FOUND" || stage === "COURT_TRANSITION" ? (
             <div className="sg-phone__panel">
-              <p className="sg-phone__status">MATCH FOUND</p>
-              <div className="sg-phone__versus">
-                <span className="sg-phone__player">EDWARD</span>
-                <span className="sg-phone__vs">VS</span>
-                <span className="sg-phone__player">PLAYER 02</span>
-              </div>
+              <p className="sg-phone__status">MATCH FOUND!</p>
+              {opponent ? (
+                /* The whole point of the product, stated as plainly as the app
+                   would state it: a real person nearby, and what they play. */
+                <dl className="sg-phone__profile">
+                  <div>
+                    <dt>NAME</dt>
+                    <dd>{opponent.name}</dd>
+                  </div>
+                  <div>
+                    <dt>SPORT</dt>
+                    <dd>{sport}</dd>
+                  </div>
+                  <div>
+                    <dt>SKILL</dt>
+                    <dd>{opponent.skill}</dd>
+                  </div>
+                </dl>
+              ) : (
+                <div className="sg-phone__versus">
+                  <span className="sg-phone__player">EDWARD</span>
+                  <span className="sg-phone__vs">VS</span>
+                  <span className="sg-phone__player">PLAYER 02</span>
+                </div>
+              )}
               {stage === "MATCH_FOUND" ? (
                 <button
                   className="sg-phone__accept"

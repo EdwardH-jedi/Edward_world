@@ -284,7 +284,7 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
             onClick={onOpenIndex}
             type="button"
           >
-            SKIP TO INDEX
+            VIEW PROJECTS
           </button>
         </div>
       </div>

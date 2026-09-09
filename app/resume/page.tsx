@@ -1,31 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BgmSurface } from "@/components/audio/bgm-surface";
 import { chapters, contact } from "@/data/personal";
 import { projects } from "@/data/projects";
 import type { PortfolioProject } from "@/types/portfolio";
 
 export const metadata: Metadata = {
-  title: "Resume",
+  title: "Background & contact",
   description: `${contact.name} — timeline, selected work and contact details.`,
 };
 
 /**
  * The direct path, for a reader who will not play anything.
  *
- * Every line is read from `data/personal.ts` and `data/projects.ts`, which
- * hold only what Edward's own repositories say. A resume is an identity
- * document: nothing is summarised into a claim here, and the formal signed-off
- * document is still Edward's to supply.
+ * Timeline and selected work come from the canonical personal and project data.
  */
-export default function Resume() {
+export default function BackgroundAndContact() {
   return (
     <main className="document-page doc-page">
-      <Link className="doc-back" href="/">
-        Edward&apos;s World
+      <BgmSurface surface="resume" />
+      <Link className="doc-back" href="/?view=index">
+        Back to portfolio
       </Link>
 
       <header className="doc-head">
-        <p className="eyebrow">Resume</p>
+        <p className="eyebrow">Background &amp; contact</p>
         <h1>{contact.name}</h1>
         <p className="doc-lede">{contact.location}</p>
       </header>
@@ -81,7 +80,7 @@ export default function Resume() {
                 </ul>
               ) : null}
               <div className="doc-links">
-                <Link href={project.caseStudyUrl}>Case study</Link>
+                <Link href={project.caseStudyUrl}>Project details</Link>
                 {project.githubUrl ? (
                   <a href={project.githubUrl} rel="noreferrer" target="_blank">
                     GitHub
@@ -92,12 +91,6 @@ export default function Resume() {
           ))}
         </ol>
       </section>
-
-      <p className="doc-pending">
-        This page is assembled from Edward&apos;s own public repositories. A
-        formal resume document, and anything it would add beyond the above, is
-        his to supply.
-      </p>
     </main>
   );
 }

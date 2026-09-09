@@ -123,6 +123,37 @@ describe("readJoinTotal / recordJoin (route logic)", () => {
   });
 });
 
+describe("response shape", () => {
+  it("serves JSON whose success body is exactly { total }", async () => {
+    const store = createInMemoryJoinStore();
+    const response = await recordJoin(store);
+
+    expect(response.headers.get("content-type")).toContain("application/json");
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(Object.keys(body)).toEqual(["total"]);
+  });
+
+  it("serves an error body that is exactly { error }, with no internals in it", async () => {
+    const store: JoinStore = {
+      read: async () => {
+        throw new Error("redis://user:hunter2@internal-host:6379 refused");
+      },
+      increment: async () => {
+        throw new Error("redis://user:hunter2@internal-host:6379 refused");
+      },
+    };
+
+    for (const response of [await readJoinTotal(store), await recordJoin(store)]) {
+      expect(response.headers.get("content-type")).toContain("application/json");
+      const body = (await response.json()) as Record<string, unknown>;
+      expect(Object.keys(body)).toEqual(["error"]);
+      // The visitor is told the counter is unavailable, never why.
+      expect(JSON.stringify(body)).not.toContain("hunter2");
+      expect(JSON.stringify(body)).not.toContain("internal-host");
+    }
+  });
+});
+
 describe("route wiring (GET/POST handlers)", () => {
   it("POST /api/joins increments the shared counter and GET reflects it without incrementing further", async () => {
     const before = await totalOf(await GET());

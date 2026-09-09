@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { chapters, contact, leagueRank } from "@/data/personal";
+import { chapters, contact } from "@/data/personal";
 import { getProjectBySlug, projects } from "@/data/projects";
 
 const sourceOf = (relativePath: string) =>
@@ -58,10 +58,5 @@ describe("document page content", () => {
     expect(contact.email).toMatch(/@/);
     expect(contact.linkedin.startsWith("https://")).toBe(true);
     expect(contact.github.startsWith("https://")).toBe(true);
-  });
-
-  /** D3: the rank is Edward's to supply, and no surface may invent one. */
-  it("leaves the League rank unset", () => {
-    expect(leagueRank).toBeNull();
   });
 });

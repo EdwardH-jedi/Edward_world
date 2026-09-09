@@ -184,6 +184,8 @@ const DIGIT_GLYPHS: Readonly<Record<string, SpriteRows>> = {
   "3": ["XXX", "..X", ".XX", "..X", "XXX"],
   "4": ["X.X", "X.X", "XXX", "..X", "..X"],
   "5": ["XXX", "X..", "XXX", "..X", "XXX"],
+  "6": ["XXX", "X..", "XXX", "X.X", "XXX"],
+  "7": ["XXX", "..X", "..X", ".X.", ".X."],
 };
 
 /** A 3x5 scoreboard digit. */
@@ -220,11 +222,9 @@ export interface ArtRect {
  * Wraps a raster so every rect is translated by `offset` and then clipped to
  * `bounds`, with anything fully outside dropped rather than drawn.
  *
- * Two things in the house need this. A window shows a *crop* of a scene
- * authored at another size (`sydney.ts` paints full-width sky and water bands,
- * which would flood the room without a clip), and the wall map reveals its face
- * by growing the rectangle its contents are allowed to occupy — one unfold,
- * one set of coordinates, no second copy of the artwork at a smaller size.
+ * The house needs this for its windows. The night skyline behind them is
+ * authored as one scene and drawn twice at different sizes; without a clip its
+ * sky band and its towers would run straight out across the bedroom wall.
  */
 export function clipRaster(
   draw: Raster,

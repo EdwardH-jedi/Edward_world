@@ -1,5 +1,18 @@
 # Edward's World — Implementation Roadmap
 
+> **Historical development record.** This file is the working roadmap the
+> project was built against, phase by phase, and it is kept for its verified-
+> facts table and its record of what was decided when. **It is not a description
+> of the current product.** Parts of it describe work that was later superseded
+> or removed — most notably Phase 9's wandering NPC, which was built, shipped
+> and then deliberately deleted, and Phases 7–8, which were superseded by the V4
+> opening in Phase 11.
+>
+> For what the product is today, read [`../README.md`](../README.md),
+> [`PROJECT_STATUS.md`](./PROJECT_STATUS.md) and
+> [`ARCHITECTURE.md`](./ARCHITECTURE.md).
+
+
 The persistent source of truth for remaining implementation work. **Read this
 file, `PROJECT_STATUS.md` and `ARCHITECTURE.md` before touching code.** Do not
 rely on conversation history.
@@ -461,7 +474,14 @@ overrode the real scene — 64 stale lines removed.
 
 ## Phase 9 — World polish / TOMODACHI
 
-**Status:** DONE
+**Status:** DONE — **the NPC was subsequently removed from the product.**
+
+> Everything below describes the phase as it was built. The wandering NPC it
+> added has since been deleted from the product. `lib/game/tomodachi.ts`, its
+> sprites, its world entry and its types are gone, and
+> `tests/world-data.test.ts` guards the removal. The ambient-animation, sign,
+> prop and transition work from this phase is still in the product. Do not
+> restore the NPC from this section.
 
 **Scope.** Final world-life pass — ambient animation, signs, props, small
 details, NPC positioning, transitions, TOMODACHI dialogue and easter eggs.

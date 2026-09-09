@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { MusicControl } from "@/components/audio/music-control";
 import { Archivo, IBM_Plex_Mono, Silkscreen } from "next/font/google";
 import "./globals.css";
 
@@ -75,7 +76,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       className={`${archivo.variable} ${plexMono.variable} ${silkscreen.variable}`}
       lang="en"
     >
-      <body>{children}</body>
+      <body>
+        {children}
+        <MusicControl />
+      </body>
     </html>
   );
 }

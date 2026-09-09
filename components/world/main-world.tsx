@@ -11,18 +11,16 @@ import {
   type HorizontalDirection,
 } from "@/lib/game/movement";
 import { getGroundYForFootprint, PIXEL_UNIT } from "@/lib/game/terrain";
-import { getTomodachiLines, getWanderOffset } from "@/lib/game/tomodachi";
 import { formatJoinLine } from "@/lib/joins/ordinal";
 import { useJoinTotal } from "@/lib/joins/use-join-total";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
 import {
-  drawTomodachi,
   EDWARD_ART_SIZE,
   edwardPoses,
+  getAvatarAnchor,
   getWalkFrame,
-  TOMODACHI_ART_SIZE,
   type EdwardPose,
 } from "@/lib/pixel/characters";
 import type { Player, WorldObject } from "@/types/world";
@@ -42,11 +40,6 @@ const MOVEMENT_KEYS = new Set(["a", "d", "arrowleft", "arrowright"]);
  */
 const SETTLE_MS = 420;
 
-const TOMODACHI_ART: BuildingArt = {
-  size: TOMODACHI_ART_SIZE,
-  draw: drawTomodachi,
-};
-
 function getDirection(keys: ReadonlySet<string>): HorizontalDirection {
   const left = keys.has("a") || keys.has("arrowleft");
   const right = keys.has("d") || keys.has("arrowright");
@@ -57,7 +50,6 @@ function getDirection(keys: ReadonlySet<string>): HorizontalDirection {
 /** Resolves the art routine and grid size for any world object. */
 function getObjectArt(object: WorldObject): BuildingArt {
   if (object.kind === "building") return buildingArt[object.id];
-  if (object.kind === "npc") return TOMODACHI_ART;
   return signpostArt;
 }
 
@@ -68,7 +60,6 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   }));
   const [moving, setMoving] = useState(false);
   const [settled, setSettled] = useState(true);
-  const [tomodachiVisits, setTomodachiVisits] = useState(0);
   const [viewportWidth, setViewportWidth] = useState(0);
   const viewportRef = useRef<HTMLDivElement>(null);
   const pressedKeys = useRef(new Set<string>());
@@ -181,19 +172,8 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   const openNearby = useCallback(() => {
     if (disabled || !nearbyObject) return;
 
-    // TOMODACHI has more than one thing to say, and remembers roughly how
-    // often you have stopped. Everything else dispatches as authored.
-    if (nearbyObject.kind === "npc" && nearbyObject.interaction.type === "TALK") {
-      onInteraction({
-        ...nearbyObject.interaction,
-        lines: getTomodachiLines(tomodachiVisits),
-      });
-      setTomodachiVisits((visits) => visits + 1);
-      return;
-    }
-
     onInteraction(nearbyObject.interaction);
-  }, [disabled, nearbyObject, onInteraction, tomodachiVisits]);
+  }, [disabled, nearbyObject, onInteraction]);
 
   useEffect(() => {
     function handleInteraction(event: KeyboardEvent) {
@@ -220,6 +200,15 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   });
 
   const walkFrame = getWalkFrame(player.position.x, PIXEL_UNIT, moving);
+
+  /**
+   * The art rectangle, which is deliberately not the hitbox. `player.size` is
+   * the only rectangle movement, bounds, the camera and proximity read; this
+   * is where the sprite is *drawn*, anchored feet-down and centred on that
+   * footprint. Today they are the same 48x64, so this changes nothing — it is
+   * the seam that lets a taller avatar arrive without moving the player.
+   */
+  const avatar = getAvatarAnchor(EDWARD_ART_SIZE, player.size, PIXEL_UNIT);
 
   /**
    * Which Edward to draw. Purely presentational — every branch reads state the
@@ -279,10 +268,6 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
           {worldObjects.map((object) => {
             const art = getObjectArt(object);
             const isNearby = nearbyObject?.id === object.id;
-            // Only TOMODACHI drifts, and only visually.
-            const drift =
-              object.kind === "npc" ? getWanderOffset(ambientFrame) : 0;
-
             return (
               <div
                 className={`world-object world-object--${object.kind}`}
@@ -291,7 +276,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
                 key={object.id}
                 style={{
                   height: object.size.height,
-                  left: object.position.x + drift,
+                  left: object.position.x,
                   top: object.position.y,
                   width: object.size.width,
                 }}
@@ -304,7 +289,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
                   unit={PIXEL_UNIT}
                 />
                 <span className="world-object__label">{object.label}</span>
-                {isNearby ? (
+                {isNearby && object.interaction ? (
                   <InteractionPrompt
                     text={getInteractionPrompt(object.interaction)}
                   />
@@ -320,10 +305,10 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
             data-moving={moving || undefined}
             data-pose={pose}
             style={{
-              height: player.size.height,
-              left: player.position.x,
-              top: player.position.y,
-              width: player.size.width,
+              height: avatar.height,
+              left: player.position.x + avatar.left,
+              top: player.position.y + avatar.top,
+              width: avatar.width,
             }}
           >
             <PixelCanvas

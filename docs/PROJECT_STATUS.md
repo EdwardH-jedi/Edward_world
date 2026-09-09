@@ -3,7 +3,7 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-08-31 · Phase 14, feature/content pass — counter wired, content pages built, world atmosphere
+**Last updated:** 2026-09-05 · release-presentation pass — public README, case study, architecture refresh
 
 ---
 
@@ -20,7 +20,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 | 6 | Index mode final pass | **DONE** |
 | 7 | Title screen | **DONE** — superseded by 11 |
 | 8 | Six-second intro | **DONE** — superseded by 11 |
-| 9 | World polish / TOMODACHI | **DONE** |
+| 9 | World polish + a wandering NPC | **DONE** — the NPC was later removed from the product |
 | 10 | Release pass | **DONE** |
 | 11 | V4 intro: the approach and the name gate | **DONE** |
 | 12 | Monument intro as a real interaction | **DONE** |
@@ -48,8 +48,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   a labelled control to assistive technology, while showing none of a form
   field's chrome.
 - **Main world** — side-view pixel town, six buildings, terraced terrain,
-  stone path, stream and footbridge, town cluster, AFL oval, and TOMODACHI,
-  who wanders near the house and has five conversations in him. Smooth
+  stone path, stream and footbridge, town cluster, and AFL oval. Smooth
   A/D + arrow movement, terrain-following, camera follow, proximity prompts,
   ambient animation on a shared frame counter.
 - **SportsGang location** — the only project location with a full experience.
@@ -58,7 +57,8 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   result → project context with real links and stack.
   - **Golf** — stop the power bar, then the contact bar; carry distance and
     fairway/rough are computed from those two stops.
-  - **Tennis** — three timed returns graded PERFECT / GOOD / MISS.
+  - **Tennis** — a rally to five points; each swing is graded on how close
+    the player was to the ball, which sets the shot's speed and accuracy.
   - **Basketball** — three hold-and-release shots; make or miss from the
     release point alone.
   - **Running** — 200 m of pace against stamina; exhaustion latches, so going
@@ -97,22 +97,34 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 - **Routes** — `/`, `/resume`, `/case-studies/[slug]` ×4, `/manifest.webmanifest`,
   `/robots.txt`, 404.
 
-## What is still placeholder
+## What is still open
 
 Content, not code:
 
-- `/resume` and `/case-studies/*` — placeholder bodies (D2, D4).
-- The League of Legends rank in Edward's House — a typed `null` hook (D3).
+- **The League of Legends rank in Edward's House** — a typed `null` hook (D3).
+  The room says the shelf is empty rather than inventing a tier.
+- **`/resume` and `/case-studies/*`** are built and shipped, assembled strictly
+  from what Edward's public repositories record. Each closes with an honest note
+  that the written account — and a formal resume document — is Edward's to
+  supply (D2, D4). They are no longer placeholder bodies.
+
+### Not in the product
+
+- A wandering NPC (Phase 9) was built and shipped, and has since been removed
+  from the product. `lib/game/tomodachi.ts`, its sprites, its world entry and
+  its types are gone; `tests/world-data.test.ts` guards the removal, including
+  that no interactable is stranded in the stretch it used to own. It is not to
+  be presented as a current feature or restored.
 
 ## Quality gates
 
-All green after the 2026-08-28 QA pass:
+All four green as of 2026-09-05:
 
 ```
-npm run lint        eslint . --max-warnings 0
-npm run typecheck   tsc --noEmit
-npm test            25 files, 293 tests
-npm run build       production build
+npm run lint        eslint . --max-warnings 0            clean
+npm run typecheck   tsc --noEmit                         clean
+npm test            27 files, 368 tests                  passing
+npm run build       production build, 10 routes          succeeds
 ```
 
 ## How to run
@@ -122,9 +134,13 @@ npm install
 npm run dev     # http://localhost:3000
 ```
 
-Walk with `A`/`D` or the on-screen controls, and press `E` or tap the status
-bar to enter what you are standing next to. Everything works without a
-keyboard, and everything professional is also one click away in INDEX.
+Walk with `A`/`D` or `←`/`→` or the on-screen controls, and press `E` or tap
+the status bar to enter what you are standing next to. `Escape` leaves anything.
+Everything works without a keyboard, and everything professional is also one
+click away in INDEX.
+
+Public-facing docs: [`../README.md`](../README.md),
+[`CASE_STUDY.md`](./CASE_STUDY.md), [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## Resuming work
 

@@ -10,13 +10,13 @@ export default function NotFound() {
   return (
     <main className="document-page not-found-page">
       <p className="eyebrow">404 · Outside the world boundary</p>
-      <h1>This path doesn&apos;t lead anywhere yet.</h1>
+      <h1>This path doesn&apos;t lead anywhere.</h1>
       <p>
-        Return to the interactive world, or use the resume route for the direct path.
+        Return to the portfolio, or find Edward&apos;s background and contact details.
       </p>
       <div className="document-page__links">
-        <Link href="/">Return to Edward&apos;s World</Link>
-        <Link href="/resume">View resume</Link>
+        <Link href="/?view=index">Back to portfolio</Link>
+        <Link href="/resume">Background &amp; contact</Link>
       </div>
     </main>
   );

@@ -83,12 +83,13 @@ function canvas(width: number, height: number, scale: number, outputDir: string)
 }
 
 const IDS: readonly HouseThingId[] = [
-  "map",
-  "desk",
-  "computer",
-  "papers",
-  "rail",
-  "rig",
+  "collection",
+  "clarinet",
+  "jersey",
+  "sports",
+  "pc",
+  "closet",
+  "window",
 ];
 
 it("renders the room to disk for a look", () => {
@@ -98,7 +99,7 @@ it("renders the room to disk for a look", () => {
   try {
     for (const [name, reveal, edwardX] of [
       ["house-shut.png", 0, 24],
-      ["house-open.png", 1, 148],
+      ["house-open.png", 1, 232],
     ] as const) {
       const sheet = canvas(
         HOUSE_ART_SIZE.width,

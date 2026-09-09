@@ -17,6 +17,7 @@ import {
   isWorn,
   MINIMUM_LOOK_SLOTS,
 } from "@/lib/game/wardrobe-archive";
+import type { WardrobePersistenceOutcome } from "@/lib/game/wardrobe-persistence";
 import {
   confirmSave,
   flyBetween,
@@ -72,13 +73,14 @@ const ART_UNIT = { hanging: 3, table: 6, shelf: 3, mannequin: 7, frame: 4 } as c
 
 export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
   const [state, dispatch] = useReducer(archiveReducer, undefined, createArchiveState);
-  const [storageWorked, setStorageWorked] = useState(true);
-  const [message, setMessage] = useState("Wardrobe. Take a garment off the rail.");
+  const [persistenceOutcome, setPersistenceOutcome] = useState<WardrobePersistenceOutcome>("idle");
+  const [message, setMessage] = useState<string | null>("Wardrobe. Take a garment off the rail.");
 
   // Read from storage rather than mirrored into state, so a look kept on an
   // earlier visit hangs in the frame without counting as progress through the
   // loop — and forgetting it updates the room immediately.
-  const savedLook = useSavedLook();
+  const persistence = useSavedLook(persistenceOutcome);
+  const savedLook = persistence.look;
 
   const rootRef = useRef<HTMLElement>(null);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -179,26 +181,25 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
     if (!canSaveLook(state)) return;
     // Storage and state move first; the flight is only how it is shown.
     const kept = writeSavedLook(state.outfit);
-    setStorageWorked(kept);
+    setPersistenceOutcome(kept ? "saved" : "save-error");
     dispatch({ type: "SAVE" });
-    setMessage(
-      kept
-        ? "Look saved to this browser."
-        : "Storage is unavailable, so the look was not kept.",
-    );
-    startFlight(figureRef.current, frameRef.current, () =>
-      confirmSave(frameRef.current),
-    );
+    setMessage(null);
+    if (kept) {
+      startFlight(figureRef.current, frameRef.current, () =>
+        confirmSave(frameRef.current),
+      );
+    }
   }, [startFlight, state]);
 
   const startOver = useCallback(() => {
     dispatch({ type: "RESET" });
+    setPersistenceOutcome("idle");
     setMessage("Wardrobe. Take a garment off the rail.");
   }, []);
 
   const forgetLook = useCallback(() => {
-    clearSavedLook();
-    setMessage("Saved look forgotten. Nothing is kept on this device.");
+    setPersistenceOutcome(clearSavedLook() ? "forgotten" : "forget-error");
+    setMessage(null);
   }, []);
 
   const mannequin = useMemo(
@@ -215,6 +216,7 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
     <section
       aria-label="Wardrobe"
       className="loc-experience wd-room"
+      data-complete={complete || undefined}
       data-stage={stage}
       ref={rootRef}
       tabIndex={-1}
@@ -230,13 +232,16 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
       </button>
 
       <p aria-live="polite" className="loc-announcer">
-        {message}
+        {message ?? persistence.copy.announcement}
       </p>
 
+      <div className="wd-content">
       <SavedLookFrame
+        emptyLabel={persistence.copy.emptyFrame}
         forget={forgetLook}
         frameRef={frameRef}
         look={savedLook}
+        note={persistence.copy.frameNote}
         routine={framedLook}
       />
 
@@ -436,9 +441,11 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
                 SAVE LOOK
               </button>
               <p className="wd-save__hint">
-                {canSaveLook(state)
-                  ? "Kept in this browser only."
-                  : `${MINIMUM_LOOK_SLOTS} layers minimum.`}
+                {persistence.status === "unavailable"
+                  ? "Browser storage is unavailable."
+                  : canSaveLook(state)
+                    ? "Save in this browser only."
+                    : `${MINIMUM_LOOK_SLOTS} layers minimum.`}
               </p>
             </section>
           </div>
@@ -461,9 +468,7 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
             </div>
           </div>
           <p className="loc-caption">
-            {storageWorked
-              ? "LOOK SAVED TO THIS BROWSER"
-              : "STORAGE UNAVAILABLE — THE LOOK WAS NOT KEPT"}
+            {persistence.copy.caption}
           </p>
           <ProjectSummary
             firstActionRef={summaryRef}
@@ -476,12 +481,13 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
             wordmark="WARDROBE"
           >
             <p className="wd-summary__line">
-              Captured {state.archived.length} garments, composed {worn} layers,
-              kept the look on this device.
+              Captured {state.archived.length} garments, composed {worn} layers.
+              {" "}{persistence.copy.summary}
             </p>
           </ProjectSummary>
         </>
       ) : null}
+      </div>
     </section>
   );
 }
@@ -566,7 +572,9 @@ function TableAction({
 }
 
 interface SavedLookFrameProps {
+  emptyLabel: string;
   look: Outfit | null;
+  note: string;
   routine: ReturnType<typeof createMannequinRoutine>;
   frameRef: React.RefObject<HTMLDivElement | null>;
   forget: () => void;
@@ -578,7 +586,7 @@ interface SavedLookFrameProps {
  * It is drawn empty before anything is saved on purpose — the destination has
  * to exist before the visitor saves, or saving has nowhere to mean anything.
  */
-function SavedLookFrame({ look, routine, frameRef, forget }: SavedLookFrameProps) {
+function SavedLookFrame({ emptyLabel, look, note, routine, frameRef, forget }: SavedLookFrameProps) {
   return (
     <div className="wd-saved">
       <p className="wd-saved__name">SAVED LOOK</p>
@@ -592,11 +600,11 @@ function SavedLookFrame({ look, routine, frameRef, forget }: SavedLookFrameProps
             unit={ART_UNIT.frame}
           />
         ) : (
-          <p className="wd-saved__empty">NOTHING SAVED</p>
+          <p className="wd-saved__empty">{emptyLabel}</p>
         )}
       </div>
       <p className="wd-saved__note">
-        {look ? "ON THIS DEVICE ONLY" : "STAYS IN THIS BROWSER"}
+        {note}
       </p>
       {look ? (
         <button className="loc-button loc-button--quiet wd-saved__forget" onClick={forget} type="button">

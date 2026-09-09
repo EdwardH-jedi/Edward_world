@@ -15,17 +15,12 @@ export interface JoinStore {
 }
 
 /**
- * Default, non-durable binding: an in-process counter.
+ * Non-durable binding: an in-process counter, for local development and tests.
  *
- * This is intentionally the *only* store shipped here. It resets to 0 on
- * every process restart, and on Vercel each Function instance (and each
- * cold start) gets its own independent counter, so totals will diverge
- * across concurrent instances in production. It exists as a working
- * default for local development and as a reference implementation of the
- * `JoinStore` contract that a durable store can drop in to replace,
- * without any change to the route handler. See the project report for a
- * production-storage recommendation — provisioning that store is a
- * decision for a human, not this module.
+ * It resets to 0 on every process restart, and on Vercel each Function
+ * instance (and each cold start) gets its own independent counter, so
+ * totals diverge across concurrent instances. That is why `getJoinStore()`
+ * refuses to bind this store in production — see the note there.
  *
  * Increments are serialized through a promise chain rather than a bare
  * `total += 1`. Today's `total += 1` has no `await` in it, so it is in
@@ -131,18 +126,53 @@ export function createRestJoinStore(config: {
   };
 }
 
+/**
+ * The binding used when production is running without a durable store.
+ *
+ * Every call throws, which `lib/joins/response.ts` turns into a 500 and the
+ * client turns into silence. That is deliberate: the alternative — falling
+ * back to the in-process counter — would greet the very first visitor of
+ * every cold Function instance as "the 1st player to join the world", over
+ * and over, forever. A number nobody can stand behind is worse than no
+ * number, so an unprovisioned production counter says nothing at all.
+ *
+ * See `docs/ARCHITECTURE.md` for the two environment-variable pairs that
+ * make this branch unreachable.
+ */
+export function createUnavailableJoinStore(): JoinStore {
+  const fail = async (): Promise<number> => {
+    throw new Error(
+      "no durable join store is configured; set KV_REST_API_URL and KV_REST_API_TOKEN",
+    );
+  };
+  return { read: fail, increment: fail };
+}
+
 let sharedStore: JoinStore | undefined;
 
 /**
  * The process-wide store used by the route handler. Lazily created so
  * every request within one server instance shares the same counter.
+ *
+ * Three outcomes, in order:
+ *
+ * 1. The environment names a Redis-compatible REST endpoint — use it. This
+ *    is the only branch that is correct across restarts and instances.
+ * 2. Nothing is provisioned and this is a production build — refuse, so the
+ *    world shows no number rather than a per-instance fiction.
+ * 3. Nothing is provisioned and this is development or a test — count in
+ *    memory, so `npm run dev` has a working counter with no setup.
+ *
+ * Nothing here provisions anything.
  */
 export function getJoinStore(): JoinStore {
   if (!sharedStore) {
     const config = readRestConfig();
-    // Durable when the environment provides somewhere durable to write, and
-    // an honest local counter otherwise. Nothing here provisions anything.
-    sharedStore = config ? createRestJoinStore(config) : createInMemoryJoinStore();
+    sharedStore = config
+      ? createRestJoinStore(config)
+      : process.env.NODE_ENV === "production"
+        ? createUnavailableJoinStore()
+        : createInMemoryJoinStore();
   }
   return sharedStore;
 }

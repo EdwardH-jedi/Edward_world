@@ -12,14 +12,30 @@ import {
  * touching choreography or markup. Nothing in this module knows about React,
  * the DOM, or anime.js.
  */
+/**
+ * How long each self-advancing beat holds.
+ *
+ * Measured end to end before these were touched: pressing E put 5.6 seconds of
+ * animation between the visitor and the game, every time, and the result screen
+ * then held a score they had already read for another 3.2. A demonstration is
+ * allowed to take a beat; it is not allowed to be something you sit through
+ * twice. Trimmed to 4.1s and 2.2s.
+ *
+ * Every one of these is passed straight to its own choreography timeline, so
+ * the animations shorten with the stage rather than finishing early and
+ * leaving the screen still.
+ */
 export const SPORTSGANG_STAGE_TIMINGS: Readonly<
   Record<TimedSportsgangStage, number>
 > = {
-  ENTER: 900,
-  PHONE: 1_100,
-  SEARCHING: 2_200,
-  COURT_TRANSITION: 1_400,
-  RESULT: 3_200,
+  ENTER: 700,
+  PHONE: 800,
+  // The search stays the longest beat on purpose: it is the product's own
+  // pitch, and below about a second and a half it reads as a loading flicker
+  // rather than as looking for someone nearby.
+  SEARCHING: 1_500,
+  COURT_TRANSITION: 1_100,
+  RESULT: 2_200,
 };
 
 const TIMED_STAGES = new Set<SportsgangStage>(
