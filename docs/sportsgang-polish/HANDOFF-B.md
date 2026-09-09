@@ -182,6 +182,15 @@ build                        compiles, 10 routes
 The foundation's 59 contract tests and the two frozen golf suites pass
 **unedited**.
 
+One deviation worth recording: `lib/pixel/sg-golf.ts` was written before its
+tests, unlike every other file here. Rather than claim a red-green cycle that
+did not happen, the tests were verified by mutation — freezing the body so
+only the arm and club move, which is the shortcut the brief rules out. The
+first version of `moves the whole body, not one arm` **passed** that mutation,
+because the club's shaft crossed the rows it was reading; keyed on colour
+instead, it fails as it should. The mutation and the restore are in the
+session log, and the fix is in `e838079`.
+
 Golf tests, mapped to the brief's checklist:
 
 | Asked for | Where |
@@ -227,6 +236,7 @@ Chrome 1440×900 and 390×844 against `next dev` on port 3012, driven over CDP.
 | Club head on the ball at impact | PASS — measured: club-head anchor (322.94, 564.45), ball centre (322.94, 564.45) |
 | Six distinguishable swing poses | PASS — all six captured live, matched by timestamp |
 | Determinism | PASS — two runs, identical result |
+| Reduced motion changes the shake and nothing else | PASS — see below |
 
 Evidence in `docs/sportsgang-polish/evidence/golf/`, including
 `golf-hole-completion.gif` — a full tee-to-cup completion, 150 frames sampled
@@ -235,6 +245,24 @@ from a live screencast of the run, played back faster than real time.
 `10-close-follow-through.png` is named for what it shows: the close crop
 intended for impact raced past the 33 ms impact window. The true impact frame
 is `06-swing-impact.png`, matched to the pose by timestamp.
+
+### Reduced motion, run as a controlled pair
+
+Same scripted player, same hole, once with
+`prefers-reduced-motion: reduce` emulated from before the page loaded and once
+without:
+
+```
+reduce   matchMedia true    play-layer transform: none, for the whole run
+control  matchMedia false   transform shakes 3px → 0 after each strike
+both     RUN ABANDONED · 11 STROKES · longest drive 205 M · 27 M SHORT
+```
+
+The identical result is the point: the shake is the only thing that changed.
+The power bar, the contact window, the strike and the score are the same game
+either way. (That run reached the shot cap rather than holing out — the
+scripted player used a fixed full power instead of reading the range — so it
+also exercises the cap and out-of-bounds paths end to end.)
 
 **Not verified:** audio, and any browser other than Chrome.
 

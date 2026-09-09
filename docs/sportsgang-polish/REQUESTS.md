@@ -100,3 +100,47 @@ the call site at `sportsgang-experience.tsx:364` is
 `<Minigame active onFinish={finishPlay} />`, so neither is supplied yet and
 every run is correctly stamped `GUEST`. See HANDOFF-B.md for the two lines D
 needs.
+
+---
+
+## B-4 · `rulesVersion` is now stale, and `carryM` means something wider
+
+**File** `lib/game/minigames/golf-result.ts` (frozen).
+
+### The version string no longer describes the rules
+
+`GOLF_RULES_VERSION = "golf-1h-2026-09-1"` lives in the frozen contract, and
+`golf-course.ts` imports it unchanged. It was minted for the single-drive
+game. It now labels a 300 m par 4 with clubs, penalties and a shot cap, which
+plays nothing like the drive it was named for.
+
+CONTRACT.md says B bumps this "whenever the hole plays differently". **B
+cannot**: the constant is on the frozen list. So the string is stale by
+design, and the first board D builds would file a run from the old drive and a
+run from the hole under the same rules.
+
+**Asked for, before any run is stored anywhere:** bump it to
+`"golf-1h-2026-09-2"`, *or* move ownership of the string into
+`golf-course.ts` so the session that changes the rules is the one that can
+change its name. Either is a one-line change; the second is the one that stops
+this recurring.
+
+Nothing else has to change: `golf-course.ts` re-exports whatever it imports,
+and `draftGolfRun` already passes `rulesVersion` explicitly rather than
+letting the constructor default it.
+
+### `shotLog[].carryM` holds carry plus roll
+
+`GolfShotV1.carryM` is documented in the frozen file as "carry of this shot in
+metres". B stores the ground distance from where the shot was struck to where
+it came to rest — carry **plus** roll — because that is the number the HUD
+shows as `LAST SHOT` and the one a player would recognise. A true carry, with
+roll excluded, is not currently recorded anywhere.
+
+This is documented in HANDOFF-B.md's D-integration section, so nothing is
+hidden, but the field's name and its comment now disagree with its contents.
+
+**Asked for, at D's discretion:** either rename it to `distanceM` and update
+the comment, or keep `carryM` and change the comment to say carry plus roll.
+B has no preference; what matters is that a server re-deriving a total from
+the log knows which one it is getting.
