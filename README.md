@@ -45,14 +45,15 @@ Five experiences stand along one continuous side-scrolling town.
 
 ### Edward's House
 
-The personal room — who Edward is when he is not writing code. You walk up to
-six objects and press `E` to look at each: the map from Jeju to Sydney, the desk,
-the computer, the drawer, the clothes rail, the gaming PC.
+The personal room — who Edward is when he is not writing code. Seven things sit
+around it, and you press `E` to look at each: the shelf of collected things, the
+clarinet, the football jersey, the sports leaning in the corner, the PC, the
+closet and the window. A counter tracks how many you have looked at.
 
-Every line in the room is verified biography read from Edward's own public
-repositories. Where something isn't known, the room says so rather than
-inventing it — the League of Legends shelf is a typed hook waiting for a real
-value, not a made-up rank.
+Each one says a single true thing and stops — eight years of clarinet, `#67` for
+the Sydney University Korean Football Team, four sports picked up since moving
+to Australia. The room is written the way the rest of the world is: nothing is
+padded out to fill the space, and nothing claims more than it can support.
 
 ### AFL Predict
 
