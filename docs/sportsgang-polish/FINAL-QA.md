@@ -5,7 +5,8 @@ behave as asked on a real screen, but the public golf leaderboard has no shared
 storage in this environment, and in a production build it therefore does not
 work at all — it says so honestly rather than faking a board, which is the
 right behaviour and still not a working feature. Three defects were found by
-looking at the running app; all three are fixed on this branch. Details below.
+looking at the running app and all three are fixed on this branch — E-3 with a
+caveat named in §4. Details below.
 
 ---
 
@@ -18,7 +19,7 @@ looking at the running app; all three are fixed on this branch. Details below.
 | Final SHA after QA fixes | `220386e` (see §7) |
 | cwd | `/Users/edwardhwang/Desktop/Edward_world-sg-e` |
 | Dev server | `npm run dev -- --port 3015` → `http://localhost:3015/?view=world` |
-| Production build | `npm run build` then `npx next start --port 3016` → `http://localhost:3016/?view=world` |
+| Production build | `npm run build` then `npx next start --port 3016` → `http://localhost:3016/?view=world`. Rebuilt at `957aabc` after the fixes, so the production check below is against the branch being shipped, not the reviewed commit. |
 | Board API | `/api/sportsgang/golf-board` on both |
 | Node | v24.19.0 (`/opt/homebrew/opt/node@24/bin`), npm 11.17.0 |
 | Browser | Chrome 152 via the chrome-devtools MCP, CDP device emulation |
@@ -95,7 +96,7 @@ Evidence paths are relative to `docs/sportsgang-polish/`.
 
 | Check | Result |
 |---|---|
-| Five swings look different | **PASS** — distinct pose tables, distinct durations (0.16–0.46 s) and windows; seen on screen as SERVE, FOREHAND, BACKHAND, SMASH · `evidence-e/tennis-pose-forehand.png`, `tennis-smash-before.png` |
+| Five swings look different | **PASS** — distinct pose tables, distinct durations (0.16–0.46 s) and windows; seen on screen as SERVE, FOREHAND, BACKHAND and a SMASH swing (which missed — see the row below) · `evidence-e/tennis-pose-forehand.png`, `tennis-smash-before.png` |
 | All five actually chosen in ordinary play | **PASS** — measured, not assumed. Which swing you get depends where you stand: at the baseline, groundstrokes; camped at x≈35, VOLLEY ×2 and SMASH ×3; at the net, VOLLEY. Pinned by `tests/qa-e-tennis-serve.test.ts`. |
 | Serve toss visible, and met by the racket | **PASS after fix** — was broken; see defect **E-1** |
 | Smash only on reachable balls | **PASS** — a SMASH swung at a ball outside the racket box registered no contact (observed on screen, 12 ticks traced) |
@@ -238,8 +239,10 @@ under one tick of travel. Evidence:
 follow-through is now still running when the rally starts. `tennis-swings.test.ts`
 counted "a completed swing followed by the next one" as a mashing restart, which
 used to be impossible. The check now distinguishes a swing whose clock went
-backwards *before finishing* from one that ran its full duration; the assertion
-is still `restarts === 0`. That is the one existing assertion this pass touched,
+backwards *before finishing* from one that ran its full duration. The condition
+went from `now.elapsed < before.elapsed` to
+`now.elapsed < before.elapsed && before.elapsed + DT < before.duration`; the
+assertion is still `restarts === 0`. That is the one existing assertion this pass touched,
 and it was made narrower, not weaker.
 
 ### E-2 · P1 — conceding gave a perfect golf record
@@ -281,6 +284,15 @@ read `SUBMIT AS GUEST` and did the same thing.
 disabled while it stands; the separate guest button is not rendered when the box
 is empty, and returns the moment there is something in it — which is when it
 means something different, and is also the way out of an unusable name.
+
+**What the fix does not do, so it is not filed again.** In the *invalid-name*
+state the disabled primary still reads `SUBMIT AS GUEST` beside the working
+guest button, so the two identical labels are still there — one greyed out, with
+the error underneath saying why. A disabled control plus an inline error is a
+standard and readable pattern, and removing the duplication entirely would mean
+relabelling the primary while a name is being rejected, which is a copy decision
+rather than a defect fix. The reported case — an *empty* box showing two
+identical, identically-behaving buttons — is gone.
 
 ### Not defects, recorded so they are not re-investigated
 
@@ -347,6 +359,20 @@ handoffs' NOT_RUN lists are the right source for the browser checklist; that a
 stepped-clock capture must be labelled a stepped reconstruction and never a
 real-time recording.
 
+**What the second review corrected**, before this report was handed over:
+
+- It caught the headline claiming E-3 was fixed outright when my own re-test
+  showed the invalid-name state still renders two identically-labelled buttons.
+  That caveat is now in §4 and in the verdict, so the next reader does not file
+  it a second time.
+- It caught that the production server was still the one built at `97c4944` —
+  the reviewed commit, not the branch being shipped. It has been rebuilt at
+  `957aabc` and the `UNAVAILABLE` result re-confirmed against it. The check that
+  decides the verdict should not be run against stale output.
+- It asked for the tightened assertion's before/after condition to be written
+  out inline rather than left to the diff, and for the missed SMASH to be
+  described as a miss.
+
 **Held:** the suggestion to wire A-1 (`debug` into `TennisGame`) as QA tooling.
 The DOM already exposes `data-swing` on both figures, which answered the
 five-swings question in normal play without adding a production code path for a
@@ -360,7 +386,8 @@ test's benefit.
 |---|---|
 | `32c11d2` | fix(tennis): serve the ball on the frame the racket reaches it |
 | `220386e` | fix: a conceded hole is not a nought, and the name box says why |
-| *(this one)* | docs(qa): the QA report and its evidence |
+| `957aabc` | docs(qa): the independent review, its evidence and the verdict |
+| *(last)* | docs(qa): what the second review corrected; production build at HEAD |
 
 Branched from `97c4944`. `main` is untouched at `4c75644`. Nothing was pushed,
 merged or deployed, and no Vercel deployment was created.

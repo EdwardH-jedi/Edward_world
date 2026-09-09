@@ -52,7 +52,8 @@ Chrome 152 · 1440×900 DPR&nbsp;2 and 390×844 DPR&nbsp;3 (CDP device emulation
 <div class="verdict">
   <strong>CONDITIONAL</strong>
   <p>The gates pass and the six requirements behave as asked on a real screen. Three defects
-  were found by looking at the running app and all three are fixed here. The public golf
+  were found by looking at the running app and all three are fixed here (E-3 with a caveat,
+  below). The public golf
   leaderboard has no shared storage in this environment, so in a <b>production build it does
   not work</b> — it says so honestly instead of faking a board, which is right, and still not
   a working feature.</p>
@@ -171,7 +172,7 @@ ticks.</p>
 <h3>The one that decides the verdict</h3>
 <figure style="max-width: 640px">
   <img src="evidence-e/prod-01-board-unavailable.png" alt="The production build refusing to show a board.">
-  <figcaption><b>Production build, <code>:3016</code></b> — “The public board is not available right
+  <figcaption><b>Production build, <code>:3016</code></b>, rebuilt at <code>957aabc</code> — “The public board is not available right
   now. Your run was not submitted.” No credentials are configured, so
   <code>GLOBAL_LEADERBOARD = BLOCKED_CONFIG</code>. Refusing is the correct behaviour — a
   per-instance board would show each visitor their own scores back as a world ranking — but the
@@ -193,7 +194,7 @@ animation-frame drift <b>0</b>, canvas drift <b>0</b>, no audio elements accumul
   <tr><th>#</th><th>Severity</th><th>What</th><th>State</th></tr>
   <tr><td>E-1</td><td class="fail">P1</td><td>The serve launched 14 ticks after the racket met the ball; the toss fell below the court surface and the ball reappeared 19.3 units above it.</td><td class="pass">fixed · <code>32c11d2</code></td></tr>
   <tr><td>E-2</td><td class="fail">P1</td><td>Conceding golf recorded a 0-stroke personal best, beating every round anyone can finish. (The public board was never affected — the server refuses anything not completed.)</td><td class="pass">fixed · <code>220386e</code></td></tr>
-  <tr><td>E-3</td><td class="na">P2</td><td>With an over-long name the submit button relabelled itself <code>SUBMIT AS GUEST</code> and then refused; with an empty box two identical buttons did the same thing.</td><td class="pass">fixed · <code>220386e</code></td></tr>
+  <tr><td>E-3</td><td class="na">P2</td><td>With an over-long name the submit button relabelled itself <code>SUBMIT AS GUEST</code> and then refused; with an empty box two identical buttons did the same thing.</td><td class="pass">fixed · <code>220386e</code><br><span style="color:var(--muted);font-weight:400">— the empty-box duplication is gone and the rejection now appears while you type. In the invalid-name state the disabled primary still carries the GUEST label beside the working guest button, with the error explaining. See <code>FINAL-QA.md §4</code>.</span></td></tr>
 </table>
 <p>Tests went from <b>665 / 41 files</b> to <b>689 / 44</b>. Nothing was deleted, skipped or
 loosened; one assertion was made narrower and is documented in <code>FINAL-QA.md §4</code>.</p>
