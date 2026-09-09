@@ -73,27 +73,27 @@ interface GolfPose {
 const DRIVER_POSES: Readonly<Record<GolfSwingArtStage, GolfPose>> = {
   ADDRESS: {
     hands: [15, 13], clubHead: [20, 23], shoulder: [12, 9],
-    hipsX: 12, torsoWidth: 6, head: [9, 3], backHeelUp: false,
+    hipsX: 12, torsoWidth: 7, head: [8, 1], backHeelUp: false,
   },
   BACKSWING: {
     hands: [8, 6], clubHead: [16, 1], shoulder: [11, 8],
-    hipsX: 11, torsoWidth: 4, head: [9, 3], backHeelUp: false,
+    hipsX: 11, torsoWidth: 5, head: [8, 1], backHeelUp: false,
   },
   DOWNSWING: {
     hands: [10, 10], clubHead: [3, 15], shoulder: [12, 9],
-    hipsX: 12, torsoWidth: 5, head: [9, 3], backHeelUp: false,
+    hipsX: 12, torsoWidth: 6, head: [8, 1], backHeelUp: false,
   },
   IMPACT: {
     hands: [16, 13], clubHead: [20, 23], shoulder: [13, 9],
-    hipsX: 13, torsoWidth: 7, head: [9, 3], backHeelUp: true,
+    hipsX: 13, torsoWidth: 8, head: [9, 1], backHeelUp: true,
   },
   FOLLOW_THROUGH: {
     hands: [18, 7], clubHead: [22, 3], shoulder: [14, 8],
-    hipsX: 14, torsoWidth: 6, head: [11, 3], backHeelUp: true,
+    hipsX: 14, torsoWidth: 7, head: [10, 1], backHeelUp: true,
   },
   FINISH: {
     hands: [13, 2], clubHead: [4, 6], shoulder: [14, 8],
-    hipsX: 14, torsoWidth: 5, head: [12, 2], backHeelUp: true,
+    hipsX: 14, torsoWidth: 6, head: [11, 0], backHeelUp: true,
   },
 };
 
@@ -107,27 +107,27 @@ const DRIVER_POSES: Readonly<Record<GolfSwingArtStage, GolfPose>> = {
 const PUTTER_POSES: Readonly<Record<GolfSwingArtStage, GolfPose>> = {
   ADDRESS: {
     hands: [15, 13], clubHead: [20, 23], shoulder: [12, 9],
-    hipsX: 12, torsoWidth: 6, head: [9, 4], backHeelUp: false,
+    hipsX: 12, torsoWidth: 6, head: [8, 2], backHeelUp: false,
   },
   BACKSWING: {
     hands: [14, 13], clubHead: [16, 22], shoulder: [12, 9],
-    hipsX: 12, torsoWidth: 6, head: [9, 4], backHeelUp: false,
+    hipsX: 12, torsoWidth: 6, head: [8, 2], backHeelUp: false,
   },
   DOWNSWING: {
     hands: [14, 13], clubHead: [17, 22], shoulder: [12, 9],
-    hipsX: 12, torsoWidth: 6, head: [9, 4], backHeelUp: false,
+    hipsX: 12, torsoWidth: 6, head: [8, 2], backHeelUp: false,
   },
   IMPACT: {
     hands: [15, 13], clubHead: [20, 23], shoulder: [12, 9],
-    hipsX: 12, torsoWidth: 6, head: [9, 4], backHeelUp: false,
+    hipsX: 12, torsoWidth: 6, head: [8, 2], backHeelUp: false,
   },
   FOLLOW_THROUGH: {
     hands: [16, 13], clubHead: [22, 22], shoulder: [13, 9],
-    hipsX: 12, torsoWidth: 6, head: [9, 4], backHeelUp: false,
+    hipsX: 12, torsoWidth: 6, head: [8, 2], backHeelUp: false,
   },
   FINISH: {
     hands: [16, 13], clubHead: [23, 22], shoulder: [13, 9],
-    hipsX: 12, torsoWidth: 6, head: [10, 4], backHeelUp: false,
+    hipsX: 12, torsoWidth: 6, head: [9, 2], backHeelUp: false,
   },
 };
 
@@ -154,13 +154,24 @@ export const GOLFER_ANCHOR_PERCENT = {
   y: ((GOLFER_ART_SIZE.height - CLUB_HEAD_AT_IMPACT.y) / GOLFER_ART_SIZE.height) * 100,
 } as const;
 
-/** Edward's head. The curtain part is the whole point of drawing it at all. */
+/**
+ * Edward's head, lifted straight off the world sprite.
+ *
+ * These are rows 0-6 of `EDWARD_BODY` in `lib/pixel/sportsgang.ts` with the
+ * empty columns trimmed. Drawing a smaller, neater head was the wrong call:
+ * the world's Edward is a big head on a short body, and a golfer with a
+ * realistic head-to-body ratio read as a different person standing next to
+ * him. The curtain part — two lit wings either side of an unlit centre — is
+ * the single most recognisable thing about him.
+ */
 const HEAD_ROWS: SpriteRows = [
-  ".hhh.",
-  "hHhHh",
-  "hffff",
-  ".fefg",
-  ".ffg.",
+  "..hhhh..",
+  ".hHhhhh.",
+  "hhHhhhhh",
+  "hhhhhffh",
+  "hhhffeff",
+  "hhhffffg",
+  ".hffffg.",
 ];
 
 const HEAD_MAP: SpriteMap = {

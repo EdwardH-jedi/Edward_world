@@ -5226,13 +5226,13 @@ p {
   position: absolute;
 }
 
-.sg-golf__scene:focus-visible {
-  outline: 2px solid var(--loc-orange);
-  outline-offset: 2px;
-}
-
 .sg-golf__ground {
-  background: linear-gradient(180deg, #93a06c 0%, #7d8b5c 40%, #6d7a4f 100%);
+  background: linear-gradient(
+    180deg,
+    #93a06c 0%,
+    #7d8b5c 45%,
+    rgb(109 122 79 / 0%) 100%
+  );
   bottom: 0;
   left: 0;
   position: absolute;
@@ -5270,10 +5270,13 @@ p {
    camera's span in metres, so walking up to the hole makes it bigger on
    screen the way walking up to a hole does. */
 .sg-golf__green {
-  aspect-ratio: 3.4;
   background: #a8b47c;
   border-radius: 50%;
   box-shadow: inset 0 -2px 0 rgb(109 122 79 / 60%);
+  /* Width follows the camera so walking up to the green makes it bigger.
+     Height does not: a 32 m green inside a 14 m frame was drawing a dome
+     two-thirds of the screen tall. */
+  height: 22%;
   min-width: 10px;
   position: absolute;
   transform: translate(-50%, 50%);
@@ -5292,6 +5295,9 @@ p {
 /* Anchored by the base of its own pin, with the cloth flying right — so the
    flag marks the cup without standing in front of it. */
 .sg-golf__flag {
+  /* A definite box, not a shrink-to-fit one: the anchor below is a percentage
+     of this element, so its height and width both have to be known. */
+  aspect-ratio: 14 / 24;
   height: 26%;
   position: absolute;
 }
@@ -5300,12 +5306,12 @@ p {
   display: block;
   height: 100%;
   image-rendering: pixelated;
-  width: auto;
+  width: 100%;
 }
 
 .sg-golf__trail {
   aspect-ratio: 1;
-  background: var(--loc-cream);
+  background: #55523f;
   border-radius: 50%;
   position: absolute;
   transform: translate(-50%, 50%);
@@ -5325,20 +5331,22 @@ p {
   aspect-ratio: 1;
   background: var(--loc-glow, #f7f1e2);
   border-radius: 50%;
-  box-shadow: inset -1px -1px 0 #c4baa3;
-  min-width: 4px;
+  /* The ring is what makes a cream ball readable against a cream sky. */
+  box-shadow: inset -1px -1px 0 #c4baa3, 0 0 0 1px rgb(43 40 35 / 55%);
+  min-width: 5px;
   position: absolute;
   transform: translate(-50%, 50%);
   width: 0.6%;
 }
 
 .sg-golf__ball[data-airborne] {
-  box-shadow: inset -1px -1px 0 #c4baa3, 0 0 0 1px rgb(255 255 255 / 35%);
+  box-shadow: inset -1px -1px 0 #c4baa3, 0 0 0 1px rgb(43 40 35 / 75%);
 }
 
 /* Positioned by the club head of its own impact pose, as a share of its own
    box — so the club meets the ball at any rendered size. */
 .sg-golf__figure {
+  aspect-ratio: 1;
   height: 32%;
   position: absolute;
 }
@@ -5347,7 +5355,7 @@ p {
   display: block;
   height: 100%;
   image-rendering: pixelated;
-  width: auto;
+  width: 100%;
 }
 
 .sg-golf__readout {
@@ -5412,18 +5420,6 @@ p {
   position: absolute;
   transform: translate(-50%, -50%);
   width: 4px;
-}
-
-.sg-golf__map-label {
-  color: #8d8575;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.4rem;
-  left: 0.4rem;
-  letter-spacing: 0.12em;
-  margin: 0;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
 }
 
 /* ── HUD ───────────────────────────────────────────────────────────────── */

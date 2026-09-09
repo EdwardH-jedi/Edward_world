@@ -228,6 +228,8 @@ export function GolfGame({
       <div
         aria-label={`Golf, hole 1, par ${GOLF_COURSE.par}. Shot ${shotNumber}, ${Math.round(remaining)} metres to the hole.`}
         className="sg-golf__scene"
+        data-club={state.club}
+        data-phase={state.phase}
         ref={sceneRef}
         role="application"
         tabIndex={-1}
@@ -294,6 +296,7 @@ export function GolfGame({
 
         <div
           className="sg-golf__figure"
+          data-swing={state.swingStage}
           style={{
             bottom: `${ballGround}%`,
             left: `${ballLeft}%`,
@@ -304,6 +307,7 @@ export function GolfGame({
             artHeight={GOLFER_ART_SIZE.height}
             artWidth={GOLFER_ART_SIZE.width}
             draw={golferRoutines[swinging][state.swingStage]}
+            fill
             flipX={!facingRight}
             frame={0}
             unit={PIXEL_UNIT}
@@ -340,16 +344,15 @@ export function GolfGame({
             top: `${50 + (ball.y / GOLF_COURSE.outOfBoundsHalfWidthM) * 50}%`,
           }}
         />
-        <p className="sg-golf__map-label">
-          {GOLF_COURSE.name} · {GOLF_COURSE.holeM} M · PAR {GOLF_COURSE.par}
-        </p>
       </div>
 
       <div className="sg-golf__hud">
         <p className="sg-golf__line">
           <span>PLAYER</span>
           <strong>{playerDisplayName ?? GUEST_DISPLAY_NAME}</strong>
-          <span>HOLE 1 / PAR {GOLF_COURSE.par}</span>
+          <span>
+            HOLE 1 · {GOLF_COURSE.holeM} M · PAR {GOLF_COURSE.par}
+          </span>
         </p>
         <dl className="sg-golf__stats">
           <div>
