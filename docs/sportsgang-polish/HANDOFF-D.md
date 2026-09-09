@@ -114,8 +114,15 @@ Neither is the visitor's own name and neither was reused as one.
   dialog's handler is on `document` and stops propagation before the
   experience's `window` listener sees it. Focus is trapped and returns to the
   button that opened it.
-- **Server ids and client labels are separate.** `runId` and `receivedAt` are
-  the server's; the display name is the client's, and never an identifier.
+- **Ids and client labels are separate, and the ids are not all the server's.**
+  Worth being exact, because the brief asks for exactly this line:
+  `runId` is minted **on the client** — `crypto.randomUUID()` in
+  `golf-game.tsx`, one per attempt — and the server reuses it as the
+  idempotency key rather than issuing a record id of its own. The only
+  server-issued field is `receivedAt`, which is what orders a tie. The display
+  name is the client's, is never an identifier, and never reaches a key. No
+  separate server record id was added; `runId` + the board hash field
+  (`anonId`) already address a row.
 
 ---
 
@@ -226,7 +233,7 @@ local-only rather than global.
 | Impossible strokes | PASS — `IMPLAUSIBLE_STROKES` |
 | Client-asserted `rank` | PASS — ignored |
 | **Independent browser session** | PASS — a second isolated context with **empty localStorage** saw the same four rows, no row marked as its own, and no `anonId` in the payload. This is what proves the board is server-held rather than local. |
-| Refresh | PASS — rows survive; the local submitted-run list stops a resend |
+| Refresh | PASS — rows survive a reload (fetched fresh from the server each mount, and seen in the isolated context). The resend guard is checked at the unit level and by reading back `submitted-runs` in localStorage after a submit; **the reload → same-run → "already submitted" path was not walked in the browser**, because a reload starts a new `runId` by construction. |
 | Counter untouched | PASS — only `edwards-world:sg-golf:*` in localStorage, counter's session key intact, `/api/joins` unchanged |
 
 ### On screen
@@ -236,7 +243,7 @@ local-only rather than global.
 | Nickname box: preview, scope, GUEST default | PASS — `board-desktop-detail-consent.png` |
 | Typing `S`/`E`/`A`/`D`/`Enter` + IME in the box | PASS — game never moved, dialog stayed, text survived |
 | Board panel: rank, tie, Korean name, own row marked | PASS — `board-desktop-1440x900-01-panel.png` |
-| Public board and per-visit RANK are distinct | PASS — **they overlapped at first; fixed** (below) |
+| Public board and per-visit RANK are distinct | PASS at 1440×900 — **they overlapped at first; fixed** (below) — and re-measured at 390×844, where the fix matters most: board `top 17 / bottom 336`, RANK `top 516 / bottom 810`, no intersection, neither clipped by the viewport. |
 | Exit gate reachable, readable, labelled | PASS — `exit-desktop-1440x900-01-gate.png` |
 | Walking past does not fire it | PASS |
 | Held `E` fires once | PASS — **it re-fired before; fixed** (below) |
@@ -274,6 +281,18 @@ local-only rather than global.
 - **Tap-target size of the farewell buttons** is 32px, from the existing
   `.loc-button`, below the 44px guideline. Not introduced here and not changed;
   worth a pass.
+- **The farewell's `PROJECT INDEX` button** was never clicked in the browser.
+  Its handler is the same `showIndex` every other route into the index uses,
+  and it clears `farewell` on the way, but the click itself is untested.
+
+### Deliberate, in case it reads as a bug
+
+- **The golf HUD says `PLAYER GUEST` even for a returning visitor** who has a
+  nickname stored. `playerDisplayName` is not passed down to `<Minigame>`: a
+  name is asked for at the moment of publishing, not at the moment of playing,
+  so that nothing is ever attached to a record the visitor did not confirm on
+  that submission. Wiring `getStoredNickname() ?? undefined` through would be a
+  one-line change if the preference goes the other way.
 
 ---
 
@@ -298,6 +317,16 @@ What the first review changed:
 - Pointed out that the shot log records outcomes rather than inputs, so a full
   re-verification is impossible and the board must be labelled client-reported
   rather than verified. That framing is now in the code, the API and the UI.
+
+What the second review changed:
+
+- **Caught the `runId` claim above being backwards** — I had written that the
+  server issues it. It does not; the client does. Corrected in §2, and it is
+  the one factual error in this document that would have misled a reader about
+  the trust boundary.
+- Made me measure the board/RANK de-overlap at 390×844 rather than inferring
+  it from the desktop fix. It holds, and the numbers are in §6.
+- Made me narrow the "Refresh | PASS" row to what was actually walked.
 - Told me not to stall on the leaderboard being blocked: the adapter, schema,
   route, tests and labelled local-only mode are the deliverable here.
 
@@ -337,7 +366,8 @@ On `polish/sg-d-integration`, from `cdd593d`:
 | `28ae9f8` | feat: a public golf board that says what it is |
 | `6301009` | feat: ask before publishing, and show the board that results |
 | `25f0b66` | feat: a way out of the world, at the right-hand end of it |
-| *(last)* | fix: three things found by looking at it, and the handoff |
+| `ca51fe2` | fix: three things found by looking at it, and the handoff |
+| *(last)* | docs: correct the trust boundary; measure the board on mobile |
 
 `main` is untouched at `4c75644`. The canonical checkout was never checked out
 onto another branch and still holds exactly its four pre-existing untracked

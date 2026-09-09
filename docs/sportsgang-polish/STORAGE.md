@@ -110,3 +110,11 @@ Only what they pressed a button to publish:
 
 No IP, cookie, user agent, email or real name. Nothing is written until a
 visitor submits, and the anonymous id is not even created before then.
+
+One thing worth knowing about that id: the board is read with
+`GET /api/sportsgang/golf-board?anonId=…`, so once a visitor has submitted, the
+id appears in the request URL and any server access log keeps it. It is used
+only to mark their own row as `YOU`, it identifies a device rather than a
+person, and it is not a secret — but it is in a URL rather than a header, which
+is the more log-visible of the two. Moving it to a header would be a small
+change if that matters.
