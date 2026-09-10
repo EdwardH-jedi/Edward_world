@@ -261,7 +261,13 @@ describe("a whole match keeps its physical invariants on every schedule", () => 
           (previous.x > TENNIS_COURT.NET_X && now.x < TENNIS_COURT.NET_X);
         // A ball that crossed the net plane while the point continued must
         // have been above the tape when it did.
-        if (crossed && !state.pointWinner) {
+        //
+        // A new point being set up is not a crossing: the previous ball is
+        // dead on the ground, sometimes out past a baseline, and the next one
+        // appears at the server's contact height on the other side. That is a
+        // reset, and the giveaway is its bounce count going back to zero.
+        const reset = now.bounces < previous.bounces;
+        if (crossed && !reset && !state.pointWinner) {
           const t = (TENNIS_COURT.NET_X - previous.x) / (now.x - previous.x || 1);
           const heightAtNet = previous.y + (now.y - previous.y) * t;
           if (heightAtNet <= TENNIS_COURT.NET_TOP) violations += 1;

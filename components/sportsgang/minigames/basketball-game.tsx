@@ -8,9 +8,9 @@ import { useMinigameInput } from "@/components/sportsgang/minigames/use-minigame
 import {
   advanceBasketball,
   BASKETBALL_SHOTS,
+  COURT,
   createBasketballState,
   getBasketballResult,
-  getShotReach,
   IDEAL_RELEASE,
   isMade,
   type BasketballState,
@@ -26,13 +26,6 @@ import {
   BALL_VIEWBOX,
   basketballSeams,
 } from "@/lib/pixel/sg-ball";
-
-/** Where the player shoots from and where the ring sits, in court percent. */
-const SHOOTER_X = 20;
-const RING_X = 84;
-/** Court percentages: where the ball leaves the hands, and where the ring is. */
-const RELEASE_HEIGHT = 30;
-const RING_HEIGHT = 52;
 
 /**
  * Turns the ball makes between the hands and the ring.
@@ -132,30 +125,23 @@ export function BasketballGame({ active, onFinish }: MinigameProps) {
   // together: tabbing away mid-shot must not replay the release on return.
   useFixedStepGameLoop(active, consume, step, { onSuspend: clear });
 
-  // How far the shot actually travels is the release strength, nothing else.
-  const reach = getShotReach(state.release);
-  const travel = Math.min(reach, 1.25);
-  // `DONE` counts as in flight so the last shot does not snap back to the
-  // player's hands for the frame between the session ending and the RESULT
-  // panel taking over. The state still holds that shot's `flight` and
-  // `release`, so the ball simply stays where it finished.
+  // Where the ball is, read straight off the simulation.
+  //
+  // This used to be a curve drawn here from `flight` and `release`, which is
+  // why a shot with too much on it could be drawn straight through the
+  // backboard and then stop dead against it: there was no ball to collide
+  // with anything. The simulation now owns the position, in the same court
+  // percentages this element has always consumed, so what is drawn and what
+  // is judged cannot disagree.
   const inFlight =
     state.phase === "SHOT" || state.phase === "FEEDBACK" || state.phase === "DONE";
 
-  // The ball is in the player's hands before the shot and on its arc after it,
-  // so the court is never a basketball court without a basketball on it.
-  const ballLeft = inFlight
-    ? SHOOTER_X + state.flight * travel * (RING_X - SHOOTER_X)
-    : SHOOTER_X;
-  // The shot rises to the ring rather than back to the floor: the baseline
-  // climbs from release height to ring height, and the arc sits on top of it.
-  const climb = state.flight * (RING_HEIGHT - RELEASE_HEIGHT) * travel;
-  const arc = Math.sin(Math.PI * state.flight) * 38 * Math.min(reach, 1.3);
+  const ballLeft = inFlight ? state.ballX : COURT.SHOOTER_X;
   const ballBottom = inFlight
-    ? RELEASE_HEIGHT + climb + arc
+    ? state.ballY
     : // Gathered a little higher the longer the shot is held. Read off the
       // charge the simulation already keeps; it decides nothing.
-      RELEASE_HEIGHT + state.charge * 3;
+      COURT.RELEASE_Y + state.charge * 3;
 
   const spinFrame = inFlight
     ? Math.round(state.flight * FLIGHT_TURNS * BALL_SPIN_FRAMES)

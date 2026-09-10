@@ -3,6 +3,8 @@ import {
   advanceTennis,
   createTennisState,
   selectSwing,
+  STRIKE_HALF_X,
+  STRIKE_HALF_Y,
   SWING_SPEC,
   contactAnchor,
   timeToStrike,
@@ -145,7 +147,18 @@ function playFrom(station: (state: TennisState) => number) {
       const spec = SWING_SPEC[kind];
       const centre = (spec.windowStart + spec.windowEnd) / 2;
       const anchor = contactAnchor("PLAYER", state.playerX, kind, centre);
-      const strike = timeToStrike(state.ball, anchor.x, anchor.y, 2.4, 5);
+      // The racket the game actually has, not a copy of the numbers it had
+      // when this was written. The playability pass widened the strike zone to
+      // match the higher bounce, and a policy still asking about a 2.4 x 5 box
+      // declines shots the visitor can plainly make — which made it look as
+      // though the volley had stopped occurring when it had not.
+      const strike = timeToStrike(
+        state.ball,
+        anchor.x,
+        anchor.y,
+        STRIKE_HALF_X,
+        STRIKE_HALF_Y,
+      );
       if (strike !== null && strike <= centre * spec.duration) {
         input = { ...IDLE_INPUT, pressed: true, action: true };
       }

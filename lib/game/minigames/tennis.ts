@@ -80,13 +80,13 @@ const PHYSICS = {
    * which is how a rally stops ending. Skidding away flat means the ball has to
    * be met on its way down — once.
    */
-  RESTITUTION: 0.4,
+  RESTITUTION: 0.58,
   /** Ground friction applied to horizontal speed at each bounce. */
-  BOUNCE_DRAG: 0.86,
+  BOUNCE_DRAG: 0.9,
 } as const;
 
 const MOVE = {
-  PLAYER_SPEED: 46,
+  PLAYER_SPEED: 52,
   PLAYER_ACCEL_SECONDS: 0.12,
   ALEX_SPEED: 34,
   ALEX_ACCEL_SECONDS: 0.16,
@@ -94,11 +94,11 @@ const MOVE = {
 
 const SWING = {
   /** How long the racket is actually capable of touching the ball. */
-  ACTIVE_SECONDS: 0.18,
+  ACTIVE_SECONDS: 0.22,
   /** Total animation length, so the arm keeps moving after the live window. */
   DURATION_SECONDS: 0.28,
   /** Enforced gap between swings. This is the anti-mash rule. */
-  COOLDOWN_SECONDS: 0.34,
+  COOLDOWN_SECONDS: 0.3,
   /** Horizontal half-width of the racket's reach. */
   REACH_X: 8,
   /**
@@ -193,8 +193,8 @@ export function contactAnchor(
 export const STRIKE = {
   HALF_W_ART: RACKET_HEAD.width / 2,
   HALF_H_ART: RACKET_HEAD.height / 2,
-  TOLERANCE_X_ART: 1,
-  TOLERANCE_Y_ART: 0.6,
+  TOLERANCE_X_ART: 1.5,
+  TOLERANCE_Y_ART: 1.8,
   /** The ball is drawn 1.8% wide, so its own radius counts toward contact. */
   BALL_RADIUS: 0.9,
 } as const;
@@ -232,8 +232,16 @@ export const SWING_SPEC: Readonly<Record<TennisSwing, SwingSpec>> = {
 
 /** Thresholds that choose the swing. Every one of them is a named number. */
 export const SWING_CHOICE = {
-  /** A ball arriving above this height can be smashed. */
-  SMASH_MIN_Y: 13,
+  /**
+   * A ball arriving above this height can be smashed.
+   *
+   * Raised with the bounce. The first bounce now peaks around y 12.5 rather
+   * than 6, so at 13 an ordinary bounced groundstroke qualified as an
+   * overhead and the volley stopped being chosen at all. This sits above what
+   * a bounce reaches and below what a lob does, which is the distinction the
+   * shot is supposed to make.
+   */
+  SMASH_MIN_Y: 17,
   /** ...if the player is at most this far from where it will arrive. */
   SMASH_REACH_X: 7,
   /** Un-bounced balls within this of the net are volleyed. */
@@ -252,7 +260,7 @@ export const SWING_CHOICE = {
  * does and the reason this one ends. Without it two competent players simply
  * trade the ball forever, and every point runs to the safety cap.
  */
-const RALLY_PACE = { PER_SHOT: 0.09, FLOOR: 0.5 } as const;
+const RALLY_PACE = { PER_SHOT: 0.05, FLOOR: 0.58 } as const;
 
 function paceFactor(rallyShots: number) {
   return Math.max(RALLY_PACE.FLOOR, 1 - rallyShots * RALLY_PACE.PER_SHOT);
@@ -268,10 +276,10 @@ const SHOT_SECONDS: Readonly<Record<Exclude<TennisQuality, "MISS">, number>> = {
 
 const ALEX = {
   /** Seconds before ALEX starts chasing a ball that has just been struck. */
-  REACTION_MIN: 0.32,
-  REACTION_MAX: 0.6,
+  REACTION_MIN: 0.4,
+  REACTION_MAX: 0.72,
   /** How wrong his read of the bounce can be, in court units. */
-  PREDICTION_ERROR: 4.5,
+  PREDICTION_ERROR: 6,
   /** Chance a reachable ball is shanked anyway. */
   SHANK_CHANCE: 0.13,
   /**

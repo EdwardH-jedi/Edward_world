@@ -32,8 +32,12 @@ describe("figure geometry", () => {
   it("puts the strike zone at the size of a racket, not a fifth of the court", () => {
     // The old reach was 8 court units — 1.88x the drawn sprite's half-width.
     expect(STRIKE_HALF_X).toBeLessThan(CANVAS_WIDTH_PCT / 2);
-    expect(STRIKE_HALF_X).toBeCloseTo(2.317, 2);
-    expect(STRIKE_HALF_Y).toBeCloseTo(4.775, 2);
+    // Widened by the playability pass: the bounce is now chest-high, so the
+    // racket had to be able to reach a ball arriving there. Still a racket
+    // rather than a region of court — the assertion above is the one that
+    // matters, and it is unchanged.
+    expect(STRIKE_HALF_X).toBeCloseTo(2.553, 2);
+    expect(STRIKE_HALF_Y).toBeCloseTo(6.275, 2);
   });
 });
 
