@@ -1,0 +1,98 @@
+
+$ node -v
+v24.19.0
+exit=0
+
+$ npm -v
+11.17.0
+exit=0
+
+$ npm run lint
+
+> edwards-world@0.1.0 lint
+> eslint . --max-warnings 0
+
+exit=0
+
+$ npm run typecheck
+
+> edwards-world@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0
+
+$ npm test
+
+> edwards-world@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/edwardhwang/Desktop/Edward_world
+
+
+ Test Files  29 passed (29)
+      Tests  391 passed (391)
+   Start at  19:53:09
+   Duration  2.26s (transform 1.35s, setup 0ms, import 1.71s, tests 2.94s, environment 1ms)
+
+exit=0
+
+$ npm test -- tests/minigames.test.ts tests/sportsgang-machine.test.ts tests/sportsgang-playthrough.test.ts tests/sportsgang-standings.test.ts
+
+> edwards-world@0.1.0 test
+> vitest run tests/minigames.test.ts tests/sportsgang-machine.test.ts tests/sportsgang-playthrough.test.ts tests/sportsgang-standings.test.ts
+
+
+ RUN  v4.1.11 /Users/edwardhwang/Desktop/Edward_world
+
+
+ Test Files  4 passed (4)
+      Tests  83 passed (83)
+   Start at  19:53:12
+   Duration  169ms (transform 146ms, setup 0ms, import 181ms, tests 74ms, environment 0ms)
+
+exit=0
+
+$ npm run build
+
+> edwards-world@0.1.0 build
+> next build
+
+▲ Next.js 16.3.3 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 10ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 315ms
+  Running TypeScript ...
+  Finished TypeScript in 629ms ...
+  Collecting page data using 9 workers ...
+  Generating static pages using 9 workers (0/10) ...
+  Generating static pages using 9 workers (2/10)
+  Generating static pages using 9 workers (4/10)
+  Generating static pages using 9 workers (7/10)
+✓ Generating static pages using 9 workers (10/10) in 247ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/joins
+├   /case-studies/[slug]
+│ ├ ● /case-studies/sportsgang
+│ ├ ● /case-studies/afl-predict
+│ ├ ● /case-studies/wardrobe
+│ └ ● /case-studies/soonpermario
+├ ○ /manifest.webmanifest
+├ ○ /resume
+└ ○ /robots.txt
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+exit=0
+
+$ git diff --check
+exit=0

@@ -1,0 +1,102 @@
+Recorded 2026-09-10T19:53:05.989271+10:00
+
+$ git rev-parse --show-toplevel
+/Users/edwardhwang/Desktop/Edward_world
+exit=0
+
+$ git branch --show-current
+main
+exit=0
+
+$ git rev-parse HEAD
+4c7564458951b18dda70dd3e2c549dcd7f939a08
+exit=0
+
+$ git status --short
+?? docs/VISUAL_POLISH_PASS_2026-09-03.md
+?? docs/WORK_SAMPLE_READINESS_AUDIT.md
+?? docs/predeploy/
+?? docs/visual-polish/
+?? scripts/
+exit=0
+
+$ git worktree list
+/Users/edwardhwang/Desktop/Edward_world           4c75644 [main]
+/Users/edwardhwang/Desktop/Edward_world-bgm       4cb8685 [feat/bgm-feel-polish]
+/Users/edwardhwang/Desktop/Edward_world-character 1a9685d [feat/character-avatar]
+/Users/edwardhwang/Desktop/Edward_world-feel      1166939 [feat/feel-calibration]
+/Users/edwardhwang/Desktop/Edward_world-sg-00     cdd593d [polish/sg-00-foundation]
+/Users/edwardhwang/Desktop/Edward_world-sg-a      a53f950 [polish/sg-a-tennis]
+/Users/edwardhwang/Desktop/Edward_world-sg-b      1488c08 [polish/sg-b-golf]
+/Users/edwardhwang/Desktop/Edward_world-sg-c      9a0a4c8 [polish/sg-c-ball-running]
+/Users/edwardhwang/Desktop/Edward_world-sg-d      97c4944 [polish/sg-d-integration]
+/Users/edwardhwang/Desktop/Edward_world-sg-e      34d0f65 [qa/sg-e]
+/Users/edwardhwang/Desktop/Edward_world-tennis    57baebe [feat/sportsgang-tennis]
+/Users/edwardhwang/Desktop/Edward_world-visitor   39dc741 [feat/visitor-counter]
+exit=0
+
+$ git stash list
+exit=0
+
+$ git remote -v
+origin	https://github.com/EdwardH-jedi/Edward_world.git (fetch)
+origin	https://github.com/EdwardH-jedi/Edward_world.git (push)
+exit=0
+
+$ node -v
+v26.7.0
+exit=0
+
+$ npm -v
+11.19.0
+exit=0
+
+$ ps -p 77038 -o pid,ppid,lstart,command
+  PID  PPID STARTED                      COMMAND
+77038 77037 Thu Sep 10 03:15:05 2026     next-server (v16.3.3)
+exit=0
+
+$ lsof -a -p 77038 -d cwd
+COMMAND   PID        USER   FD   TYPE DEVICE SIZE/OFF     NODE NAME
+node    77038 edwardhwang  cwd    DIR   1,15     1120 19262126 /Users/edwardhwang/Desktop/Edward_world
+exit=0
+
+$ git log --oneline -5
+4c75644 docs: describe Edward's House as built
+fc37520 release: publish Edward's World v1.0
+1a9685d docs: record Phase 14, the feature/content pass
+0cf984c fix: two things the content pages left behind
+ae6680a feat: build the resume and case-study pages from verified facts only
+exit=0
+
+$ git log --oneline main..qa/sg-e
+34d0f65 docs(qa): the contact frames, and tidying this pass left
+a0a13b9 docs(qa): the second pass, its evidence and the corrected verdict
+a385ce9 fix(tennis): spark ALEX's return where the strings met it
+aab5c39 docs(qa): what the second review corrected; production build at HEAD
+957aabc docs(qa): the independent review, its evidence and the verdict
+220386e fix: a conceded hole is not a nought, and the name box says why
+32c11d2 fix(tennis): serve the ball on the frame the racket reaches it
+97c4944 docs: correct the trust boundary; measure the board on mobile
+ca51fe2 fix: three things found by looking at it, and the handoff
+25f0b66 feat: a way out of the world, at the right-hand end of it
+6301009 feat: ask before publishing, and show the board that results
+28ae9f8 feat: a public golf board that says what it is
+9ac2acd fix: settle the shared-file requests the sports could not make
+e349b35 merge: session C — the basketball and running's controls
+447f2e3 merge: session B — one hole of golf
+17d5f40 merge: session A — tennis contact sync and five swings
+1488c08 docs(golf): correct the suite size in the handoff
+1f13cec docs(golf): run reduced motion as a pair, and flag the stale rules version
+65e8d9d docs(golf): hand over the hole with its evidence
+a53f950 feat(tennis): tie the racket, the physics and the ball to one contact event
+9a0a4c8 fix: report the spurt as held, not as working
+6d69998 feat(golf): play the hole on screen, on the SportsGang clock
+3419570 fix: keep the running pad on screen on a phone
+e838079 feat(golf): draw the swing as a body turning, not an arm rotating
+fa6618f fix(golf): bounce the ball in play, not only in the estimate
+485a1ff feat(golf): simulate one hole instead of one drive
+efd65b4 feat: give running an input that means something
+077b37d feat: make the basketball look like a basketball
+cdd593d feat: fix the SportsGang input and clock the parallel sports need
+exit=0
