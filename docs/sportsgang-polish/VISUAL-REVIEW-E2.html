@@ -1,0 +1,126 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>SportsGang QA — second pass evidence</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f7f5ef; --fg:#1d1b16; --mut:#6b6558; --line:#d9d3c4; --card:#fff; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16150f; --fg:#eae6d9; --mut:#a09a89; --line:#333026; --card:#1f1e16; } }
+  * { box-sizing:border-box; }
+  body { margin:0; padding:2.5rem 1.5rem 5rem; background:var(--bg); color:var(--fg);
+         font:14px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .wrap { max-width:1180px; margin:0 auto; }
+  h1 { font-size:1.5rem; letter-spacing:.06em; margin:0 0 .4rem; }
+  .sub { color:var(--mut); margin:0 0 2rem; }
+  h2 { font-size:1rem; letter-spacing:.08em; text-transform:uppercase; margin:2.5rem 0 .5rem;
+        padding-bottom:.4rem; border-bottom:1px solid var(--line); }
+  .note { color:var(--mut); margin:.2rem 0 1rem; max-width:70ch; }
+  .grid { display:grid; gap:1rem; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
+  figure { margin:0; background:var(--card); border:1px solid var(--line); border-radius:6px; overflow:hidden; }
+  img { display:block; width:100%; height:auto; }
+  figcaption { padding:.5rem .6rem; color:var(--mut); font-size:12px; word-break:break-all; }
+  table { border-collapse:collapse; margin:1rem 0; }
+  td,th { border:1px solid var(--line); padding:.35rem .7rem; text-align:left; }
+  code { background:rgba(128,128,128,.15); padding:.1em .35em; border-radius:3px; }
+</style>
+<div class="wrap">
+  <h1>SportsGang QA — second pass</h1>
+  <p class="sub">Independent re-review of <code>qa/sg-e</code>. Reviewed <code>aab5c39</code>, final <code>a385ce9</code>.
+     Chrome 152 headless over CDP, dev <code>:3015</code> and production <code>:3017</code>, both confirmed to be
+     serving this worktree. Every image below was captured by this pass in normal play, not from a fixture.</p>
+  <table>
+    <tr><th>Verdict</th><td><strong>CONDITIONAL</strong> — no shared storage for the public board, here or on the deploy target</td></tr>
+    <tr><th>Gates</th><td>lint, typecheck, build PASS · 45 files / 697 tests pass</td></tr>
+    <tr><th>Found this pass</th><td>E2-1 (P1) — ALEX's contact and spark drawn past the strings; fixed in <code>a385ce9</code></td></tr>
+    <tr><th>GLOBAL_LEADERBOARD</th><td><code>BLOCKED_CONFIG</code> — <code>vercel env ls production</code> reports no environment variables at all</td></tr>
+  </table>
+    <section>
+      <h2>Tennis — ALEX's contact, frame by frame (stepped reconstruction)</h2>
+      <p class=note>The defect this pass found (E2-1). Driven on a virtual clock one 16.7&nbsp;ms step at a time, so the frames either side of contact could be captured. The ball reverses on the contact frame with the spark at the strings &mdash; FOREHAND 63.579 &rarr; <strong>64.002</strong> &rarr; 63.271&nbsp;%, SMASH 62.266 &rarr; <strong>62.317</strong> &rarr; 61.489&nbsp;%. <strong>A stepped reconstruction, not a real-time recording.</strong></p>
+      <div class="grid">
+      <figure><a href="evidence-e2/tennis-alex1-after.png"><img src="evidence-e2/tennis-alex1-after.png" alt="tennis-alex1-after.png" loading="lazy"></a><figcaption>tennis-alex1-after.png</figcaption></figure>
+      <figure><a href="evidence-e2/tennis-alex1-before.png"><img src="evidence-e2/tennis-alex1-before.png" alt="tennis-alex1-before.png" loading="lazy"></a><figcaption>tennis-alex1-before.png</figcaption></figure>
+      <figure><a href="evidence-e2/tennis-alex1-contact.png"><img src="evidence-e2/tennis-alex1-contact.png" alt="tennis-alex1-contact.png" loading="lazy"></a><figcaption>tennis-alex1-contact.png</figcaption></figure>
+      <figure><a href="evidence-e2/tennis-alex2-after.png"><img src="evidence-e2/tennis-alex2-after.png" alt="tennis-alex2-after.png" loading="lazy"></a><figcaption>tennis-alex2-after.png</figcaption></figure>
+      <figure><a href="evidence-e2/tennis-alex2-before.png"><img src="evidence-e2/tennis-alex2-before.png" alt="tennis-alex2-before.png" loading="lazy"></a><figcaption>tennis-alex2-before.png</figcaption></figure>
+      <figure><a href="evidence-e2/tennis-alex2-contact.png"><img src="evidence-e2/tennis-alex2-contact.png" alt="tennis-alex2-contact.png" loading="lazy"></a><figcaption>tennis-alex2-contact.png</figcaption></figure>
+      </div>
+    </section>
+    <section>
+      <h2>Tennis — normal play</h2>
+      <p class=note>A live match on the dev server. All five swings (FOREHAND, SERVE, BACKHAND, SMASH, VOLLEY) were read from <code>data-swing</code> during ordinary rallies, not from a fixture.</p>
+      <div class="grid">
+      <figure><a href="evidence-e2/tennis-rally-normal-play.png"><img src="evidence-e2/tennis-rally-normal-play.png" alt="tennis-rally-normal-play.png" loading="lazy"></a><figcaption>tennis-rally-normal-play.png</figcaption></figure>
+      </div>
+    </section>
+    <section>
+      <h2>Basketball — actual play size and magnified</h2>
+      <p class=note>The ball as drawn (27&times;27 desktop, 15&times;15 mobile, ratio exactly 1.0000), then the same pixels enlarged 10&times;. Four seam paths and two circles; a sphere with curved great-circle seams, not a circle or a plus.</p>
+      <div class="grid">
+      <figure><a href="evidence-e2/ball-desktop-actual-size.png"><img src="evidence-e2/ball-desktop-actual-size.png" alt="ball-desktop-actual-size.png" loading="lazy"></a><figcaption>ball-desktop-actual-size.png</figcaption></figure>
+      <figure><a href="evidence-e2/ball-desktop-magnified.png"><img src="evidence-e2/ball-desktop-magnified.png" alt="ball-desktop-magnified.png" loading="lazy"></a><figcaption>ball-desktop-magnified.png</figcaption></figure>
+      <figure><a href="evidence-e2/ball-mobile-actual-size.png"><img src="evidence-e2/ball-mobile-actual-size.png" alt="ball-mobile-actual-size.png" loading="lazy"></a><figcaption>ball-mobile-actual-size.png</figcaption></figure>
+      <figure><a href="evidence-e2/ball-mobile-magnified.png"><img src="evidence-e2/ball-mobile-magnified.png" alt="ball-mobile-magnified.png" loading="lazy"></a><figcaption>ball-mobile-magnified.png</figcaption></figure>
+      </div>
+    </section>
+    <section>
+      <h2>Basketball — stationary, in flight, near the rim</h2>
+      <p class=note>Desktop and mobile, at real play size.</p>
+      <div class="grid">
+      <figure><a href="evidence-e2/basketball-desktop-inflight.png"><img src="evidence-e2/basketball-desktop-inflight.png" alt="basketball-desktop-inflight.png" loading="lazy"></a><figcaption>basketball-desktop-inflight.png</figcaption></figure>
+      <figure><a href="evidence-e2/basketball-desktop-nearrim.png"><img src="evidence-e2/basketball-desktop-nearrim.png" alt="basketball-desktop-nearrim.png" loading="lazy"></a><figcaption>basketball-desktop-nearrim.png</figcaption></figure>
+      <figure><a href="evidence-e2/basketball-desktop-stationary.png"><img src="evidence-e2/basketball-desktop-stationary.png" alt="basketball-desktop-stationary.png" loading="lazy"></a><figcaption>basketball-desktop-stationary.png</figcaption></figure>
+      <figure><a href="evidence-e2/basketball-mobile-inflight.png"><img src="evidence-e2/basketball-mobile-inflight.png" alt="basketball-mobile-inflight.png" loading="lazy"></a><figcaption>basketball-mobile-inflight.png</figcaption></figure>
+      <figure><a href="evidence-e2/basketball-mobile-nearrim.png"><img src="evidence-e2/basketball-mobile-nearrim.png" alt="basketball-mobile-nearrim.png" loading="lazy"></a><figcaption>basketball-mobile-nearrim.png</figcaption></figure>
+      <figure><a href="evidence-e2/basketball-mobile-stationary.png"><img src="evidence-e2/basketball-mobile-stationary.png" alt="basketball-mobile-stationary.png" loading="lazy"></a><figcaption>basketball-mobile-stationary.png</figcaption></figure>
+      </div>
+    </section>
+    <section>
+      <h2>Running — the four control states</h2>
+      <p class=note>Arrows only (200&nbsp;&rarr;&nbsp;189&nbsp;m at 62&nbsp;% cruise); arrows + S (pace 100&nbsp;%, stamina 100&nbsp;&rarr;&nbsp;12&nbsp;%); S released and recovering; lanes up and down. Standing still with S left the distance unchanged at 128&nbsp;M.</p>
+      <div class="grid">
+      <figure><a href="evidence-e2/running-1-arrows-only.png"><img src="evidence-e2/running-1-arrows-only.png" alt="running-1-arrows-only.png" loading="lazy"></a><figcaption>running-1-arrows-only.png</figcaption></figure>
+      <figure><a href="evidence-e2/running-2-arrows-plus-sprint.png"><img src="evidence-e2/running-2-arrows-plus-sprint.png" alt="running-2-arrows-plus-sprint.png" loading="lazy"></a><figcaption>running-2-arrows-plus-sprint.png</figcaption></figure>
+      <figure><a href="evidence-e2/running-3-recovered-after-release.png"><img src="evidence-e2/running-3-recovered-after-release.png" alt="running-3-recovered-after-release.png" loading="lazy"></a><figcaption>running-3-recovered-after-release.png</figcaption></figure>
+      <figure><a href="evidence-e2/running-4-lane-up.png"><img src="evidence-e2/running-4-lane-up.png" alt="running-4-lane-up.png" loading="lazy"></a><figcaption>running-4-lane-up.png</figcaption></figure>
+      <figure><a href="evidence-e2/running-5-lane-down.png"><img src="evidence-e2/running-5-lane-down.png" alt="running-5-lane-down.png" loading="lazy"></a><figcaption>running-5-lane-down.png</figcaption></figure>
+      <figure><a href="evidence-e2/running-lane-down.png"><img src="evidence-e2/running-lane-down.png" alt="running-lane-down.png" loading="lazy"></a><figcaption>running-lane-down.png</figcaption></figure>
+      <figure><a href="evidence-e2/running-lane-up.png"><img src="evidence-e2/running-lane-up.png" alt="running-lane-up.png" loading="lazy"></a><figcaption>running-lane-up.png</figcaption></figure>
+      </div>
+    </section>
+    <section>
+      <h2>Golf — the hole, the swing, the HUD</h2>
+      <p class=note>Green, flagstick and cup are visible from the tee, with distance markers and the full HUD: SHOT, TOTAL STROKES, TO HOLE, LAST SHOT, CLUB, RANGE, PAR.</p>
+      <div class="grid">
+      <figure><a href="evidence-e2/golf-1-tee.png"><img src="evidence-e2/golf-1-tee.png" alt="golf-1-tee.png" loading="lazy"></a><figcaption>golf-1-tee.png</figcaption></figure>
+      <figure><a href="evidence-e2/golf-2-swing-f0.png"><img src="evidence-e2/golf-2-swing-f0.png" alt="golf-2-swing-f0.png" loading="lazy"></a><figcaption>golf-2-swing-f0.png</figcaption></figure>
+      <figure><a href="evidence-e2/golf-2-swing-f1.png"><img src="evidence-e2/golf-2-swing-f1.png" alt="golf-2-swing-f1.png" loading="lazy"></a><figcaption>golf-2-swing-f1.png</figcaption></figure>
+      <figure><a href="evidence-e2/golf-2-swing-f2.png"><img src="evidence-e2/golf-2-swing-f2.png" alt="golf-2-swing-f2.png" loading="lazy"></a><figcaption>golf-2-swing-f2.png</figcaption></figure>
+      <figure><a href="evidence-e2/golf-3-after-shot1.png"><img src="evidence-e2/golf-3-after-shot1.png" alt="golf-3-after-shot1.png" loading="lazy"></a><figcaption>golf-3-after-shot1.png</figcaption></figure>
+      <figure><a href="evidence-e2/golf-3-after-shot2.png"><img src="evidence-e2/golf-3-after-shot2.png" alt="golf-3-after-shot2.png" loading="lazy"></a><figcaption>golf-3-after-shot2.png</figcaption></figure>
+      <figure><a href="evidence-e2/golf-3-after-shot3.png"><img src="evidence-e2/golf-3-after-shot3.png" alt="golf-3-after-shot3.png" loading="lazy"></a><figcaption>golf-3-after-shot3.png</figcaption></figure>
+      <figure><a href="evidence-e2/golf-3-after-shot4.png"><img src="evidence-e2/golf-3-after-shot4.png" alt="golf-3-after-shot4.png" loading="lazy"></a><figcaption>golf-3-after-shot4.png</figcaption></figure>
+      <figure><a href="evidence-e2/golf-3-after-shot5.png"><img src="evidence-e2/golf-3-after-shot5.png" alt="golf-3-after-shot5.png" loading="lazy"></a><figcaption>golf-3-after-shot5.png</figcaption></figure>
+      <figure><a href="evidence-e2/golf-3-after-shot6.png"><img src="evidence-e2/golf-3-after-shot6.png" alt="golf-3-after-shot6.png" loading="lazy"></a><figcaption>golf-3-after-shot6.png</figcaption></figure>
+      <figure><a href="evidence-e2/golf-4-final.png"><img src="evidence-e2/golf-4-final.png" alt="golf-4-final.png" loading="lazy"></a><figcaption>golf-4-final.png</figcaption></figure>
+      </div>
+    </section>
+    <section>
+      <h2>Exit — gate, fireworks, reduced motion, return</h2>
+      <p class=note>Fireworks measured on the <code>sg-exit__sky</code> canvas: peak 220 lit pixels of 32,400 (0.68&nbsp;%), zero by t+4.2&nbsp;s. Under <code>prefers-reduced-motion: reduce</code>, 528 lit pixels identical across 4.2&nbsp;s &mdash; one held still frame.</p>
+      <div class="grid">
+      <figure><a href="evidence-e2/exit-1-gate-normal.png"><img src="evidence-e2/exit-1-gate-normal.png" alt="exit-1-gate-normal.png" loading="lazy"></a><figcaption>exit-1-gate-normal.png</figcaption></figure>
+      <figure><a href="evidence-e2/exit-2-fireworks-normal.png"><img src="evidence-e2/exit-2-fireworks-normal.png" alt="exit-2-fireworks-normal.png" loading="lazy"></a><figcaption>exit-2-fireworks-normal.png</figcaption></figure>
+      <figure><a href="evidence-e2/exit-3-returned-normal.png"><img src="evidence-e2/exit-3-returned-normal.png" alt="exit-3-returned-normal.png" loading="lazy"></a><figcaption>exit-3-returned-normal.png</figcaption></figure>
+      <figure><a href="evidence-e2/exit-fireworks-normal.png"><img src="evidence-e2/exit-fireworks-normal.png" alt="exit-fireworks-normal.png" loading="lazy"></a><figcaption>exit-fireworks-normal.png</figcaption></figure>
+      <figure><a href="evidence-e2/exit-fireworks-reduced.png"><img src="evidence-e2/exit-fireworks-reduced.png" alt="exit-fireworks-reduced.png" loading="lazy"></a><figcaption>exit-fireworks-reduced.png</figcaption></figure>
+      </div>
+    </section>
+    <section>
+      <h2>Production build</h2>
+      <p class=note>The production server on :3017, built from the code under review. Every preserved surface opened and closed cleanly. The board there returns <code>{&quot;mode&quot;:&quot;UNAVAILABLE&quot;}</code>.</p>
+      <div class="grid">
+      <figure><a href="evidence-e2/prod-1-world.png"><img src="evidence-e2/prod-1-world.png" alt="prod-1-world.png" loading="lazy"></a><figcaption>prod-1-world.png</figcaption></figure>
+      <figure><a href="evidence-e2/prod-2-farewell.png"><img src="evidence-e2/prod-2-farewell.png" alt="prod-2-farewell.png" loading="lazy"></a><figcaption>prod-2-farewell.png</figcaption></figure>
+      <figure><a href="evidence-e2/world-dev-3015.png"><img src="evidence-e2/world-dev-3015.png" alt="world-dev-3015.png" loading="lazy"></a><figcaption>world-dev-3015.png</figcaption></figure>
+      </div>
+    </section>
+</div>

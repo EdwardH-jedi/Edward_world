@@ -30,5 +30,7 @@ export function getInteractionPrompt(action: InteractionAction) {
       return "E TO ENTER";
     case "READ":
       return "E TO READ";
+    case "LEAVE_WORLD":
+      return "E TO LEAVE";
   }
 }

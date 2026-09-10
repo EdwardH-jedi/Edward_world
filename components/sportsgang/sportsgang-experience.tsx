@@ -10,11 +10,13 @@ import {
   useState,
 } from "react";
 import { ProjectSummary } from "@/components/locations/project-summary";
+import { GolfBoardPanel } from "@/components/sportsgang/golf-board-panel";
 import { MINIGAMES } from "@/components/sportsgang/minigames";
 import { RankBoard } from "@/components/sportsgang/rank-board";
 import { PHONE_STAGES, PixelPhone } from "@/components/sportsgang/pixel-phone";
 import { SportVenue } from "@/components/sportsgang/sport-venue";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
+import type { GolfRunResultV1 } from "@/lib/game/minigames/golf-result";
 import type { SportResult } from "@/lib/game/minigames/types";
 import {
   getSportsgangStageDuration,
@@ -76,6 +78,15 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
   const [sport, setSport] = useState<SportsgangSport | null>(null);
   const [result, setResult] = useState<SportResult | null>(null);
   const [run, setRun] = useState<RecordedRun | null>(null);
+  /**
+   * The golf hole's own versioned record, kept beside the generic result.
+   *
+   * Only golf produces one, and only it can go on the public board — the other
+   * sports keep the personal, this-visit standings they always had. Nothing is
+   * sent anywhere from here; the panel on RANK is where a visitor may ask for
+   * it to be published.
+   */
+  const [golfRun, setGolfRun] = useState<GolfRunResultV1 | null>(null);
   const reducedMotion = useReducedMotion();
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -284,6 +295,7 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
     ]);
     setSport(null);
     setResult(null);
+    setGolfRun(null);
     // The standings deliberately survive a replay: beating your own mark is
     // the only ranking this world can honestly offer.
     setRun(null);
@@ -300,11 +312,20 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
   const Minigame = MINIGAMES[activeSport];
   const opponent = SPORT_OPPONENTS[activeSport];
   /**
-   * Tennis is played rather than watched, so while its match is running the
-   * mini-game owns both figures on the court and the venue's static pair steps
-   * out of the way. Every other stage — and every other sport — is unchanged.
+   * Sports that draw their own playing surface, so the venue's static dressing
+   * steps out of the way while they are running.
+   *
+   * Tennis was always here: it is played rather than watched, so the mini-game
+   * owns both figures on the court. Golf joined at integration on B's request
+   * (REQUESTS.md B-1) — the hole draws its own flag and its own player, so
+   * leaving the venue's dressing up put a second motionless flag beside the
+   * real one and stood Edward and PLAYER 02 on the fairway while Edward was
+   * also playing the hole.
+   *
+   * Every other stage, and every other sport, is unchanged.
    */
-  const playingMatch = stage === "PLAY" && activeSport === "TENNIS";
+  const SURFACE_OWNED_BY_GAME: readonly SportsgangSport[] = ["TENNIS", "GOLF"];
+  const playingMatch = stage === "PLAY" && SURFACE_OWNED_BY_GAME.includes(activeSport);
   const showCourtPlayers =
     ["MEET", "PLAY", "RESULT", "RANK", "COMPLETE"].includes(stage) && !playingMatch;
 
@@ -357,11 +378,20 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
         opponentFrame={frames.opponent}
         opponentRef={opponentRef}
         showPlayers={showCourtPlayers}
+        surfaceOwnedByGame={playingMatch}
         sport={activeSport}
       />
 
       {stage === "PLAY" ? (
-        <Minigame active onFinish={finishPlay} />
+        <Minigame
+          active
+          onFinish={finishPlay}
+          // Additive and optional on `MinigameProps`; only golf emits one.
+          onGolfRun={setGolfRun}
+          // Absent is fine — the sport stamps GUEST. A name is chosen at the
+          // moment of publishing rather than before play, so nothing about
+          // starting a game asks a visitor to identify themselves.
+        />
       ) : null}
 
       <PixelPhone
@@ -426,12 +456,17 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
       ) : null}
 
       {stage === "RANK" ? (
-        <RankBoard
-          continueRef={continueRef}
-          onContinue={advance}
-          run={run}
-          sport={activeSport}
-        />
+        <>
+          {activeSport === "GOLF" ? (
+            <GolfBoardPanel attempts={run?.attempts ?? 1} run={golfRun} />
+          ) : null}
+          <RankBoard
+            continueRef={continueRef}
+            onContinue={advance}
+            run={run}
+            sport={activeSport}
+          />
+        </>
       ) : null}
 
       {stage === "COMPLETE" ? (

@@ -109,6 +109,28 @@ export const signs: readonly Sign[] = [
       text: "Move with A / D or the left / right arrow keys. Press E near an object.",
     },
   },
+  {
+    /**
+     * The way out, at the right-hand end of the world.
+     *
+     * A `sign` rather than a `building`: buildings are the project entrances
+     * and Edward's House, they are keyed by `WorldBuildingId`, and a gate is
+     * neither. It is also emphatically **not** a project — the index must keep
+     * listing exactly four — so it carries its own `LEAVE_WORLD` action.
+     *
+     * Placed past the scaffolding, which ends at 3696, and inside the world's
+     * 3840. The player clamps at 3792, so the gateway is walkable-to rather
+     * than something to be seen and not reached. Nothing gates it: every sport
+     * and every project can be skipped and the exit is still here.
+     */
+    kind: "sign",
+    id: "world-exit",
+    label: "Exit",
+    position: { x: 3_720, y: TOWN_GROUND_Y - 104 },
+    size: { width: 80, height: 104 },
+    interactionRange: 76,
+    interaction: { type: "LEAVE_WORLD" },
+  },
 ] as const;
 
 export const worldObjects: readonly WorldObject[] = [

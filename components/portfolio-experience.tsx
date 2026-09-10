@@ -7,6 +7,7 @@ import { AflExperience } from "@/components/afl/afl-experience";
 import { ArcadeExperience } from "@/components/arcade/arcade-experience";
 import { HouseExperience } from "@/components/house/house-experience";
 import { PortfolioIndex } from "@/components/index/portfolio-index";
+import { FarewellScene } from "@/components/world/farewell-scene";
 import { SportsgangExperience } from "@/components/sportsgang/sportsgang-experience";
 import { WardrobeExperience } from "@/components/wardrobe/wardrobe-experience";
 import { InteractionDialog } from "@/components/world/interaction-dialog";
@@ -39,6 +40,14 @@ export function PortfolioExperience() {
   const [activeProjectExperience, setActiveProjectExperience] =
     useState<PortfolioProjectId | null>(null);
   const [activeLocation, setActiveLocation] = useState<WorldLocationId | null>(null);
+  /**
+   * The goodbye at the world's right-hand gate.
+   *
+   * Kept here rather than in the world, because it is about the visit rather
+   * than about a place in it, and because leaving must also stop the world
+   * listening — which is the `disabled` prop below.
+   */
+  const [farewell, setFarewell] = useState(false);
 
   // Keep the current surface in this history entry, so returning from a
   // document or refreshing it never accidentally replays the opening ritual.
@@ -84,6 +93,7 @@ export function PortfolioExperience() {
   }, [activeLocation, activeProjectExperience]);
 
   const showWorld = useCallback(() => {
+    setFarewell(false);
     setActiveInteraction(null);
     setActiveProjectExperience(null);
     setActiveLocation(null);
@@ -91,6 +101,7 @@ export function PortfolioExperience() {
   }, [setView]);
 
   const showIndex = useCallback(() => {
+    setFarewell(false);
     setActiveInteraction(null);
     // The index is the recruiter's fast path; leaving a scripted sequence
     // running underneath it would only make returning ambiguous.
@@ -99,7 +110,13 @@ export function PortfolioExperience() {
     setView("index");
   }, [setView]);
 
+  const closeFarewell = useCallback(() => setFarewell(false), []);
+
   const handleInteraction = useCallback((action: InteractionAction) => {
+    if (action.type === "LEAVE_WORLD") {
+      setFarewell(true);
+      return;
+    }
     if (action.type === "OPEN_PROJECT" && EXPERIENCE_PROJECTS.has(action.projectId)) {
       setActiveProjectExperience(action.projectId);
       return;
@@ -134,7 +151,10 @@ export function PortfolioExperience() {
             indexOpen ||
             activeInteraction !== null ||
             activeProjectExperience !== null ||
-            activeLocation !== null
+            activeLocation !== null ||
+            // The world stops listening during the goodbye, so no world or
+            // game key does anything behind it.
+            farewell
           }
           onInteraction={handleInteraction}
         />
@@ -153,6 +173,15 @@ export function PortfolioExperience() {
       ) : null}
       {activeLocation === "edwards-house" ? (
         <HouseExperience onExit={closeLocation} />
+      ) : null}
+      {farewell ? (
+        <FarewellScene
+          onLookAround={closeFarewell}
+          onOpenIndex={() => {
+            setFarewell(false);
+            showIndex();
+          }}
+        />
       ) : null}
       {indexOpen ? <PortfolioIndex onClose={closeIndex} /> : null}
       {activeInteraction ? (

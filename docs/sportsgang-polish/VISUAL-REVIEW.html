@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SportsGang polish — QA evidence (session E)</title>
+<style>
+  :root {
+    --ink: #241a12; --paper: #f2ece1; --panel: #fffaf0; --line: #d8cdb9;
+    --good: #3f6b3a; --bad: #8f3a26; --warn: #8a6a1f; --muted: #6b6152;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink);
+         font: 15px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace; }
+  main { max-width: 1080px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 22px; margin: 0 0 4px; letter-spacing: 0.02em; }
+  h2 { font-size: 16px; margin: 40px 0 10px; padding-bottom: 6px;
+       border-bottom: 2px solid var(--line); letter-spacing: 0.06em; text-transform: uppercase; }
+  h3 { font-size: 14px; margin: 22px 0 6px; letter-spacing: 0.04em; }
+  p { margin: 8px 0; }
+  .sub { color: var(--muted); margin-bottom: 20px; }
+  .verdict { background: var(--panel); border: 2px solid var(--line);
+             border-left: 6px solid var(--warn); padding: 14px 16px; margin: 18px 0 6px; }
+  .verdict strong { font-size: 17px; letter-spacing: 0.08em; }
+  figure { margin: 0 0 18px; background: var(--panel); border: 1px solid var(--line); padding: 10px; }
+  figure img { display: block; width: 100%; height: auto; image-rendering: pixelated;
+               background: #cfc6b4; }
+  figcaption { font-size: 12.5px; color: var(--muted); padding-top: 8px; line-height: 1.5; }
+  figcaption b { color: var(--ink); }
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .strip { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .strip figure { padding: 6px; }
+  .strip figcaption { font-size: 11px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; margin: 10px 0 18px; }
+  th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: var(--panel); }
+  .pass { color: var(--good); font-weight: 700; }
+  .fail { color: var(--bad); font-weight: 700; }
+  .na { color: var(--muted); font-weight: 700; }
+  .note { background: var(--panel); border: 1px dashed var(--line); padding: 10px 12px; font-size: 13px; }
+  code { background: #e7dfd0; padding: 1px 4px; }
+  a { color: var(--bad); }
+</style>
+</head>
+<body>
+<main>
+
+<h1>SportsGang polish — QA evidence</h1>
+  <p style="margin:0 0 1.5rem;padding:.7rem .9rem;border:1px solid currentColor;border-radius:6px;opacity:.85">A <strong>second, independent QA pass</strong> has since re-reviewed this branch and captured its own evidence &mdash; <a href="VISUAL-REVIEW-E2.html">open VISUAL-REVIEW-E2.html</a>. It found one further P1 (ALEX&rsquo;s contact and spark drawn past the strings) and confirmed the leaderboard blocker against the deploy target.</p>
+
+<p class="sub">Session E, independent review pass · reviewed <code>97c4944</code> · fixes on <code>qa/sg-e</code><br>
+Chrome 152 · 1440×900 DPR&nbsp;2 and 390×844 DPR&nbsp;3 (CDP device emulation) · dev server on <code>:3015</code>, production build on <code>:3016</code></p>
+
+<div class="verdict">
+  <strong>CONDITIONAL</strong>
+  <p>The gates pass and the six requirements behave as asked on a real screen. Three defects
+  were found by looking at the running app and all three are fixed here (E-3 with a caveat,
+  below). The public golf
+  leaderboard has no shared storage in this environment, so in a <b>production build it does
+  not work</b> — it says so honestly instead of faking a board, which is right, and still not
+  a working feature.</p>
+</div>
+
+<p class="note">Every image below is a real screenshot of the running app. Where a sequence is
+one simulation tick apart, the game was driven on a <b>manual clock</b> (the animation-frame
+callback was released one tick at a time) so the frames are exactly adjacent. The two GIFs are
+therefore a <b>stepped reconstruction played slowly</b> — roughly 6&nbsp;fps, about 7× slower
+than real time — <b>not</b> a real-time recording. No screen recorder was available.</p>
+
+<h2>1 · The serve was two events. Now it is one.</h2>
+<p>The toss is aimed at the moment the strings reach it (0.664&nbsp;s). The phase ran on to a
+separate 0.9&nbsp;s before launching the ball. In those <b>14 ticks</b> the toss kept falling —
+past the racket, past the ground, to <code>y = −4.06</code> — then vanished and the served ball
+appeared <b>19.3 units above it</b>, already struck.</p>
+
+<div class="grid">
+  <figure>
+    <img src="evidence-e/tennis-serve-BEFORE-slowmo.gif" alt="Before the fix: the toss falls past the racket and through the ground.">
+    <figcaption><b>BEFORE</b> — eight frames, one tick apart. The ball drops past the strings and
+    keeps going. The last frame before it disappears has it at <code>bottom: 17.9%</code>, below
+    the court surface.</figcaption>
+  </figure>
+  <figure>
+    <img src="evidence-e/tennis-serve-AFTER-slowmo.gif" alt="After the fix: the racket meets the ball and it leaves the strings.">
+    <figcaption><b>AFTER</b> — the last toss frame is <code>38.02%</code> and the struck ball
+    appears at <code>37.24%</code>: a gap of 0.78%, under one tick of travel. Same anchor, same
+    target, same seed — the serve still lands where it did.</figcaption>
+  </figure>
+</div>
+
+<div class="strip">
+  <figure><img src="evidence-e/tennis-serve-fixed-t-3.png" alt="Three ticks before contact."><figcaption>t−3</figcaption></figure>
+  <figure><img src="evidence-e/tennis-serve-fixed-t-1.png" alt="One tick before contact."><figcaption>t−1</figcaption></figure>
+  <figure><img src="evidence-e/tennis-serve-fixed-t0-contact.png" alt="The contact frame."><figcaption><b>t0 — contact</b>, spark on the strings</figcaption></figure>
+  <figure><img src="evidence-e/tennis-serve-fixed-t2-after.png" alt="Two ticks after contact."><figcaption>t+2, ball away</figcaption></figure>
+</div>
+
+<h2>2 · Contact, reflection and spark are one event</h2>
+<div class="grid">
+  <figure>
+    <img src="evidence-e/tennis-backhand-contact.png" alt="A backhand at the moment of contact.">
+    <figcaption>Player at x&nbsp;34.885, ball at 34.97, <code>struck</code> flips, spark drawn at
+    (34.97, 30.75). <b>Contact happens at the racket</b>, not at the sprite's midline.</figcaption>
+  </figure>
+  <figure>
+    <img src="evidence-e/tennis-backhand-after.png" alt="Two ticks later the ball is leaving.">
+    <figcaption>Two ticks later the ball has reversed and is leaving; the spark stays behind at the
+    point of impact. No lag, no teleport.</figcaption>
+  </figure>
+</div>
+<div class="grid">
+  <figure>
+    <img src="evidence-e/tennis-pose-forehand.png" alt="A forehand in play.">
+    <figcaption>FOREHAND, chosen in ordinary play.</figcaption>
+  </figure>
+  <figure>
+    <img src="evidence-e/tennis-smash-before.png" alt="A smash in play.">
+    <figcaption>SMASH — and this one <b>missed</b>: the ball passed outside the racket box and no
+    contact registered. Swinging at air is not a hit.</figcaption>
+  </figure>
+</div>
+
+<h2>3 · The basketball, at the size it is actually played</h2>
+<p>Not zoomed. <b>27×27&nbsp;CSS px</b> on desktop, <b>15×15</b> on mobile, width/height ratio
+exactly <b>1.0000</b> at both — never an ellipse. Four seam paths, drawn as great circles projected
+onto the sphere and culled to the front face, with <b>24 distinct</b> geometries across 60 flight
+ticks.</p>
+<div class="grid">
+  <figure><img src="evidence-e/basketball-desktop-stationary.png" alt="The ball at rest, desktop."><figcaption>Desktop, stationary — 27 px</figcaption></figure>
+  <figure><img src="evidence-e/basketball-desktop-in-flight.png" alt="The ball in flight, desktop."><figcaption>Desktop, in flight and spinning</figcaption></figure>
+  <figure><img src="evidence-e/basketball-desktop-near-rim.png" alt="The ball arriving at the rim."><figcaption>At the rim — ball centre x&nbsp;1029, ring centre 1052</figcaption></figure>
+  <figure><img src="evidence-e/basketball-mobile-stationary.png" alt="The ball at rest on a phone viewport."><figcaption>390×844 — 15 px, still round</figcaption></figure>
+  <figure><img src="evidence-e/basketball-mobile-in-flight.png" alt="The ball in flight on a phone viewport."><figcaption>390×844, in flight</figcaption></figure>
+</div>
+
+<h2>4 · Running — the controls, measured</h2>
+<table>
+  <tr><th>What was held</th><th>For</th><th>Result</th></tr>
+  <tr><td>nothing</td><td>1 s</td><td class="pass">no movement</td></tr>
+  <tr><td><b>SPRINT only</b>, standing still</td><td>2 s</td><td class="pass">distance unchanged, stamina unchanged at 100% — no creep, no waste</td></tr>
+  <tr><td>→ only</td><td>3 s</td><td class="pass">200 → 184 m to go, pace 62% (cruise)</td></tr>
+  <tr><td>→ and SPRINT</td><td>3 s</td><td class="pass">pace 100%, stamina 100 → 10%</td></tr>
+  <tr><td>SPRINT released, → still held</td><td>0.5 s</td><td class="pass">pace 100 → 69 → 62%; → stayed held</td></tr>
+  <tr><td>everything released</td><td>5 s</td><td class="pass">stamina 3 → 28 → 100%</td></tr>
+  <tr><td>↑ / ↓</td><td>—</td><td class="pass">lane 22% → 28%, clamped; distance untouched</td></tr>
+  <tr><td>keyboard <code>S</code> while a finger held →</td><td>1.5 s</td><td class="pass">spurt engaged without dropping the finger</td></tr>
+  <tr><td><code>blur</code> with two inputs held</td><td>—</td><td class="pass">both dropped; a later stray keyup did nothing</td></tr>
+</table>
+<div class="grid">
+  <figure><img src="evidence-e/running-mobile-arrows-only.png" alt="Running with the direction pad only."><figcaption>Arrows only — cruise</figcaption></figure>
+  <figure><img src="evidence-e/running-mobile-arrows-plus-sprint.png" alt="Running with the direction pad and sprint."><figcaption>Arrows + SPRINT, two fingers</figcaption></figure>
+  <figure><img src="evidence-e/running-mobile-lane-up.png" alt="Changing lane while running."><figcaption>Lane change while running</figcaption></figure>
+  <figure><img src="evidence-e/running-mobile-recovered-after-release.png" alt="Stamina recovered after easing off."><figcaption>Eased off — stamina rebuilt to 100%</figcaption></figure>
+</div>
+
+<h2>5 · Golf — one hole, played out</h2>
+<div class="grid">
+  <figure><img src="evidence-e/golf-01-tee-course-flag-cup.png" alt="The tee, with the green, flag and cup in view."><figcaption>From the tee: fairway, green, flagstick, and the cup (5×2 px at 300 m)</figcaption></figure>
+  <figure><img src="evidence-e/golf-02-backswing.png" alt="The backswing."><figcaption>BACKSWING — power set, contact bar next</figcaption></figure>
+  <figure><img src="evidence-e/golf-03-impact.png" alt="The impact frame."><figcaption>IMPACT — contact locked at 49.2%, “PURE STRIKE”, stroke counted</figcaption></figure>
+  <figure><img src="evidence-e/golf-04-followthrough-and-flight.png" alt="Follow-through while the ball climbs."><figcaption>Follow-through runs <b>24 frames while the ball climbs</b> — they progress together</figcaption></figure>
+  <figure><img src="evidence-e/golf-06-in-the-hole.png" alt="The ball in the hole."><figcaption>Holed in <b>3 on a par 4</b> — the cup at putting distance</figcaption></figure>
+  <figure><img src="evidence-e/golf-05-abandoned-not-ranked.png" alt="An abandoned run, marked as not ranked."><figcaption>Abandoned: “RUN ABANDONED · NOT RANKED”</figcaption></figure>
+</div>
+
+<h2>6 · The board, and what it admits to</h2>
+<div class="grid">
+  <figure><img src="evidence-e/golf-08-nickname-consent.png" alt="The nickname and consent dialog."><figcaption>Asked before publishing. Korean accepted, whitespace collapsed, control characters stripped, IME kept, game keys inert while typing.</figcaption></figure>
+  <figure><img src="evidence-e/golf-09-board-after-submit.png" alt="The board after submitting."><figcaption>Submitted — “ON THE BOARD AS 에드워드 QA · RANK 1”. The anonymous id and consent are created <b>at this press</b>, not while playing.</figcaption></figure>
+  <figure><img src="evidence-e/golf-10-board-shared-ranks.png" alt="Three players sharing rank 1."><figcaption>Three players on 2 strokes all rank <b>1</b>; the next distinct score ranks <b>4</b>. A submission claiming <code>rank: 1</code> with a 7-stroke round was recorded at 4.</figcaption></figure>
+  <figure><img src="evidence-e/golf-11-board-offline-error.png" alt="The board when the network is down."><figcaption>Offline: “Could not reach the board. <b>Your run was not submitted.</b>” + TRY AGAIN, which recovered. Never an empty board, never a guessed rank.</figcaption></figure>
+</div>
+
+<h3>The one that decides the verdict</h3>
+<figure style="max-width: 640px">
+  <img src="evidence-e/prod-01-board-unavailable.png" alt="The production build refusing to show a board.">
+  <figcaption><b>Production build, <code>:3016</code></b>, rebuilt at <code>957aabc</code> — “The public board is not available right
+  now. Your run was not submitted.” No credentials are configured, so
+  <code>GLOBAL_LEADERBOARD = BLOCKED_CONFIG</code>. Refusing is the correct behaviour — a
+  per-instance board would show each visitor their own scores back as a world ranking — but the
+  public leaderboard is <b>not a working feature</b> until a Redis is provisioned.</figcaption>
+</figure>
+
+<h2>7 · The way out</h2>
+<div class="grid">
+  <figure><img src="evidence-e/exit-01-gate-at-world-end.png" alt="The exit gate at the right-hand end of the world."><figcaption>At the right-hand end. Reachable with nothing completed; opens on <code>E</code> or a click; a held <code>E</code> fires once; walking past never opens it.</figcaption></figure>
+  <figure><img src="evidence-e/exit-02-farewell-fireworks.png" alt="The farewell screen with fireworks."><figcaption>Exact copy. Fireworks peak at <b>232 lit pixels of 32,400 (0.7%)</b> and are at zero by <b>4.2 s</b>, with no animation frame left outstanding.</figcaption></figure>
+  <figure><img src="evidence-e/exit-03-reduced-motion-still.png" alt="The farewell under reduced motion, held still."><figcaption>Reduced motion: one held still frame — <b>528 lit pixels identical across 4 s</b>, and no frame ever scheduled.</figcaption></figure>
+</div>
+<p class="note">Opened and closed <b>five times</b>: window listener drift <code>{}</code>,
+animation-frame drift <b>0</b>, canvas drift <b>0</b>, no audio elements accumulated, and
+<code>/api/joins</code> called <b>0</b> times — the visitor counter is never re-incremented.</p>
+
+<h2>8 · Defects found, and their state</h2>
+<table>
+  <tr><th>#</th><th>Severity</th><th>What</th><th>State</th></tr>
+  <tr><td>E-1</td><td class="fail">P1</td><td>The serve launched 14 ticks after the racket met the ball; the toss fell below the court surface and the ball reappeared 19.3 units above it.</td><td class="pass">fixed · <code>32c11d2</code></td></tr>
+  <tr><td>E-2</td><td class="fail">P1</td><td>Conceding golf recorded a 0-stroke personal best, beating every round anyone can finish. (The public board was never affected — the server refuses anything not completed.)</td><td class="pass">fixed · <code>220386e</code></td></tr>
+  <tr><td>E-3</td><td class="na">P2</td><td>With an over-long name the submit button relabelled itself <code>SUBMIT AS GUEST</code> and then refused; with an empty box two identical buttons did the same thing.</td><td class="pass">fixed · <code>220386e</code><br><span style="color:var(--muted);font-weight:400">— the empty-box duplication is gone and the rejection now appears while you type. In the invalid-name state the disabled primary still carries the GUEST label beside the working guest button, with the error explaining. See <code>FINAL-QA.md §4</code>.</span></td></tr>
+</table>
+<p>Tests went from <b>665 / 41 files</b> to <b>689 / 44</b>. Nothing was deleted, skipped or
+loosened; one assertion was made narrower and is documented in <code>FINAL-QA.md §4</code>.</p>
+
+<h2>9 · Not run</h2>
+<p>A durable shared store (no credentials) · a real touchscreen (mobile was device emulation) ·
+any browser but Chrome 152 · audio · performance and memory profiling, so <b>no FPS, frame-time or
+memory figure appears anywhere in this document</b> · a person's judgement of the golf hole's
+difficulty · a VOLLEY struck by the visitor on screen (proven reachable in simulation, seen played
+by ALEX).</p>
+
+<p class="sub">Full detail, repro steps and the reasoning behind each fix: <code>FINAL-QA.md</code>.</p>
+
+</main>
+</body>
+</html>

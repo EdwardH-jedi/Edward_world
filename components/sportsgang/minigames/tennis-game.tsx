@@ -1,25 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { MinigameProps } from "@/components/sportsgang/minigames/types";
+import { useFixedStepGameLoop } from "@/components/sportsgang/minigames/use-fixed-step-loop";
 import { useMinigameInput } from "@/components/sportsgang/minigames/use-minigame-input";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import {
   advanceTennis,
+  contactAnchor,
   createTennisState,
   getTennisResult,
+  STRIKE_HALF_X,
+  STRIKE_HALF_Y,
+  swingProgress,
   TENNIS_TARGET_POINTS,
   type TennisState,
 } from "@/lib/game/minigames/tennis";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
-import { useGameLoop } from "@/lib/motion/use-game-loop";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
-import {
-  edwardRoutines,
-  opponentRoutines,
-  PLAYER_ART_SIZE,
-  type PlayerFrame,
-} from "@/lib/pixel/sportsgang";
+import { PLAYER_ART_SIZE } from "@/lib/pixel/sportsgang";
+import { tennisRoutine } from "@/lib/pixel/sg-tennis";
 
 /**
  * The court, drawn from the simulation.
@@ -37,30 +37,46 @@ import {
 /** The playing surface's top edge, as a percentage of the court box. */
 const SURFACE_TOP = 22;
 
-function frameFor(swinging: boolean, moving: boolean): PlayerFrame {
-  if (swinging) return "contact";
-  return moving ? "ready" : "idle";
-}
-
-export function TennisGame({ active, onFinish }: MinigameProps) {
-  const { consume, bind } = useMinigameInput(active);
+/**
+ * The court, drawn from the simulation.
+ *
+ * `debug` draws the overlay the sync work was diagnosed with: the ball centre,
+ * the racket anchor, the strike zone, and the tick. Nothing in the application
+ * passes it — the venue mounts `<TennisGame active onFinish={...} />` — so it
+ * cannot reach production, and it is a prop rather than a `NODE_ENV` check
+ * precisely so that stays true and testable.
+ */
+export function TennisGame({
+  active,
+  onFinish,
+  debug = false,
+}: MinigameProps & { debug?: boolean }) {
+  const { consume, bind, clear } = useMinigameInput(active);
   const [state, setState] = useState<TennisState>(createTennisState);
   const stateRef = useRef(state);
   const finished = useRef(false);
   const reducedMotion = useReducedMotion();
 
-  useGameLoop(active, (delta) => {
-    const next = advanceTennis(stateRef.current, consume(), delta);
-    stateRef.current = next;
-    setState(next);
+  const step = useCallback(
+    (delta: number, input: Parameters<typeof advanceTennis>[1]) => {
+      const next = advanceTennis(stateRef.current, input, delta);
+      stateRef.current = next;
+      setState(next);
 
-    // Latched, so a frame that lands after the match is over cannot report it
-    // twice — and the simulation itself refuses to advance past `done`.
-    if (next.done && !finished.current) {
-      finished.current = true;
-      onFinish(getTennisResult(next));
-    }
-  });
+      // Latched, so a frame that lands after the match is over cannot report
+      // it twice — and the simulation itself refuses to advance past `done`.
+      if (next.done && !finished.current) {
+        finished.current = true;
+        onFinish(getTennisResult(next));
+      }
+    },
+    [onFinish],
+  );
+
+  // The fixed clock. The ball and the players advance on one step, so they
+  // cannot drift apart, and the same input at the same tick plays out the same
+  // way whatever rate the browser is painting at.
+  useFixedStepGameLoop(active, consume, step, { onSuspend: clear });
 
   /* The court is a scene, not a form: nothing inside it should be able to take
      focus away from the keys that play the game. */
@@ -71,9 +87,19 @@ export function TennisGame({ active, onFinish }: MinigameProps) {
 
   const { ball } = state;
   const ballBottom = SURFACE_TOP + ball.y;
-  const playerSwinging = state.playerRacket.animating > 0;
-  const alexSwinging = state.alexRacket.animating > 0;
+  const playerSwing = state.playerRacket.swing;
+  const alexSwing = state.alexRacket.swing;
+  const playerProgress = swingProgress(playerSwing);
+  const alexProgress = swingProgress(alexSwing);
   const ballLive = state.phase === "RALLY";
+
+  // The one point both the picture and the physics call contact.
+  const playerAnchor = contactAnchor(
+    "PLAYER",
+    state.playerX,
+    playerSwing?.kind ?? null,
+    playerProgress,
+  );
 
   // Shake is a transform on the court layer alone, and only when motion is
   // wanted — it never moves anything the simulation reads.
@@ -105,15 +131,27 @@ export function TennisGame({ active, onFinish }: MinigameProps) {
           />
         ) : null}
 
+        {/* The toss. A serve whose ball simply appears at contact height was
+            the thing that read as fake, so the ball is thrown and travels. */}
+        {state.toss ? (
+          <div
+            className="sg-tennis__ball sg-tennis__ball--toss"
+            style={{
+              bottom: `${SURFACE_TOP + state.toss.y}%`,
+              left: `${state.toss.x}%`,
+            }}
+          />
+        ) : null}
+
         <div
           className="sg-tennis__figure sg-tennis__figure--player"
-          data-swinging={playerSwinging || undefined}
+          data-swing={playerSwing?.kind}
           style={{ left: `${state.playerX}%` }}
         >
           <PixelCanvas
             artHeight={PLAYER_ART_SIZE.height}
             artWidth={PLAYER_ART_SIZE.width}
-            draw={edwardRoutines[frameFor(playerSwinging, state.playerVx !== 0)]}
+            draw={tennisRoutine("PLAYER", playerSwing?.kind ?? null, playerProgress)}
             frame={0}
             unit={PIXEL_UNIT}
           />
@@ -121,13 +159,13 @@ export function TennisGame({ active, onFinish }: MinigameProps) {
 
         <div
           className="sg-tennis__figure sg-tennis__figure--alex"
-          data-swinging={alexSwinging || undefined}
+          data-swing={alexSwing?.kind}
           style={{ left: `${state.alexX}%` }}
         >
           <PixelCanvas
             artHeight={PLAYER_ART_SIZE.height}
             artWidth={PLAYER_ART_SIZE.width}
-            draw={opponentRoutines[frameFor(alexSwinging, state.alexVx !== 0)]}
+            draw={tennisRoutine("ALEX", alexSwing?.kind ?? null, alexProgress)}
             flipX
             frame={0}
             unit={PIXEL_UNIT}
@@ -140,6 +178,46 @@ export function TennisGame({ active, onFinish }: MinigameProps) {
             data-struck={state.impactAge < 0.12 || undefined}
             style={{ bottom: `${ballBottom}%`, left: `${ball.x}%` }}
           />
+        ) : null}
+
+        {debug ? (
+          <>
+            <div
+              className="sg-tennis-debug__box"
+              style={{
+                bottom: `${SURFACE_TOP + playerAnchor.y - STRIKE_HALF_Y}%`,
+                height: `${STRIKE_HALF_Y * 2}%`,
+                left: `${playerAnchor.x - STRIKE_HALF_X}%`,
+                width: `${STRIKE_HALF_X * 2}%`,
+              }}
+            />
+            <div
+              className="sg-tennis-debug__anchor"
+              style={{
+                bottom: `${SURFACE_TOP + playerAnchor.y}%`,
+                left: `${playerAnchor.x}%`,
+              }}
+            />
+            {ballLive ? (
+              <div
+                className="sg-tennis-debug__ball"
+                style={{ bottom: `${ballBottom}%`, left: `${ball.x}%` }}
+              />
+            ) : null}
+            <p className="sg-tennis-debug__read">
+              {`tick ${state.tick} · ${state.phase} · swing ${
+                playerSwing?.kind ?? "—"
+              } · p ${playerProgress.toFixed(2)} · anchor ${playerAnchor.x.toFixed(
+                2,
+              )},${playerAnchor.y.toFixed(2)} · ball ${ball.x.toFixed(2)},${ball.y.toFixed(
+                2,
+              )}${
+                state.lastContact
+                  ? ` · hit t=${state.lastContact.t.toFixed(2)} @${state.lastContact.tick} ${state.lastContact.swing}`
+                  : ""
+              }`}
+            </p>
+          </>
         ) : null}
 
         {/* One spark at the point of contact, gone in a fifth of a second. */}

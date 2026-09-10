@@ -28,6 +28,15 @@ export interface MinigameInput {
   /** Horizontal intent, for anything the player walks. */
   readonly left: boolean;
   readonly right: boolean;
+  /**
+   * A second sustained action, separate from `action` and from `down`.
+   *
+   * Optional so every existing simulation, and every test that spreads
+   * `IDLE_INPUT`, keeps its exact shape. Running uses it for the spurt, which
+   * is why it could not simply reuse `down`: the runner steers with the arrow
+   * keys while spurting, so the two must be pressable at the same time.
+   */
+  readonly sprint?: boolean;
 }
 
 export const IDLE_INPUT: MinigameInput = {

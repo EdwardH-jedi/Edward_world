@@ -5209,3 +5209,905 @@ p {
 
   .sg-tennis__verdict { opacity: 1; }
 }
+
+/* @owner:A tennis — swing poses, the serve toss, and the diagnostic overlay.
+   Appended as its own block so B and C can append theirs without a conflict;
+   nothing above this line is touched. */
+
+/* The toss reads as the same ball, dimmer, because it is not live yet. */
+.sg-tennis__ball--toss {
+  opacity: 0.85;
+  z-index: 1;
+}
+
+/* Each swing gets its own weight shift. The racket itself is drawn by the
+   sprite — this is the body leaning into it, which is what the old single
+   `scale(1.08)` was standing in for. */
+.sg-tennis__figure[data-swing] canvas {
+  transform: translateX(-50%);
+}
+.sg-tennis__figure[data-swing="FOREHAND"] canvas,
+.sg-tennis__figure[data-swing="BACKHAND"] canvas {
+  transform: translateX(-50%) scale(1.04);
+}
+.sg-tennis__figure[data-swing="VOLLEY"] canvas {
+  transform: translateX(-50%) scale(1.02);
+}
+.sg-tennis__figure[data-swing="SERVE"] canvas,
+.sg-tennis__figure[data-swing="SMASH"] canvas {
+  transform: translateX(-50%) scale(1.08);
+}
+
+/* Diagnostic overlay. Rendered only when `debug` is passed, which nothing in
+   the application does — the venue mounts the game with `active` and
+   `onFinish` and nothing else. */
+.sg-tennis-debug__box {
+  border: 1px solid rgb(201 138 82 / 90%);
+  position: absolute;
+  pointer-events: none;
+  z-index: 4;
+}
+.sg-tennis-debug__anchor {
+  background: #c98a52;
+  height: 0.8%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.8%;
+  z-index: 5;
+}
+.sg-tennis-debug__ball {
+  background: #6f8892;
+  height: 0.6%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.6%;
+  z-index: 5;
+}
+.sg-tennis-debug__read {
+  background: rgb(34 31 26 / 92%);
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.5rem;
+  left: 0;
+  letter-spacing: 0.04em;
+  margin: 0;
+  padding: 0.2rem 0.4rem;
+  position: absolute;
+  top: 0;
+  z-index: 6;
+}
+/* @end A */
+
+/* @owner:B golf — one hole
+   Appended as its own block and prefixed `.sg-golf-*` / `.sg-golf__*`, so a
+   merge with the other sports touches nothing shared. The 162 existing `.sg-`
+   rules are not edited.
+
+   Geometry note: the HUD sits above the play box and the controls below it,
+   exactly as tennis does. That is not decoration — it is what keeps the cup,
+   which is drawn on the ground line inside the box, from ever being covered
+   by a panel, a button or the flag's cloth. */
+
+.sg-golf__scene {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+.sg-golf__ground {
+  background: linear-gradient(
+    180deg,
+    #93a06c 0%,
+    #7d8b5c 45%,
+    rgb(109 122 79 / 0%) 100%
+  );
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+/* Distance posts stand on the ball's own ground line, so the camera moving
+   under them is the thing that reads as travel. */
+.sg-golf__marker {
+  height: 9%;
+  position: absolute;
+  width: 0;
+}
+
+.sg-golf__marker::before {
+  background: rgb(87 83 74 / 55%);
+  content: "";
+  inset: 0 auto 0 0;
+  position: absolute;
+  width: 1px;
+}
+
+.sg-golf__marker span {
+  color: rgb(52 50 42 / 85%);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.5rem;
+  left: 0;
+  letter-spacing: 0.1em;
+  position: absolute;
+  top: calc(100% + 2px);
+  transform: translateX(-50%);
+}
+
+/* The putting surface, and the cup cut into it. Both are sized from the
+   camera's span in metres, so walking up to the hole makes it bigger on
+   screen the way walking up to a hole does. */
+.sg-golf__green {
+  background: #a8b47c;
+  border-radius: 50%;
+  box-shadow: inset 0 -2px 0 rgb(109 122 79 / 60%);
+  /* Width follows the camera so walking up to the green makes it bigger.
+     Height does not: a 32 m green inside a 14 m frame was drawing a dome
+     two-thirds of the screen tall. */
+  height: 22%;
+  min-width: 10px;
+  position: absolute;
+  transform: translate(-50%, 50%);
+}
+
+.sg-golf__hole {
+  aspect-ratio: 2.2;
+  background: #17140f;
+  border-radius: 50%;
+  box-shadow: 0 -1px 0 rgb(240 235 216 / 45%);
+  min-width: 5px;
+  position: absolute;
+  transform: translate(-50%, 50%);
+}
+
+/* Anchored by the base of its own pin, with the cloth flying right — so the
+   flag marks the cup without standing in front of it. */
+.sg-golf__flag {
+  /* A definite box, not a shrink-to-fit one: the anchor below is a percentage
+     of this element, so its height and width both have to be known. */
+  aspect-ratio: 14 / 24;
+  height: 26%;
+  position: absolute;
+}
+
+.sg-golf__flag canvas {
+  display: block;
+  height: 100%;
+  image-rendering: pixelated;
+  width: 100%;
+}
+
+.sg-golf__trail {
+  aspect-ratio: 1;
+  background: #55523f;
+  border-radius: 50%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.35%;
+}
+
+.sg-golf__shadow {
+  aspect-ratio: 3;
+  background: rgb(40 44 28 / 100%);
+  border-radius: 50%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 1%;
+}
+
+.sg-golf__ball {
+  aspect-ratio: 1;
+  background: var(--loc-glow, #f7f1e2);
+  border-radius: 50%;
+  /* The ring is what makes a cream ball readable against a cream sky. */
+  box-shadow: inset -1px -1px 0 #c4baa3, 0 0 0 1px rgb(43 40 35 / 55%);
+  min-width: 5px;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.6%;
+}
+
+.sg-golf__ball[data-airborne] {
+  box-shadow: inset -1px -1px 0 #c4baa3, 0 0 0 1px rgb(43 40 35 / 75%);
+}
+
+/* Positioned by the club head of its own impact pose, as a share of its own
+   box — so the club meets the ball at any rendered size. */
+.sg-golf__figure {
+  aspect-ratio: 1;
+  height: 32%;
+  position: absolute;
+}
+
+.sg-golf__figure canvas {
+  display: block;
+  height: 100%;
+  image-rendering: pixelated;
+  width: 100%;
+}
+
+.sg-golf__readout {
+  color: #2b2823;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  margin: 0;
+  position: absolute;
+  text-shadow: 0 1px 0 rgb(239 231 211 / 70%);
+  top: 6%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* ── The course map, always up ─────────────────────────────────────────────
+   Seen from above, because line is the one thing a side-on view cannot show:
+   the ball's sideways error is its position across this strip. */
+.sg-golf__map {
+  background: rgb(34 31 26 / 88%);
+  border: 1px solid #57534a;
+  bottom: calc(100% + 0.35rem);
+  height: 1.15rem;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(92vw, 30rem);
+}
+
+.sg-golf__map-fairway {
+  background: #6d7a4f;
+  height: 45%;
+  left: 4%;
+  position: absolute;
+  top: 27.5%;
+  width: 91%;
+}
+
+.sg-golf__map-green {
+  background: #a8b47c;
+  border-radius: 50%;
+  height: 80%;
+  position: absolute;
+  right: 1.5%;
+  top: 10%;
+  width: 6%;
+}
+
+.sg-golf__map-flag {
+  background: var(--loc-orange);
+  height: 40%;
+  position: absolute;
+  right: 3.6%;
+  top: 30%;
+  width: 2px;
+}
+
+.sg-golf__map-ball {
+  background: var(--loc-cream);
+  border-radius: 50%;
+  height: 4px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 4px;
+}
+
+/* ── HUD ───────────────────────────────────────────────────────────────── */
+.sg-golf__hud {
+  background: rgb(34 31 26 / 92%);
+  border: 1px solid #57534a;
+  bottom: calc(100% + 1.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  left: 50%;
+  padding: 0.6rem 0.9rem;
+  pointer-events: auto;
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(92vw, 30rem);
+}
+
+.sg-golf__line {
+  align-items: baseline;
+  color: #8d8575;
+  display: flex;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.45rem;
+  gap: 0.5rem;
+  justify-content: space-between;
+  letter-spacing: 0.16em;
+  margin: 0;
+}
+
+.sg-golf__line strong {
+  color: var(--loc-cream);
+  font-size: 0.6rem;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+}
+
+.sg-golf__stats {
+  display: grid;
+  gap: 0.3rem 0.7rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.sg-golf__stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.sg-golf__stats dt {
+  color: #7d766a;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.4rem;
+  letter-spacing: 0.14em;
+}
+
+.sg-golf__stats dd {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+/* A penalty raises the score without giving you another ball, so the two
+   numbers have to be able to disagree on screen as well as in the record. */
+.sg-golf__stats dd[data-penalised] {
+  color: var(--loc-orange);
+}
+
+.sg-golf__prompt {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  margin: 0;
+  text-align: center;
+}
+
+.sg-golf__aim {
+  color: var(--loc-orange);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.16em;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Controls ──────────────────────────────────────────────────────────── */
+.sg-golf__controls {
+  bottom: -3.2rem;
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+  left: 50%;
+  pointer-events: auto;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.sg-golf__button {
+  background: #3a352c;
+  border: 1px solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.5rem 0.8rem;
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-golf__button:disabled {
+  color: #6d675c;
+  opacity: 0.55;
+}
+
+.sg-golf__button--action {
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
+  color: #241f18;
+  min-width: 8rem;
+}
+
+.sg-golf__button--quiet {
+  background: transparent;
+  color: #a29a8a;
+  font-size: 0.5rem;
+}
+
+.sg-golf__hint {
+  bottom: -5.2rem;
+  color: #a29a8a;
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.5rem;
+  left: 50%;
+  letter-spacing: 0.12em;
+  margin: 0;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Short landscape puts the panels beside the hole rather than above it, the
+   same way the shared layout already does for the other sports. */
+@media (max-height: 500px) and (max-width: 950px) and (orientation: landscape) {
+  .sg-golf__hud,
+  .sg-golf__map {
+    bottom: auto;
+    left: calc(100% + 1rem);
+    transform: none;
+    width: 16rem;
+  }
+
+  .sg-golf__hud { top: -2.5rem; }
+  .sg-golf__map { top: 9.5rem; }
+
+  .sg-golf__controls {
+    bottom: auto;
+    flex-wrap: wrap;
+    left: calc(100% + 1rem);
+    top: 11.5rem;
+    transform: none;
+    width: 16rem;
+  }
+
+  .sg-golf__hint {
+    bottom: auto;
+    left: calc(100% + 1rem);
+    top: 15.5rem;
+    transform: none;
+    white-space: normal;
+    width: 16rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .sg-golf__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-golf__button--action { min-width: 6rem; }
+}
+
+/* Reduced motion takes the shake and the cloth's ripple, and nothing that
+   decides a shot: the power bar, the contact window and the strike are
+   identical either way. */
+@media (prefers-reduced-motion: reduce) {
+  .sg-golf__trail { opacity: 0.25 !important; }
+}
+/* @end B */
+
+/* @owner:C basketball — the ball itself
+   Sizing only. Position, the 1:1 box and the `translate(-50%, 50%)` that puts
+   the simulation's ball centre at the element's centre all stay on the frozen
+   `.sg-play__ball` rule above, so the arc, the ring and the judging are
+   measured against exactly what they were before. Scoped to `.sg-ball`, which
+   only basketball carries: the tennis and golf balls are untouched. */
+.sg-ball {
+  /* The court is `min(92vw, 900px)`, and the ring inside it is 5.76% of that.
+     3% puts the ball at just under half the ring's width, which is where a
+     basketball sits against a real hoop. On a phone that percentage would come
+     out near 10px, too small for four seams to survive, so it is floored — the
+     floor is reached only below about 500px of court, and takes the ball to
+     roughly three quarters of the ring rather than past it. */
+  width: clamp(15px, 3%, 30px);
+}
+
+.sg-ball__art {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* @end C */
+
+/* @owner:C running — steering pad and held spurt
+   The runner's own `bottom` is set inline from the simulation's lane, so the
+   frozen `.sg-play__runner` rule keeps owning everything else about it. */
+.sg-run-controls {
+  align-items: stretch;
+  display: flex;
+  gap: 0.5rem;
+}
+
+/* Four keys on a cross, so a thumb finds a direction without looking. The two
+   that matter most — left and right, which are the race — get the middle row
+   to themselves and the width that goes with it. */
+.sg-run-pad {
+  display: grid;
+  flex: 1 1 auto;
+  gap: 0.25rem;
+  grid-template-areas:
+    ". up ."
+    "left . right"
+    ". down .";
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.sg-run-pad__key {
+  background: transparent;
+  border: 1px solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.8rem;
+  line-height: 1;
+  min-height: 2rem;
+  padding: 0.35rem 0;
+  /* Stops a drag off the key turning into a page scroll mid-race, and stops a
+     double tap being read as a zoom. */
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-run-pad__key--up { grid-area: up; }
+.sg-run-pad__key--down { grid-area: down; }
+.sg-run-pad__key--left { grid-area: left; }
+.sg-run-pad__key--right { grid-area: right; }
+
+/* The spurt sits apart from the pad rather than in it: it is a different kind
+   of control — held, not aimed — and a thumb on it must never be near enough to
+   a direction key to catch one by accident. */
+.sg-run-sprint {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  flex: 0 0 7rem;
+  flex-direction: column;
+  gap: 0.2rem;
+  justify-content: center;
+  width: auto;
+}
+
+.sg-run-sprint span {
+  font-size: 0.42rem;
+  letter-spacing: 0.2em;
+  opacity: 0.7;
+}
+
+/* Held, by either a finger or the S key. */
+.sg-run-sprint[aria-pressed="true"] {
+  background: var(--loc-cream);
+}
+
+/* On a phone an existing rule moves the whole HUD from above the court to
+   below it, so anything the HUD gains in height falls off the bottom of the
+   screen. The pad gives that height back by flattening the cross into one row:
+   three rows of keys plus their gaps is 123px, one row is 44px, and the 73px
+   the taller layout overflowed by is comfortably inside the difference.
+
+   Left and right sit on the outside, where a thumb holding a phone already
+   rests, with the two lane keys inboard — the same ordering the arrow keys
+   have. Every key keeps the 44px minimum tap target the landscape layout
+   already sets for `.sg-play__action`. */
+@media (max-width: 640px) {
+  .sg-run-pad {
+    grid-template-areas: "left up down right";
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .sg-run-pad__key {
+    font-size: 0.9rem;
+    min-height: 2.75rem;
+  }
+
+  .sg-run-sprint {
+    flex-basis: 5.5rem;
+  }
+}
+
+/* @end C */
+
+/* @owner:D public golf board and the nickname box
+   Appended as its own block, prefixed `.sg-board-*` / `.sg-board__*` and
+   `.sg-name-*` / `.sg-name__*`, per the prefix ownership in OWNERSHIP.md. No
+   existing rule is edited. */
+
+/* Sits above the per-visit RANK panel, which keeps its own place: the two are
+   deliberately different things and are never merged into one list. */
+.sg-board {
+  background: rgb(34 31 26 / 95%);
+  border: 1px solid #57534a;
+  left: 50%;
+  max-width: min(92vw, 34rem);
+  padding: 1rem 1.2rem;
+  position: absolute;
+  top: 4%;
+  transform: translateX(-50%);
+  width: min(92vw, 34rem);
+  z-index: 7;
+}
+
+.sg-board__head {
+  align-items: baseline;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: space-between;
+}
+
+.sg-board__title {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.16em;
+  margin: 0;
+}
+
+.sg-board__scope,
+.sg-board__honesty {
+  color: #8d8578;
+  font-size: 0.46rem;
+  letter-spacing: 0.14em;
+  margin: 0;
+}
+
+/* The claim the board makes about itself. Never quiet, never optional. */
+.sg-board__honesty {
+  border-bottom: 1px solid #3a362f;
+  color: #b2a894;
+  margin: 0.5rem 0 0.6rem;
+  padding-bottom: 0.5rem;
+}
+
+.sg-board__table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  list-style: none;
+  margin: 0;
+  max-height: 34vh;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.sg-board__row {
+  align-items: baseline;
+  border-bottom: 1px solid rgb(87 83 74 / 35%);
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 1.6rem 1fr auto;
+  padding-bottom: 0.3rem;
+}
+
+/* The asking visitor's own row, marked without naming anyone. */
+.sg-board__row[data-you] {
+  background: rgb(201 138 82 / 14%);
+}
+
+.sg-board__rank {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 0.72rem;
+}
+
+.sg-board__name {
+  color: var(--loc-cream);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  overflow-wrap: anywhere;
+}
+
+.sg-board__strokes {
+  color: var(--loc-cream);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+
+.sg-board__strokes small {
+  color: #8d8578;
+  font-size: 0.4rem;
+  letter-spacing: 0.12em;
+}
+
+.sg-board__aside {
+  color: #8d8578;
+  font-size: 0.42rem;
+  grid-column: 2 / -1;
+  letter-spacing: 0.12em;
+}
+
+.sg-board__state {
+  color: #b2a894;
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+  margin: 0.6rem 0 0;
+  text-align: center;
+}
+
+.sg-board__state--error {
+  color: #d99a6c;
+}
+
+.sg-board__state--ok {
+  color: var(--loc-orange);
+}
+
+.sg-board__state button {
+  margin-top: 0.5rem;
+}
+
+.sg-board__yours {
+  border-top: 1px solid #3a362f;
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  text-align: center;
+}
+
+/* ATTEMPT and TOTAL STROKES are named in full, because SHOT, TOTAL STROKES,
+   ATTEMPT, RANK and VISITOR NUMBER are five different numbers. */
+.sg-board__attempt {
+  color: #8d8578;
+  display: flex;
+  font-size: 0.46rem;
+  justify-content: space-between;
+  letter-spacing: 0.14em;
+  margin: 0 0 0.6rem;
+}
+
+.sg-board__attempt span {
+  color: var(--loc-cream);
+}
+
+/*
+ * When the public board is on screen, the per-visit panel moves out from
+ * behind it and sits underneath.
+ *
+ * The two are deliberately separate things — one is best-per-player across
+ * everyone, the other is this visitor's own attempts — and they were reading
+ * as one smudged panel because both are absolutely positioned near the top.
+ * The selector is anchored on this session's own class and only matches when
+ * the board is rendered, so the frozen `.sg-rank` rule is untouched and every
+ * other sport's RANK beat is exactly where it was.
+ */
+.sg-board ~ .sg-rank {
+  bottom: 4%;
+  top: auto;
+}
+
+/* ── The nickname box ───────────────────────────────────────────────────── */
+
+.sg-name {
+  max-width: min(92vw, 26rem);
+}
+
+.sg-name__label {
+  color: #8d8578;
+  display: block;
+  font-size: 0.46rem;
+  letter-spacing: 0.16em;
+  margin: 0.4rem 0 0.35rem;
+}
+
+.sg-name__input {
+  background: #14110d;
+  border: 1px solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  /* 16px keeps iOS Safari from zooming the page when the field takes focus. */
+  font-size: 16px;
+  padding: 0.5rem 0.6rem;
+  width: 100%;
+}
+
+.sg-name__preview {
+  color: var(--loc-cream);
+  font-size: 0.52rem;
+  letter-spacing: 0.12em;
+  margin: 0.7rem 0 0.3rem;
+  overflow-wrap: anywhere;
+}
+
+.sg-name__preview strong {
+  color: var(--loc-orange);
+}
+
+.sg-name__scope {
+  color: #8d8578;
+  font-size: 0.46rem;
+  line-height: 1.7;
+  margin: 0 0 0.6rem;
+}
+
+.sg-name__error {
+  color: #d99a6c;
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.5rem;
+}
+
+.sg-name__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+/* A phone has the board and the RANK panel competing for one screen, so the
+   board gives up its own height rather than overlapping. */
+@media (max-width: 640px) {
+  .sg-board {
+    padding: 0.8rem 0.9rem;
+    top: 2%;
+  }
+
+  .sg-board__table {
+    max-height: 26vh;
+  }
+
+  .sg-board__head {
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+}
+
+/* ── The world's right-hand exit ────────────────────────────────────────── */
+
+/* The gate is the only interactable that stands at the camera's right-hand
+   clamp, so it is the only one whose centred prompt has nothing to its right
+   to overflow into — measured at 1440x900, the chip ran 6px past the viewport.
+   Anchoring this one prompt to the gate's right post instead of its centre
+   keeps it on screen without moving the gate off the end of the world or
+   touching the shared rule every other object uses. */
+.world-object[data-object-id="world-exit"] .world-object__prompt {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+/* The fireworks sit behind the words and are decorative: `aria-hidden`, no
+   pointer events, and never the thing that has to be read. */
+.sg-exit__backdrop {
+  overflow: hidden;
+}
+
+.sg-exit__sky {
+  height: min(60vh, 40rem);
+  image-rendering: pixelated;
+  left: 50%;
+  opacity: 0.9;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(96vw, 70rem);
+}
+
+.sg-exit {
+  max-width: min(92vw, 26rem);
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+.sg-exit__bye {
+  color: var(--loc-orange, #c98a52);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
+  margin: 0 0 0.5rem;
+}
+
+.sg-exit__line {
+  font-size: 0.8rem;
+  line-height: 1.7;
+  margin: 0 0 1.2rem;
+}
+
+.sg-exit__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.sg-exit__hint {
+  color: #8d8578;
+  font-size: 0.46rem;
+  letter-spacing: 0.16em;
+  margin: 1rem 0 0;
+}
+
+/* @end D */

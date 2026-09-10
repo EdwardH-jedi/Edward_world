@@ -33,6 +33,8 @@ export function InteractionDialog({ action, onClose }: InteractionDialogProps) {
 
   // Locations are opened as full experiences by the router, never as a dialog.
   if (action.type === "OPEN_LOCATION") return null;
+  // Leaving has its own farewell scene, for the same reason.
+  if (action.type === "LEAVE_WORLD") return null;
 
   const title = action.heading;
   const body = action.type === "READ" ? action.text : action.body;

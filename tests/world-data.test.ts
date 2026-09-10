@@ -82,7 +82,15 @@ describe("finished public world", () => {
         ...initialPlayer,
         position: { ...initialPlayer.position, x },
       };
-      expect(findNearestInteractable(walker, worldObjects), `target at x=${x}`).toBeUndefined();
+      // The scaffolding is never a target. The walk deliberately runs 72px
+      // past its right edge, which now reaches the world's exit gate — so the
+      // claim is stated as what it always meant: nothing here is interactable
+      // except the exit, and never the scaffolding.
+      const found = findNearestInteractable(walker, worldObjects);
+      expect(found?.id, `target at x=${x}`).not.toBe("construction-area");
+      if (found !== undefined) {
+        expect(found.id, `target at x=${x}`).toBe("world-exit");
+      }
     }
   });
 

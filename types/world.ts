@@ -25,7 +25,16 @@ export type InteractionAction =
   | { type: "OPEN_PROJECT"; projectId: PortfolioProjectId }
   | { type: "OPEN_LOCATION"; locationId: WorldLocationId }
   | { type: "OPEN_INFO"; heading: string; body: string }
-  | { type: "READ"; heading: string; text: string };
+  | { type: "READ"; heading: string; text: string }
+  /**
+   * Finish the visit.
+   *
+   * Its own action rather than an `OPEN_*`: nothing is being opened, no
+   * project is involved, and the tests that pin the world's four project
+   * entrances and its one location would have to be loosened to admit a fake
+   * fifth. It closes nothing and locks nothing — see `data/world.ts`.
+   */
+  | { type: "LEAVE_WORLD" };
 
 export interface Interactable {
   interactionRange: number;
