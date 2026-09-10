@@ -1,0 +1,100 @@
+
+$ node --version
+v24.19.0
+exit=0
+
+$ npm --version
+11.17.0
+exit=0
+
+$ npm run lint
+
+> edwards-world@0.1.0 lint
+> eslint . --max-warnings 0
+
+exit=0
+
+$ npm run typecheck
+
+> edwards-world@0.1.0 typecheck
+> tsc --noEmit
+
+exit=0
+
+$ npm test
+
+> edwards-world@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 /Users/edwardhwang/Desktop/Edward_world
+
+
+ Test Files  45 passed (45)
+      Tests  697 passed (697)
+   Start at  20:10:35
+   Duration  2.31s (transform 1.97s, setup 0ms, import 2.72s, tests 4.25s, environment 3ms)
+
+exit=0
+
+$ npm test -- tests/basketball-ball-art.test.ts tests/golf-art.test.ts tests/golf-board.test.ts tests/golf-component.test.ts tests/golf-course.test.ts tests/golf-hole.test.ts tests/minigames.test.ts tests/qa-e-abandoned-run.test.ts tests/qa-e-schedule.test.ts tests/qa-e-tennis-serve.test.ts tests/qa-e2-tennis-rally-integrity.test.ts tests/running-controls.test.ts tests/sportsgang-foundation.test.ts tests/sportsgang-machine.test.ts tests/sportsgang-playthrough.test.ts tests/sportsgang-standings.test.ts tests/tennis-anchor.test.ts tests/tennis-schedule.test.ts tests/tennis-swings.test.ts tests/world-exit.test.ts
+
+> edwards-world@0.1.0 test
+> vitest run tests/basketball-ball-art.test.ts tests/golf-art.test.ts tests/golf-board.test.ts tests/golf-component.test.ts tests/golf-course.test.ts tests/golf-hole.test.ts tests/minigames.test.ts tests/qa-e-abandoned-run.test.ts tests/qa-e-schedule.test.ts tests/qa-e-tennis-serve.test.ts tests/qa-e2-tennis-rally-integrity.test.ts tests/running-controls.test.ts tests/sportsgang-foundation.test.ts tests/sportsgang-machine.test.ts tests/sportsgang-playthrough.test.ts tests/sportsgang-standings.test.ts tests/tennis-anchor.test.ts tests/tennis-schedule.test.ts tests/tennis-swings.test.ts tests/world-exit.test.ts
+
+
+ RUN  v4.1.11 /Users/edwardhwang/Desktop/Edward_world
+
+
+ Test Files  20 passed (20)
+      Tests  389 passed (389)
+   Start at  20:10:37
+   Duration  1.04s (transform 1.29s, setup 0ms, import 1.88s, tests 1.37s, environment 1ms)
+
+exit=0
+
+$ npm run build
+
+> edwards-world@0.1.0 build
+> next build
+
+▲ Next.js 16.3.3 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.ts took 11ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 674ms
+  Running TypeScript ...
+  Finished TypeScript in 1711ms ...
+  Collecting page data using 10 workers ...
+  Generating static pages using 10 workers (0/10) ...
+  Generating static pages using 10 workers (2/10)
+  Generating static pages using 10 workers (4/10)
+  Generating static pages using 10 workers (7/10)
+✓ Generating static pages using 10 workers (10/10) in 266ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/joins
+├ ƒ /api/sportsgang/golf-board
+├   /case-studies/[slug]
+│ ├ ● /case-studies/sportsgang
+│ ├ ● /case-studies/afl-predict
+│ ├ ● /case-studies/wardrobe
+│ └ ● /case-studies/soonpermario
+├ ○ /manifest.webmanifest
+├ ○ /resume
+└ ○ /robots.txt
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+exit=0
+
+$ git diff --check
+
+exit=0

@@ -1,0 +1,68 @@
+[
+  {
+    "branch": "polish/sg-00-foundation",
+    "path": "/Users/edwardhwang/Desktop/Edward_world-sg-00",
+    "sha": "cdd593d6018fefbc0e3cbb6038bba9eda302a677",
+    "unique_to_qa": 0,
+    "classification": "A fully contained; clean",
+    "worktree": "REMOVED",
+    "remove_output": "",
+    "branch_cleanup": "DELETED",
+    "branch_output": "Deleted branch polish/sg-00-foundation (was cdd593d).\n"
+  },
+  {
+    "branch": "polish/sg-a-tennis",
+    "path": "/Users/edwardhwang/Desktop/Edward_world-sg-a",
+    "sha": "a53f950f34939897e6b398fdf39a0dd9c9de6f8f",
+    "unique_to_qa": 0,
+    "classification": "A fully contained; clean",
+    "worktree": "REMOVED",
+    "remove_output": "",
+    "branch_cleanup": "DELETED",
+    "branch_output": "Deleted branch polish/sg-a-tennis (was a53f950).\n"
+  },
+  {
+    "branch": "polish/sg-b-golf",
+    "path": "/Users/edwardhwang/Desktop/Edward_world-sg-b",
+    "sha": "1488c08a576fbe8992c329e5a374968367ed0264",
+    "unique_to_qa": 0,
+    "classification": "A fully contained; clean",
+    "worktree": "REMOVED",
+    "remove_output": "",
+    "branch_cleanup": "DELETED",
+    "branch_output": "Deleted branch polish/sg-b-golf (was 1488c08).\n"
+  },
+  {
+    "branch": "polish/sg-c-ball-running",
+    "path": "/Users/edwardhwang/Desktop/Edward_world-sg-c",
+    "sha": "9a0a4c88a3df8246fa68282a22aa9dc867d59c57",
+    "unique_to_qa": 0,
+    "classification": "A fully contained; clean",
+    "worktree": "REMOVED",
+    "remove_output": "",
+    "branch_cleanup": "DELETED",
+    "branch_output": "Deleted branch polish/sg-c-ball-running (was 9a0a4c8).\n"
+  },
+  {
+    "branch": "polish/sg-d-integration",
+    "path": "/Users/edwardhwang/Desktop/Edward_world-sg-d",
+    "sha": "97c494499524827e60a86fab871d743167064028",
+    "unique_to_qa": 0,
+    "classification": "A fully contained; clean",
+    "worktree": "REMOVED",
+    "remove_output": "",
+    "branch_cleanup": "DELETED",
+    "branch_output": "Deleted branch polish/sg-d-integration (was 97c4944).\n"
+  },
+  {
+    "branch": "qa/sg-e",
+    "path": "/Users/edwardhwang/Desktop/Edward_world-sg-e",
+    "sha": "34d0f658c8e1bf4ebe7ceac78f50fa1c7205efa4",
+    "unique_to_qa": 0,
+    "classification": "A fully contained; clean",
+    "worktree": "REMOVED",
+    "remove_output": "",
+    "branch_cleanup": "DELETED",
+    "branch_output": "Deleted branch qa/sg-e (was 34d0f65).\n"
+  }
+]

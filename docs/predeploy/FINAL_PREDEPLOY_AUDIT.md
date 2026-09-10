@@ -1,5 +1,7 @@
 # Final pre-deployment independent audit
 
+Historical pre-integration audit. For the subsequently integrated canonical main candidate, see [SPORTSGANG_INTEGRATION_REPORT.md](SPORTSGANG_INTEGRATION_REPORT.md).
+
 Date: 2026-09-10 (Australia/Sydney).
 
 **NOT_READY — canonical main does not contain the completed SPORTSGANG polish.**

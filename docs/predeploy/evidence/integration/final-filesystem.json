@@ -1,0 +1,24 @@
+{
+  "candidate_application_sha": "1882710a5c103ca25ad1bfd57dce66b6862b35cd",
+  "owner_file_hashes_unchanged": true,
+  "owner_files": {
+    "docs/VISUAL_POLISH_PASS_2026-09-03.md": "4b2d2d23560ae411b51045f749a6853946c4eb717b436c750b7c49e191e2c9c5",
+    "docs/WORK_SAMPLE_READINESS_AUDIT.md": "a6c63cd2553186cd305f0a48454b831b847ea2e1e59bb908efb355db8ad22262",
+    "docs/visual-polish/F-contact-sheet.png": "d04601464eae237d680dca087dea1e65e8011024c1ca562ece3ceef9d9e7acb8",
+    "docs/visual-polish/cmp-A1-directions.png": "7e9cf063f632d7b373e723212e0d8f22ecd7aaebbc56f2ab92ee599589191564",
+    "docs/visual-polish/cmp-A1-tomodachi.png": "68637a289a834fb1df4d5b5665c55192565bdf34ca5af2718fed8553ffbf94cb",
+    "docs/visual-polish/cmp-A2-ball-full.png": "85c2ccc678f3cb4c745c219bb5c1822b7ef2b20f6add72c964e5c36763068846",
+    "docs/visual-polish/cmp-A2-ball-zoom.png": "41e013c4ba64b675fd8ba089972c439d905f81c486128412b879d336e5ea1dc4",
+    "scripts/check-browser-env.sh": "5e95ba7cc565f526053885efb2b31fd9d5763918d945ad01edd5b651df9d9235"
+  },
+  "remaining_folders": [
+    "/Users/edwardhwang/Desktop/Edward_world",
+    "/Users/edwardhwang/Desktop/Edward_world-bgm",
+    "/Users/edwardhwang/Desktop/Edward_world-character",
+    "/Users/edwardhwang/Desktop/Edward_world-feel",
+    "/Users/edwardhwang/Desktop/Edward_world-tennis",
+    "/Users/edwardhwang/Desktop/Edward_world-visitor"
+  ],
+  "worktrees": "worktree /Users/edwardhwang/Desktop/Edward_world\nHEAD 1882710a5c103ca25ad1bfd57dce66b6862b35cd\nbranch refs/heads/main\n\nworktree /Users/edwardhwang/Desktop/Edward_world-bgm\nHEAD 4cb86859a40b1fc38bc64af9951149f82e43e2b3\nbranch refs/heads/feat/bgm-feel-polish\n\nworktree /Users/edwardhwang/Desktop/Edward_world-character\nHEAD 1a9685d3326d5e4be8c47bee42c88f666dce4b16\nbranch refs/heads/feat/character-avatar\n\nworktree /Users/edwardhwang/Desktop/Edward_world-feel\nHEAD 116693994aa4670c05b5db2a34b60643b1f55d39\nbranch refs/heads/feat/feel-calibration\n\nworktree /Users/edwardhwang/Desktop/Edward_world-tennis\nHEAD 57baebe346cb6a5a8b70fc74359f082547c99253\nbranch refs/heads/feat/sportsgang-tennis\n\nworktree /Users/edwardhwang/Desktop/Edward_world-visitor\nHEAD 39dc7415b3628ecdeafb5285cdca6d8050c614d1\nbranch refs/heads/feat/visitor-counter\n\n",
+  "git_status": "?? docs/VISUAL_POLISH_PASS_2026-09-03.md\n?? docs/WORK_SAMPLE_READINESS_AUDIT.md\n?? docs/predeploy/evidence/integration/\n?? docs/visual-polish/\n?? scripts/\n"
+}
