@@ -102,6 +102,16 @@ export function resolveBgmState(conditions: BgmConditions): BgmState {
   return conditions.surface === "world" ? "PLAYING" : "DUCKED";
 }
 
+/**
+ * Whether a sound effect may sound. Effects share the music's one switch: the
+ * visitor's mute, a failure, or a context no gesture has unlocked all mean silence.
+ */
+export function sfxAudible(
+  conditions: Pick<BgmConditions, "unlocked" | "muted" | "failed">,
+) {
+  return conditions.unlocked && !conditions.muted && !conditions.failed;
+}
+
 /** The gain the master node should be ramping toward, right now. */
 export function targetVolume(surface: BgmSurface, muted: boolean) {
   return muted ? 0 : SURFACE_VOLUME[surface];

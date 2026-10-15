@@ -12,6 +12,7 @@ import { SportsgangExperience } from "@/components/sportsgang/sportsgang-experie
 import { WardrobeExperience } from "@/components/wardrobe/wardrobe-experience";
 import { InteractionDialog } from "@/components/world/interaction-dialog";
 import { MainWorld } from "@/components/world/main-world";
+import { SceneDissolve } from "@/components/world/scene-dissolve";
 import { WorldIndexControl } from "@/components/world/world-index-control";
 import { setBgmSurface, startBgm } from "@/lib/audio/bgm-engine";
 import { getPortfolioEntryView } from "@/lib/game/portfolio-entry";
@@ -184,6 +185,7 @@ export function PortfolioExperience() {
         />
       ) : null}
       {indexOpen ? <PortfolioIndex onClose={closeIndex} /> : null}
+      <SceneDissolve sceneKey={`${activeLocation}|${activeProjectExperience}`} />
       {activeInteraction ? (
         <InteractionDialog action={activeInteraction} onClose={closeInteraction} />
       ) : null}

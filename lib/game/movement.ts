@@ -28,12 +28,15 @@ export function getCameraX({
   playerWidth,
   viewportWidth,
   worldWidth,
+  lookAhead = 0,
 }: {
   playerX: number;
   playerWidth: number;
   viewportWidth: number;
   worldWidth: number;
+  /** Signed authored pixels the view leads the player by; still clamped to the world. */
+  lookAhead?: number;
 }) {
-  const desiredOffset = playerX + playerWidth / 2 - viewportWidth / 2;
+  const desiredOffset = playerX + playerWidth / 2 - viewportWidth / 2 + lookAhead;
   return clamp(desiredOffset, 0, Math.max(0, worldWidth - viewportWidth));
 }
