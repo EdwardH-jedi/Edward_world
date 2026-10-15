@@ -6275,3 +6275,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 }
 
 /* @end D */
+
+/* The name gate, run over Edward's House by THE MONOLITH. */
+.intro-screen--gate {
+  inset: 0;
+  position: fixed;
+  z-index: 20;
+}

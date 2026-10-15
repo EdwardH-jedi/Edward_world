@@ -45,6 +45,7 @@ const THING_IDS: readonly HouseThingId[] = [
   "pc",
   "closet",
   "window",
+  "monolith",
 ];
 
 /** Every reveal state the room can be caught in, including mid-animation. */
@@ -144,7 +145,7 @@ describe("the room stays inside its own walls", () => {
   });
 });
 
-describe("the seven things", () => {
+describe("the things in the room", () => {
   it("places every hotspot inside the room", () => {
     for (const id of THING_IDS) {
       const bounds = HOUSE_THING_BOUNDS[id];

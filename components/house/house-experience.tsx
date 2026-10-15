@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMinigameInput } from "@/components/sportsgang/minigames/use-minigame-input";
+import { MonolithGate } from "@/components/house/monolith-gate";
 import { useDialogFocus } from "@/components/ui/accessible-dialog";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { getProjectById } from "@/data/projects";
@@ -122,7 +123,20 @@ const THINGS: readonly Thing[] = [
     surface: "paper",
     lines: ["A lot of ideas started late at night with this view."],
   },
+  // The easter egg: no card of its own - looking at it runs the name gate.
+  {
+    id: "monolith",
+    label: "THE MONOLITH",
+    heading: "THE MONOLITH",
+    closeLabel: "STEP BACK",
+    surface: "paper",
+    lines: [],
+  },
 ];
+
+/** Not one of the seven things on the room's list, so it is not counted in it. */
+const EASTER_EGG: HouseThingId = "monolith";
+const COUNTED_THINGS = THINGS.filter((thing) => thing.id !== EASTER_EGG);
 
 /** What the summoner card on the PC screen says. Static, and staying static. */
 const CLIENT_FIELDS: readonly (readonly [string, string])[] = [
@@ -159,6 +173,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
   const [openId, setOpenId] = useState<HouseThingId | null>(null);
   const [seen, setSeen] = useState<readonly HouseThingId[]>([]);
   const [reveal, setReveal] = useState<HouseReveal>({});
+  const [gateOpen, setGateOpen] = useState(false);
 
   const rootRef = useRef<HTMLElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -166,7 +181,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const thingRefs = useRef(new Map<HouseThingId, HTMLButtonElement>());
 
-  const { consume } = useMinigameInput(openId === null);
+  const { consume } = useMinigameInput(openId === null && !gateOpen);
   const ambientFrame = useAmbientFrame(true);
   const reducedMotion = useReducedMotion();
 
@@ -187,11 +202,19 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
 
   const look = useCallback((id: HouseThingId) => {
     triggerRef.current = thingRefs.current.get(id) ?? null;
+    if (id === EASTER_EGG) {
+      setGateOpen(true);
+      return;
+    }
     setOpenId(id);
     setSeen((current) => (current.includes(id) ? current : [...current, id]));
   }, []);
 
   const close = useCallback(() => setOpenId(null), []);
+  const closeGate = useCallback(() => {
+    setGateOpen(false);
+    triggerRef.current?.focus();
+  }, []);
 
   useDialogFocus({
     active: open !== null,
@@ -209,6 +232,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
+      if (gateOpen) return;
       if (event.key === "Escape") {
         event.preventDefault();
         if (!openId) onExit();
@@ -221,9 +245,9 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [look, nearest, onExit, openId]);
+  }, [gateOpen, look, nearest, onExit, openId]);
 
-  useGameLoop(openId === null, (delta) => {
+  useGameLoop(openId === null && !gateOpen, (delta) => {
     const input = consume();
     const direction = (input.right ? 1 : 0) - (input.left ? 1 : 0);
     setWalking(direction !== 0);
@@ -320,7 +344,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
     >
       <button
         className="loc-exit"
-        inert={open ? true : undefined}
+        inert={open || gateOpen ? true : undefined}
         onClick={onExit}
         type="button"
       >
@@ -340,7 +364,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
           hotspot can never drift away from the thing it belongs to. */}
       <div
         className="hs-room"
-        inert={open ? true : undefined}
+        inert={open || gateOpen ? true : undefined}
         style={{
           aspectRatio: `${HOUSE_ART_SIZE.width} / ${HOUSE_ART_SIZE.height}`,
         }}
@@ -407,14 +431,17 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
         </div>
       </div>
 
-      {!open ? (
+      {!open && !gateOpen ? (
         <div className="hs-hint">
           <p>{nearest ? `${nearest.label} · E TO LOOK` : "A / D TO WALK · E TO LOOK"}</p>
           <p className="hs-hint__progress">
-            {seen.length} OF {THINGS.length} LOOKED AT
+            {seen.filter((id) => id !== EASTER_EGG).length} OF{" "}
+            {COUNTED_THINGS.length} LOOKED AT
           </p>
         </div>
       ) : null}
+
+      {gateOpen ? <MonolithGate onClose={closeGate} onSolved={onExit} /> : null}
 
       {open ? (
         <div
