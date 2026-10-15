@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useUnitChipWidth } from "@/components/world/world-label";
 import { animateElement, motionPresets } from "@/lib/motion/animate-element";
 
 /**
@@ -8,8 +9,18 @@ import { animateElement, motionPresets } from "@/lib/motion/animate-element";
  * Re-animates whenever the target changes so walking along the path reads as a
  * sequence of small arrivals.
  */
-export function InteractionPrompt({ text }: { text: string }) {
+export function InteractionPrompt({
+  text,
+  unit,
+  anchorUnits,
+}: {
+  text: string;
+  unit: number;
+  /** The object's width in art pixels, which the prompt is centred on. */
+  anchorUnits: number;
+}) {
   const promptRef = useRef<HTMLSpanElement>(null);
+  useUnitChipWidth(promptRef, unit, anchorUnits, text);
 
   useEffect(() => {
     if (!promptRef.current) return;

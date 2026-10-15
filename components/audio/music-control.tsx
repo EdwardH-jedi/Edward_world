@@ -2,6 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { BGM_TITLE } from "@/lib/audio/bgm";
+import { usePixelUnit } from "@/lib/game/use-pixel-unit";
 import {
   getBgmServerSnapshot,
   getBgmSnapshot,
@@ -56,6 +57,7 @@ export function MusicToggle({ inline = false }: { inline?: boolean }) {
     getBgmServerSnapshot,
   );
   const unavailable = state === "ERROR";
+  const unit = usePixelUnit();
 
   return (
     <button
@@ -65,6 +67,7 @@ export function MusicToggle({ inline = false }: { inline?: boolean }) {
       data-state={state.toLowerCase()}
       disabled={unavailable}
       onClick={toggleBgmMuted}
+      style={{ "--unit": `${unit}px` } as React.CSSProperties}
       title={unavailable ? "Music unavailable" : BGM_TITLE}
       type="button"
     >

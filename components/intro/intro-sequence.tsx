@@ -21,7 +21,7 @@ import {
   SOCKET_COUNT,
   type NameGateState,
 } from "@/lib/game/name-gate";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
+import { usePixelUnit } from "@/lib/game/use-pixel-unit";
 import { driveValue } from "@/lib/motion/intro-choreography";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
@@ -65,6 +65,7 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
 
   const reduced = useReducedMotion();
   const frame = useAmbientFrame(stage !== "TITLE");
+  const unit = usePixelUnit();
 
   // Stage progression is on timers — except the gate, which waits for a person.
   useEffect(() => {
@@ -225,7 +226,11 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
   const asking = stage === "TYPING";
 
   return (
-    <main className="intro-screen" data-stage={stage}>
+    <main
+      className="intro-screen"
+      data-stage={stage}
+      style={{ "--unit": `${unit}px` } as React.CSSProperties}
+    >
       <div className="intro-stage">
         {panning ? (
           <PixelCanvas
@@ -235,7 +240,7 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
             draw={drawPan}
             fill
             frame={frame}
-            unit={PIXEL_UNIT}
+            unit={unit}
           />
         ) : (
           <PixelCanvas
@@ -245,7 +250,7 @@ export function IntroSequence({ onComplete, onOpenIndex }: IntroSequenceProps) {
             draw={drawClearing}
             fill
             frame={frame}
-            unit={PIXEL_UNIT}
+            unit={unit}
           />
         )}
 
