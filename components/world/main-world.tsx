@@ -15,7 +15,9 @@ import { getGroundYForFootprint, PIXEL_UNIT } from "@/lib/game/terrain";
 import { snapToCss, toCss, usePixelUnit } from "@/lib/game/use-pixel-unit";
 import { formatJoinLine } from "@/lib/joins/ordinal";
 import { useJoinTotal } from "@/lib/joins/use-join-total";
-import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
+import { play } from "@/lib/audio/sfx";
+import { prefersReducedMotion } from "@/lib/motion/animate-element";
+import { AMBIENT_FRAME_MS, useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
 import { worldExitArt } from "@/lib/pixel/world-exit";
@@ -43,6 +45,12 @@ const MOVEMENT_KEYS = new Set(["a", "d", "arrowleft", "arrowright"]);
  */
 const SETTLE_MS = 420;
 
+/** The camera leads the player by one art pixel in the way he faces. */
+const LOOK_AHEAD = PIXEL_UNIT;
+
+/** Ambient frames the door stays open before the scene changes. */
+const DOOR_OPEN_FRAMES = 2;
+
 function getDirection(keys: ReadonlySet<string>): HorizontalDirection {
   const left = keys.has("a") || keys.has("arrowleft");
   const right = keys.has("d") || keys.has("arrowright");
@@ -66,6 +74,8 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   }));
   const [moving, setMoving] = useState(false);
   const [settled, setSettled] = useState(true);
+  // The building whose door is swinging open, and which of its two open frames.
+  const [opening, setOpening] = useState<{ id: string; step: 0 | 1 } | null>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
   const viewportRef = useRef<HTMLDivElement>(null);
   const pressedKeys = useRef(new Set<string>());
@@ -86,9 +96,14 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     return () => observer.disconnect();
   }, []);
 
+  // The door is a short scripted beat: the world listens to nothing until it ends.
+  const locked = disabled || opening !== null;
+  if (disabled && opening) setOpening(null);
+  const openingId = opening?.id;
+
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
-      if (disabled) return;
+      if (locked) return;
       const key = event.key.toLowerCase();
       if (!MOVEMENT_KEYS.has(key)) return;
       event.preventDefault();
@@ -111,11 +126,11 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
       window.removeEventListener("keyup", handleKeyUp);
       window.removeEventListener("blur", clearKeys);
     };
-  }, [disabled]);
+  }, [locked]);
 
   useEffect(() => {
-    if (disabled) pressedKeys.current.clear();
-  }, [disabled]);
+    if (locked) pressedKeys.current.clear();
+  }, [locked]);
 
   // Settling is what lets him hold his walking stance for a beat before he
   // turns to face the visitor; moving un-settles him again from the frame loop.
@@ -130,7 +145,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     let lastTime = performance.now();
 
     function update(time: number) {
-      const direction = disabled ? 0 : getDirection(pressedKeys.current);
+      const direction = locked ? 0 : getDirection(pressedKeys.current);
       const deltaSeconds = Math.min((time - lastTime) / 1_000, 0.05);
       lastTime = time;
 
@@ -169,7 +184,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
 
     animationFrame = requestAnimationFrame(update);
     return () => cancelAnimationFrame(animationFrame);
-  }, [disabled]);
+  }, [locked]);
 
   const nearbyObject = useMemo(
     () => findNearestInteractable(player, worldObjects),
@@ -177,10 +192,34 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   );
 
   const openNearby = useCallback(() => {
-    if (disabled || !nearbyObject) return;
+    if (locked || !nearbyObject) return;
 
+    // A building opens its door first; the rest of the beat plays out below.
+    if (
+      nearbyObject.kind === "building" &&
+      buildingArt[nearbyObject.id].openDoor &&
+      !prefersReducedMotion()
+    ) {
+      play("door");
+      setOpening({ id: nearbyObject.id, step: 0 });
+      return;
+    }
     onInteraction(nearbyObject.interaction);
-  }, [disabled, nearbyObject, onInteraction]);
+  }, [locked, nearbyObject, onInteraction]);
+
+  // Two ambient frames of open door, then the scene change.
+  useEffect(() => {
+    if (!openingId) return;
+    const target = worldObjects.find((object) => object.id === openingId);
+    const timers = [
+      window.setTimeout(() => setOpening({ id: openingId, step: 1 }), AMBIENT_FRAME_MS),
+      window.setTimeout(() => {
+        setOpening(null);
+        if (target?.interaction) onInteraction(target.interaction);
+      }, DOOR_OPEN_FRAMES * AMBIENT_FRAME_MS),
+    ];
+    return () => timers.forEach((timer) => window.clearTimeout(timer));
+  }, [openingId, onInteraction]);
 
   useEffect(() => {
     function handleInteraction(event: KeyboardEvent) {
@@ -189,14 +228,14 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
       // way the farewell could fire without anyone asking for it. Holding E at
       // any other object used to re-fire too.
       if (event.repeat) return;
-      if (event.key.toLowerCase() !== "e" || !nearbyObject || disabled) return;
+      if (event.key.toLowerCase() !== "e" || !nearbyObject || locked) return;
       event.preventDefault();
       openNearby();
     }
 
     window.addEventListener("keydown", handleInteraction);
     return () => window.removeEventListener("keydown", handleInteraction);
-  }, [disabled, nearbyObject, openNearby]);
+  }, [locked, nearbyObject, openNearby]);
 
   /** Pointer controls, so the world is reachable without a keyboard. */
   const holdDirection = useCallback((key: "a" | "d", held: boolean) => {
@@ -211,9 +250,26 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     playerWidth: player.size.width,
     viewportWidth: (viewportWidth * PIXEL_UNIT) / unit,
     worldWidth: WORLD_CONFIG.width,
+    lookAhead: player.facing === "left" ? -LOOK_AHEAD : LOOK_AHEAD,
   });
 
   const walkFrame = getWalkFrame(player.position.x, PIXEL_UNIT, moving);
+
+  // A footstep on every other walk frame; the sound alternates its own pitch.
+  useEffect(() => {
+    if (moving && walkFrame % 2 === 0) play("footstep");
+  }, [moving, walkFrame]);
+
+  const openStep = opening?.step ?? 0;
+  const openDoorDraw = useMemo(() => {
+    const art = openingId ? buildingArt[openingId as keyof typeof buildingArt] : null;
+    const open = art?.openDoor;
+    if (!art || !open) return null;
+    return (draw: Parameters<typeof art.draw>[0], frame: number) => {
+      art.draw(draw, frame);
+      open(draw, openStep);
+    };
+  }, [openingId, openStep]);
 
   /**
    * The art rectangle, which is deliberately not the hitbox. `player.size` is
@@ -233,7 +289,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
    */
   const pose: EdwardPose = moving
     ? "walk"
-    : disabled && nearbyObject?.kind === "building"
+    : locked && nearbyObject?.kind === "building"
       ? "back"
       : nearbyObject
         ? "inspect"
@@ -302,7 +358,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
                 <PixelCanvas
                   artHeight={art.size.height}
                   artWidth={art.size.width}
-                  draw={art.draw}
+                  draw={object.id === openingId && openDoorDraw ? openDoorDraw : art.draw}
                   frame={ambientFrame}
                   unit={unit}
                 />

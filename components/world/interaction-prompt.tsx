@@ -2,12 +2,12 @@
 
 import { useEffect, useRef } from "react";
 import { useUnitChipWidth } from "@/components/world/world-label";
-import { animateElement, motionPresets } from "@/lib/motion/animate-element";
+import { play } from "@/lib/audio/sfx";
 
 /**
- * The proximity prompt that rises over whatever the player is standing next to.
- * Re-animates whenever the target changes so walking along the path reads as a
- * sequence of small arrivals.
+ * The proximity prompt that pops in over whatever the player is standing next
+ * to. It mounts once per target, so the two-step pop (CSS) and the blip both
+ * happen once per arrival.
  */
 export function InteractionPrompt({
   text,
@@ -23,15 +23,8 @@ export function InteractionPrompt({
   useUnitChipWidth(promptRef, unit, anchorUnits, text);
 
   useEffect(() => {
-    if (!promptRef.current) return;
-
-    const animation = animateElement(promptRef.current, motionPresets.enter, {
-      duration: 220,
-    });
-    return () => {
-      animation.revert();
-    };
-  }, [text]);
+    play("ui-blip");
+  }, []);
 
   return (
     <span className="world-object__prompt" ref={promptRef}>

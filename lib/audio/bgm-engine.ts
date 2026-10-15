@@ -8,6 +8,7 @@ import {
   BGM_TIMING,
   readMutePreference,
   rampMsFor,
+  sfxAudible,
   resolveBgmState,
   targetVolume,
   writeMutePreference,
@@ -336,6 +337,18 @@ export function resumeBgmIfInterrupted() {
   if (!e.context || !e.unlocked || e.failed) return;
   if (e.context.state === "running") return;
   void e.context.resume().catch(() => {});
+}
+
+/**
+ * The context one-shot sound effects share with the music, or null when audio
+ * is not allowed to make sound: not yet unlocked by a gesture, failed, or muted.
+ * Muting the music mutes the effects; there is one switch, not two.
+ */
+export function getSfxContext(): AudioContext | null {
+  const e = engine();
+  if (!e.context || !sfxAudible(e)) return null;
+  if (e.context.state !== "running") resumeBgmIfInterrupted();
+  return e.context;
 }
 
 /** Test seam. Not called by the app; the world never tears the music down. */
