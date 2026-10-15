@@ -38,10 +38,12 @@ export const chapters: readonly Chapter[] = [
   {
     id: "sydney",
     place: "Sydney, Australia",
-    years: "2022 – 2026",
+    // Wording confirmed by Edward on 2026-10-02. Enrolment, not a completion
+    // date: no graduation is claimed until one has actually happened.
+    years: "2022 – present",
     detail: [
       "University of Sydney.",
-      "Bachelor of Advanced Computing, Computer Science.",
+      "Currently enrolled: Bachelor of Advanced Computing (Computer Science).",
     ],
   },
   {

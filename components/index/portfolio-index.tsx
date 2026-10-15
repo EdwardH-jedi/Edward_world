@@ -106,8 +106,8 @@ export function PortfolioIndex({ onClose }: PortfolioIndexProps) {
       <section className="index-about" id="about">
         <h3>About</h3>
         <p>
-          Software developer in Sydney, finishing a Bachelor of Advanced
-          Computing (Computer Science) at the University of Sydney. Most
+          Software developer in Sydney, currently enrolled in a Bachelor of
+          Advanced Computing (Computer Science) at the University of Sydney. Most
           recently computer vision and field deployment at Sensorway — Ecopro in
           Hungary: around 750 sensors, Docker, data pipelines, a live rollout.
           Before Sydney: Jeju, and a research internship at Seoul National

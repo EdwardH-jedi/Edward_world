@@ -7,7 +7,7 @@ export const projects = [
     displayName: "SportsGang / Protin",
     shortDescriptor: "A mobile sports matchmaking and community product.",
     category: "Full-stack product",
-    githubUrl: "https://github.com/EdwardH-jedi/SportsGang",
+    githubUrl: "https://github.com/EdwardH-jedi/Sportsgang",
     caseStudyUrl: "/case-studies/sportsgang",
     worldBuildingId: "sportsgang",
     // Verified against the repository itself, not inferred.
@@ -43,10 +43,17 @@ export const projects = [
         "Keeping those rules in the backend makes the workflow auditable: the " +
         "client requests a change, and the server decides whether it is allowed. " +
         "Related records share a database commit with the booking update.",
+      // Evidence: Sportsgang docs/PORTFOLIO_FACTS.md (approval on 13 May 2026).
+      // The approval is a dated release record; it says nothing about which
+      // storefronts carry the app today or whether its backend is running.
       currentState:
         "The repository contains the mobile application, API, migrations and " +
-        "automated tests. Booking outcomes still depend on participant reports: " +
-        "the reputation system does not independently verify attendance.",
+        "automated tests. SportsGang v1.0 passed Apple App Review and was " +
+        "approved for App Store distribution on 13 May 2026. That approval is a " +
+        "release record, not a statement that the app is available in every " +
+        "country or that its backend is operating today. Booking outcomes still " +
+        "depend on participant reports: the reputation system does not " +
+        "independently verify attendance.",
       worldRepresentation:
         "Edward’s World presents bounded playable sports experiences inspired by " +
         "the product. They run locally in this portfolio; they do not connect to " +
@@ -109,7 +116,7 @@ export const projects = [
     displayName: "Wardrobe",
     shortDescriptor: "A local-first digital wardrobe and outfit experience.",
     category: "Full-stack product",
-    githubUrl: "https://github.com/EdwardH-jedi/wadrobe",
+    githubUrl: "https://github.com/EdwardH-jedi/wardrobe",
     caseStudyUrl: "/case-studies/wardrobe",
     worldBuildingId: "wardrobe",
     techStack: [
@@ -125,8 +132,8 @@ export const projects = [
     repositorySummary:
       "Local-first digital wardrobe — browser-persisted garment archive, " +
       "outfit composition, and a scoped proxy-3D experiment.",
-    // Evidence: wadrobe/src/app/providers/archiveReducer.ts,
-    // src/lib/storage/archiveStorage.ts and docs/PORTFOLIO_FACTS.md.
+    // Evidence: wardrobe/src/app/providers/archiveReducer.ts,
+    // src/lib/storage/archiveStorage.ts and docs/PROJECT_SCOPE.md.
     // World boundary: data/wardrobe.ts and components/wardrobe/.
     details: {
       problem:
@@ -164,7 +171,7 @@ export const projects = [
     displayName: "Soonpermario",
     shortDescriptor: "An interactive browser experiment in playful movement.",
     category: "Interactive experience",
-    githubUrl: "https://github.com/EdwardH-jedi/soonpermario",
+    githubUrl: "https://github.com/EdwardH-jedi/career-quest",
     caseStudyUrl: "/case-studies/soonpermario",
     worldBuildingId: "arcade",
     // The repository's own README: "pure HTML5 Canvas + vanilla JavaScript".
@@ -182,7 +189,7 @@ export const projects = [
       "The final flag is the graduate offer.",
       "The final boss, THE JOB, is damaged only by thrown skills.",
     ],
-    // Evidence: github.com/EdwardH-jedi/soonpermario (README.md, game.js,
+    // Evidence: github.com/EdwardH-jedi/career-quest (README.md, game.js,
     // index.html); embedded implementation: lib/game/arcade/platformer.ts.
     details: {
       problem:

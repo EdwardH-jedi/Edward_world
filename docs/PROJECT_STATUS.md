@@ -3,7 +3,10 @@
 Updated after every completed phase. For the task list, acceptance criteria and
 verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMAP.md).
 
-**Last updated:** 2026-09-05 · release-presentation pass — public README, case study, architecture refresh
+**Last updated:** 2026-10-02 · facts pass — enrolment wording, canonical repository links, SportsGang release record, recorded verification
+
+The phase table below was last revised on 2026-09-05. The SportsGang golf board,
+basketball and tennis work that followed is recorded in [`predeploy/`](./predeploy/).
 
 ---
 
@@ -32,7 +35,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 - **Title screen** — pixel Sydney at dusk with the monument still off-screen:
   harbour, bridge, terraces, canopy trees, first stars, drifting motes, and one
   faint warm glow past the right treeline. `Enter`, click or tap to start;
-  `SKIP TO INDEX →` for anyone who would rather read.
+  `VIEW PROJECTS →` for anyone who would rather read.
 - **Opening ritual** — the design's V4 eight-frame storyboard. `ENTER` pans the
   camera east to the shrine clearing; the name's letters pull free of a
   seventy-letter carved face and assemble into SOON HYUN HWANG; an inscription
@@ -42,7 +45,7 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
   go — channels every third letter, the apex ring at halfway, the braziers on
   the final word — and completion is a door, not a toast. The assembled name
   stays on screen the whole time: the gate tests presence, not memory. `ESC` or
-  `SKIP GATE` leaves for the world and `SKIP TO INDEX` for the index, at any
+  `SKIP GATE` leaves for the world and `VIEW PROJECTS` for the index, at any
   moment. The gate is a real text input sitting over the carved sockets, so it
   works on a phone — tap the slab and the native keyboard opens — and reads as
   a labelled control to assistive technology, while showing none of a form
@@ -118,14 +121,19 @@ Content, not code:
 
 ## Quality gates
 
-All four green as of 2026-09-05:
+Recorded runs are dated evidence for one commit, not for the current tree.
+The latest recorded full run is in the
+[10 September 2026 deployment report](./predeploy/FINAL_PRODUCTION_DEPLOY.md#verification),
+for commit `2b34ba9`:
 
 ```
-npm run lint        eslint . --max-warnings 0            clean
-npm run typecheck   tsc --noEmit                         clean
-npm test            27 files, 368 tests                  passing
-npm run build       production build, 10 routes          succeeds
+npm run lint        eslint . --max-warnings 0            PASS
+npm run typecheck   tsc --noEmit                         PASS
+npm test            46 files, 714 tests                  PASS
+npm run build       production build, 11 routes          PASS
 ```
+
+Re-run all four before relying on any count.
 
 ## How to run
 

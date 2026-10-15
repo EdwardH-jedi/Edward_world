@@ -26,6 +26,7 @@ no CSS framework and no component library; the runtime dependency list is
 | `lib/motion/` | anime.js choreography, the shared rAF loop, motion preferences |
 | `lib/audio/` | The background-music engine and its pure policy module |
 | `lib/joins/` | The visitor counter: store bindings, route response, client latch |
+| `lib/sportsgang-board/` | The optional public golf board: submission schema, ranking, anonymous device id, client, store bindings |
 | `lib/storage/` | Guarded `localStorage` access for the saved wardrobe look |
 | `data/` | Canonical content: projects, world geometry, biography, garments |
 | `types/` | Shared domain types |
@@ -39,6 +40,7 @@ no CSS framework and no component library; the runtime dependency list is
 | `/resume` | Static |
 | `/case-studies/[slug]` | SSG, one page per project via `generateStaticParams` |
 | `/api/joins` | Dynamic (`force-dynamic`). `GET` reads, `POST` increments |
+| `/api/sportsgang/golf-board` | Dynamic (`force-dynamic`). `GET` reads the ranked board, `POST` accepts a submitted golf run |
 | `/manifest.webmanifest`, `/robots.txt`, `/_not-found` | Static |
 
 `/resume` and `/case-studies/*` are real routes, not overlays, so the component
@@ -536,8 +538,10 @@ Marketplace Redis integration (Upstash) injects automatically, and the
 
 Both are **server-only**. They are read inside a route handler, never prefixed
 `NEXT_PUBLIC_`, and the token travels as an `Authorization: Bearer` header
-rather than in a URL, so it is never in a log line or a referrer. Nothing about
-the store reaches the browser except the integer itself.
+rather than in a URL, so it is never in a log line or a referrer. For the
+counter, nothing about the store reaches the browser except the integer itself;
+the [public golf board](#the-public-golf-board) reads the same pair and returns
+ranked rows.
 
 To provision on Vercel: add a Redis store from the Marketplace
 (`vercel integration add upstash` or the dashboard), connect it to the project,
@@ -549,7 +553,7 @@ unconfigured. The counter lives under one key, `edwards-world:joins`.
 
 `recordJoinOnce()` is called from `components/portfolio-experience.tsx` the
 first time the visitor actually holds the world, whichever of the three doors
-they came through (the intro's timed unlock, SKIP INTRO, SKIP TO INDEX). Two
+they came through (the intro's timed unlock, SKIP INTRO, VIEW PROJECTS). Two
 latches keep it to one:
 
 - A **module-scope flag** covers a single page load — React re-mounts freely
@@ -579,6 +583,32 @@ a count, the total stays `null` and `main-world.tsx` renders no line at all.
 There is no error state, no spinner, and no technical message; the world simply
 does not mention what number you are.
 
+## The public golf board
+
+The counter is not the only feature that talks to a server. After a completed
+SportsGang golf hole, a visitor may **choose** to submit the run to
+`/api/sportsgang/golf-board`. Nothing is sent, and no identifier is created,
+until they confirm.
+
+- **What is published:** the display name they confirmed (or `GUEST`) and the
+  run's score data. Both become visible to anyone who reads the board.
+- **What is stored but not published:** an anonymous device id generated in the
+  browser (`crypto.randomUUID()`) and the server's received time. `rankEntries`
+  strips the id from every public row. After a submission the board is read
+  with `?anonId=…` so the visitor's own row can be marked, which puts the id in
+  the request URL, where server access logs can see it.
+- **What it is not:** the board is casual and client-reported. The server
+  validates that a run is possible under its rules and owns the rank, but it
+  does not replay or independently verify gameplay.
+- **Store:** the same optional `KV_REST_API_*` / `UPSTASH_REDIS_REST_*` pair as
+  the counter, under its own key prefix. With no pair set, development uses a
+  process-local board labelled `LOCAL-ONLY`, and production answers `503
+  BOARD_UNAVAILABLE`. The panel then says the board is not available and that
+  the run was not submitted, rather than showing an empty board.
+
+Modes, keys, retention and provisioning steps are in the
+[storage reference](sportsgang-polish/STORAGE.md).
+
 ## Visual implementation seam
 
 Every surface now has its real art. World objects expose stable
@@ -599,8 +629,11 @@ Four gates. All four must pass before anything is called done.
 | `npm test` | `vitest run` |
 | `npm run build` | The production Next.js build, which type-checks again |
 
-**Last full run — 2026-09-05:** lint clean, typecheck clean, **368 tests across
-27 files passing**, production build succeeding with 10 routes generated.
+**Recorded runs are dated evidence, not a statement about the current tree.**
+The latest recorded full run is in the
+[10 September 2026 deployment report](predeploy/FINAL_PRODUCTION_DEPLOY.md#verification):
+lint, typecheck and build passing, and **714 tests across 46 files**, for commit
+`2b34ba9`. Re-run the four gates before relying on any count.
 
 ### What the suite covers, and why there
 
@@ -620,6 +653,9 @@ invisible are all pure, so they can be tested without a DOM at all.
   hitbox as a literal so a future avatar swap cannot silently move it.
 - **The join counter** — all three store bindings, the response contract, and
   the once-per-session client latch.
+- **The golf board** — nicknames, submission validation, ranking (including
+  that no anonymous id is returned), and the store adapters, without a real
+  store.
 - **Audio policy** — state resolution, target volumes, ramp durations and the
   loop-crossfade maths, all without an `AudioContext`.
 - **Content invariants** — `tests/projects.test.ts` and
@@ -644,17 +680,22 @@ could not have been found any other way.
 
 A standard Next.js 16 application. `npm run build` produces a production build
 and `npm start` serves it; any Node-compatible host that can run a Next.js
-application will run this one. Node 20.9 or newer, per Next's own floor.
+application will run this one. The repository pins Node 24.x (`.nvmrc` and
+`engines` in `package.json`).
 
-The application is **static apart from one route**. `/`, `/resume`, the four
-`/case-studies/*` pages, the manifest and `robots.txt` are all prerendered; only
-`/api/joins` is dynamic, and it is marked `force-dynamic` so the total is never
-baked into a static response.
+The application is **static apart from two API routes**. `/`, `/resume`, the
+four `/case-studies/*` pages, the manifest and `robots.txt` are all prerendered;
+`/api/joins` and `/api/sportsgang/golf-board` are dynamic, and both are marked
+`force-dynamic` so a total or a board is never baked into a static response.
 
 Nothing in this repository provisions infrastructure, and nothing is configured
 for a specific host. There are no build-time environment variables: the only
 environment the application reads is the optional Redis-compatible REST pair
-described above, read inside the route handler at request time. Without it the
-counter degrades to silence and every other part of the product is unaffected.
+described above, read inside the route handlers at request time. Without it the
+counter degrades to silence, the golf board reports itself unavailable, and
+every other part of the product is unaffected.
 
-There is no live deployment yet.
+The application is deployed to Vercel at `https://edwards-world.vercel.app`.
+The [10 September 2026 deployment report](predeploy/FINAL_PRODUCTION_DEPLOY.md)
+records that deployment and its golf board as `BLOCKED_CONFIG`; it is a dated
+record, not a live status check.
