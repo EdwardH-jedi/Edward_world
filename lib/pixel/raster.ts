@@ -107,6 +107,24 @@ export function windowPane(
   }
 }
 
+/** The 1px light line that marks a lit window as one you can walk into. */
+export function glowEdge(draw: Raster, x: number, y: number, width: number) {
+  draw(x, y, width, 1, palette.warmGlow);
+}
+
+/** A 1px door frame in the sign accent: lintel plus both jambs. */
+export function doorFrame(
+  draw: Raster,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+) {
+  draw(x - 1, y - 1, width + 2, 1, palette.signAccent);
+  draw(x - 1, y, 1, height, palette.signAccent);
+  draw(x + width, y, 1, height, palette.signAccent);
+}
+
 /**
  * The sign-band dash run. Signage is never readable text at world scale — the
  * real labels live on the DOM label chips, per the approved building language.
@@ -159,7 +177,7 @@ export function tree(
 export function lamp(draw: Raster, x: number, groundY: number, height = 18) {
   draw(x, groundY - height, 1, height, palette.char);
   draw(x, groundY - height, 3, 1, palette.char);
-  draw(x + 2, groundY - height + 1, 2, 2, palette.warm);
+  draw(x + 2, groundY - height + 1, 2, 2, palette.warmGlow);
 }
 
 /** A hollow wheel, used for the bicycle by Edward's door. */

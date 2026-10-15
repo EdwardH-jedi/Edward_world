@@ -125,11 +125,11 @@ describe("Edward sprite", () => {
     }
   });
 
-  it("keeps the recognisable traits: dark hair, skin, navy coat, brown bag", () => {
+  it("keeps the recognisable traits: dark hair, skin, blue coat, brown bag", () => {
     for (const pose of EDWARD_POSES) {
       const colors = new Set(record(edwardPoses[pose], 0).map((rect) => rect.color));
       expect(colors.has(palette.hair), `${pose} hair`).toBe(true);
-      expect(colors.has(palette.navy), `${pose} coat`).toBe(true);
+      expect(colors.has(palette.blue3), `${pose} coat`).toBe(true);
       expect(colors.has(palette.brown2), `${pose} bag`).toBe(true);
       expect(colors.has(palette.denim), `${pose} trousers`).toBe(true);
     }
