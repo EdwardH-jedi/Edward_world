@@ -154,7 +154,7 @@ export function smoke(draw: Raster, x: number, y: number, frame: number) {
   const lanes = [0, 2, 1] as const;
   for (let puff = 0; puff < 3; puff += 1) {
     const age = (frame + puff) % 4;
-    const size = age === 3 ? 1 : 2;
+    const size = age === 3 ? 1 : age === 2 ? 2 : 3;
     draw(x + lanes[puff] - (age > 1 ? 1 : 0), y - age * 3, size, size, SMOKE_AGES[age]);
   }
 }
