@@ -43,7 +43,7 @@ const ROOM_H = 90;
  * roughly the world's own four-CSS-pixels-per-art-pixel density on a laptop.
  */
 export const HOUSE_ART_SIZE = {
-  width: 328,
+  width: 344,
   height: CEILING_H + ROOM_H,
 } as const;
 
@@ -63,7 +63,7 @@ export const HOUSE_STAND_Y = CEILING_H + 78;
 /** The desk surface, and the shelf line the whole collection side hangs off. */
 const DESK_TOP = 46;
 
-/** The seven things worth looking at. */
+/** The seven things worth looking at, and the stone at the end of the room. */
 export type HouseThingId =
   | "collection"
   | "clarinet"
@@ -71,7 +71,8 @@ export type HouseThingId =
   | "sports"
   | "pc"
   | "closet"
-  | "window";
+  | "window"
+  | "monolith";
 
 /**
  * Where each thing physically is. The component positions its hotspot and
@@ -86,6 +87,7 @@ const ROOM_THING_BOUNDS: Readonly<Record<HouseThingId, ArtRect>> = {
   pc: { x: 220, y: 24, width: 30, height: 24 },
   closet: { x: 254, y: 20, width: 26, height: 46 },
   window: { x: 284, y: 6, width: 36, height: 36 },
+  monolith: { x: 324, y: 26, width: 16, height: 40 },
 };
 
 export const HOUSE_THING_BOUNDS: Readonly<Record<HouseThingId, ArtRect>> =
@@ -868,6 +870,22 @@ export function drawBedCorner(draw: Raster, frame: number, reveal: number): void
 
 /* ── The whole room ──────────────────────────────────────────────────────── */
 
+/**
+ * THE MONOLITH, small: a dark slab at the end of the room with a column of
+ * carved sockets that the ambient tick lights one at a time. It is the house's
+ * only easter egg, so it is drawn quietly - nothing about it asks to be found.
+ */
+export function drawMonolithProp(draw: Raster, frame: number): void {
+  draw(325, 27, 14, 39, palette.ink);
+  draw(326, 26, 12, 1, palette.char);
+  draw(327, 28, 10, 37, palette.char);
+  draw(325, FLOOR_Y - 1, 14, 1, palette.soilDark);
+  for (let socket = 0; socket < 5; socket += 1) {
+    const lit = (frame + socket) % 5 === 0;
+    draw(330, 32 + socket * 7, 4, 3, lit ? palette.warm : palette.stone3);
+  }
+}
+
 export function drawHouseRoom(
   draw: Raster,
   frame: number,
@@ -903,4 +921,5 @@ function drawHouseInterior(
   drawDeskPc(draw, frame, revealOf(reveal, "pc"));
   drawCloset(draw, revealOf(reveal, "closet"));
   drawBedCorner(draw, frame, revealOf(reveal, "window"));
+  drawMonolithProp(draw, frame);
 }

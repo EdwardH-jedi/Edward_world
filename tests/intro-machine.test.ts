@@ -2,53 +2,63 @@ import { describe, expect, it } from "vitest";
 import {
   getIntroStageDuration,
   getPanOffset,
+  getShrineStageDuration,
   INTRO_SCRIPTED_MS,
   INTRO_STAGE_TIMINGS,
-  isShrineStage,
   isTimedIntroStage,
+  isTimedShrineStage,
   MONOLITH_PHASE,
   nextIntroStage,
+  nextShrineStage,
   PAN_OFFSET,
+  SHRINE_SCRIPTED_MS,
+  SHRINE_STAGE_TIMINGS,
 } from "@/lib/game/intro-machine";
-import { INTRO_STAGES } from "@/types/intro";
+import { INTRO_STAGES, SHRINE_STAGES, type ShrineStage } from "@/types/intro";
 
-describe("intro state machine", () => {
-  it("advances through the declared sequence and stops at WORLD", () => {
-    for (let index = 0; index < INTRO_STAGES.length - 1; index += 1) {
-      expect(nextIntroStage(INTRO_STAGES[index])).toBe(INTRO_STAGES[index + 1]);
+describe("the default path: title, pan, world", () => {
+  it("is exactly TITLE -> PAN -> WORLD, with no shrine stage on it", () => {
+    expect([...INTRO_STAGES]).toEqual(["TITLE", "PAN", "WORLD"]);
+    const walked = ["TITLE"];
+    let stage: (typeof INTRO_STAGES)[number] = "TITLE";
+    while (stage !== "WORLD") {
+      stage = nextIntroStage(stage);
+      walked.push(stage);
     }
-    expect(nextIntroStage("WORLD")).toBe("WORLD");
+    expect(walked).toEqual(["TITLE", "PAN", "WORLD"]);
   });
 
-  it("has a positive centralized timing for each automatic stage", () => {
-    const timedStages = INTRO_STAGES.filter(isTimedIntroStage);
-    expect(timedStages).toHaveLength(6);
-    for (const stage of timedStages) {
-      expect(INTRO_STAGE_TIMINGS[stage]).toBeGreaterThan(0);
-    }
+  it("holds the pan to 900 ms or less, and that is all it performs", () => {
+    expect(INTRO_STAGE_TIMINGS.PAN).toBeGreaterThan(0);
+    expect(INTRO_STAGE_TIMINGS.PAN).toBeLessThanOrEqual(900);
+    expect(INTRO_SCRIPTED_MS).toBe(INTRO_STAGE_TIMINGS.PAN);
   });
 
-  it("leaves the typing gate off the clock — it waits for a person", () => {
-    expect(isTimedIntroStage("TYPING")).toBe(false);
-    // Which is why V4 budgets only the part the world performs by itself.
-    // The old fixed six-second total is superseded, deliberately — and the
-    // budget grew again when the extraction became thirteen separate journeys
-    // and the hero beat was held long enough to read.
-    expect(INTRO_SCRIPTED_MS).toBe(9_800);
+  it("times only the pan; the title waits for ENTER", () => {
+    expect(INTRO_STAGES.filter(isTimedIntroStage)).toEqual(["PAN"]);
   });
 
-  it("collapses automatic stage waits when reduced motion is requested", () => {
-    expect(getIntroStageDuration("SELECTION", true)).toBe(1);
-    expect(getIntroStageDuration("SELECTION", false)).toBe(
-      INTRO_STAGE_TIMINGS.SELECTION,
-    );
+  it("is idempotent at the end: WORLD cannot advance past itself", () => {
+    let stage: (typeof INTRO_STAGES)[number] = "WORLD";
+    for (let i = 0; i < 5; i += 1) stage = nextIntroStage(stage);
+    expect(stage).toBe("WORLD");
+  });
+
+  it("collapses the pan when reduced motion is requested", () => {
+    expect(getIntroStageDuration("PAN", true)).toBe(1);
+    expect(getIntroStageDuration("PAN", false)).toBe(INTRO_STAGE_TIMINGS.PAN);
   });
 });
 
-describe("storyboard frames", () => {
-  it("draws every stage after the pan as the shrine clearing", () => {
-    const shrineStages = INTRO_STAGES.filter(isShrineStage);
-    expect(shrineStages).toEqual([
+describe("the house monolith path: the name gate, kept as an easter egg", () => {
+  it("runs the whole ritual in order and then reports the stone open", () => {
+    const walked: ShrineStage[] = [SHRINE_STAGES[0]];
+    let stage: ShrineStage | null = nextShrineStage(SHRINE_STAGES[0]);
+    while (stage !== null) {
+      walked.push(stage);
+      stage = nextShrineStage(stage);
+    }
+    expect(walked).toEqual([
       "SHRINE",
       "SELECTION",
       "NAME",
@@ -56,13 +66,32 @@ describe("storyboard frames", () => {
       "TYPING",
       "UNLOCK",
     ]);
+    // UNLOCK is the last beat: past it there is nothing but the caller's
+    // completion, which is what the house turns into leaving for the world.
+    expect(nextShrineStage("UNLOCK")).toBeNull();
   });
 
-  it("maps each shrine beat onto its monolith phase, in order", () => {
-    const phases = INTRO_STAGES.filter(isShrineStage).map(
-      (stage) => MONOLITH_PHASE[stage],
+  it("gives the gate no timer at TYPING, so only a person can open it", () => {
+    for (const stage of SHRINE_STAGES) {
+      expect(isTimedShrineStage(stage), stage).toBe(stage !== "TYPING");
+    }
+    for (const stage of SHRINE_STAGES.filter(isTimedShrineStage)) {
+      expect(SHRINE_STAGE_TIMINGS[stage]).toBeGreaterThan(0);
+    }
+    expect(SHRINE_SCRIPTED_MS).toBe(8_000);
+  });
+
+  it("collapses automatic waits under reduced motion", () => {
+    expect(getShrineStageDuration("SELECTION", true)).toBe(1);
+    expect(getShrineStageDuration("SELECTION", false)).toBe(
+      SHRINE_STAGE_TIMINGS.SELECTION,
     );
-    expect(phases).toEqual([3, 4, 5, 6, 7, 8]);
+  });
+
+  it("maps each beat onto its monolith phase, in order", () => {
+    expect(SHRINE_STAGES.map((stage) => MONOLITH_PHASE[stage])).toEqual([
+      3, 4, 5, 6, 7, 8,
+    ]);
   });
 });
 
@@ -88,45 +117,5 @@ describe("the camera east", () => {
     expect(getPanOffset(0.5)).toBe(Math.round(PAN_OFFSET / 2));
     // ...and the first quarter covers less ground than the middle one.
     expect(getPanOffset(0.25)).toBeLessThan(getPanOffset(0.5) - getPanOffset(0.25));
-  });
-});
-
-describe("transition safety", () => {
-  it("only ever advances by one, so nothing can be skipped", () => {
-    for (const stage of INTRO_STAGES) {
-      const next = nextIntroStage(stage);
-      const from = INTRO_STAGES.indexOf(stage);
-      const to = INTRO_STAGES.indexOf(next);
-      expect(to - from, stage).toBeLessThanOrEqual(1);
-      expect(to, stage).toBeGreaterThanOrEqual(from);
-    }
-  });
-
-  it("is idempotent at the end: WORLD cannot advance past itself", () => {
-    let stage: (typeof INTRO_STAGES)[number] = "WORLD";
-    for (let i = 0; i < 5; i += 1) stage = nextIntroStage(stage);
-    expect(stage).toBe("WORLD");
-  });
-
-  it("walks the whole storyboard in order, one beat at a time", () => {
-    const walked: string[] = ["TITLE"];
-    let stage: (typeof INTRO_STAGES)[number] = "TITLE";
-    while (stage !== "WORLD") {
-      stage = nextIntroStage(stage);
-      walked.push(stage);
-    }
-    expect(walked).toEqual([...INTRO_STAGES]);
-  });
-
-  it("gives the gate no timer at all, so nothing can advance it but a person", () => {
-    // Every other beat has a duration; TYPING deliberately has none, which is
-    // what stops an aggressive keypress or a stray timer from opening the door.
-    for (const stage of INTRO_STAGES) {
-      if (stage === "TITLE" || stage === "TYPING" || stage === "WORLD") {
-        expect(isTimedIntroStage(stage), stage).toBe(false);
-      } else {
-        expect(isTimedIntroStage(stage), stage).toBe(true);
-      }
-    }
   });
 });

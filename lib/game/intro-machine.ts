@@ -1,21 +1,35 @@
 import type { MonolithPhase } from "@/lib/pixel/monolith";
 import {
   INTRO_STAGES,
+  SHRINE_STAGES,
   type IntroStage,
   type ShrineStage,
   type TimedIntroStage,
+  type TimedShrineStage,
 } from "@/types/intro";
 
 /**
- * The eight-frame storyboard's timed beats.
- *
- * V4 replaces the fixed six-second intro: the ritual now has a stage that
- * waits for the visitor, so a single total for the whole sequence stopped
- * meaning anything. What is still worth holding to a budget is the scripted
- * part — everything the world performs on its own — which totals 9.8 seconds.
+ * The default way in is title → pan → world, and the pan is the only timed
+ * beat. It is held under a second: the camera still travels east, but nobody
+ * waits on it to start walking.
  */
 export const INTRO_STAGE_TIMINGS: Readonly<Record<TimedIntroStage, number>> = {
-  PAN: 1_800,
+  PAN: 800,
+};
+
+/** What the default entry performs unprompted. */
+export const INTRO_SCRIPTED_MS = Object.values(INTRO_STAGE_TIMINGS).reduce(
+  (total, value) => total + value,
+  0,
+);
+
+/**
+ * The name gate's timed beats, run by THE MONOLITH in Edward's House.
+ *
+ * What is held to a budget is the scripted part — everything the stone
+ * performs on its own — which totals eight seconds.
+ */
+export const SHRINE_STAGE_TIMINGS: Readonly<Record<TimedShrineStage, number>> = {
   SHRINE: 900,
   // Thirteen letters have to leave the stone one at a time and be seen doing
   // it. Any quicker and the extraction reads as a wave rather than a choice.
@@ -26,8 +40,8 @@ export const INTRO_STAGE_TIMINGS: Readonly<Record<TimedIntroStage, number>> = {
   UNLOCK: 1_600,
 };
 
-/** What the world performs unprompted, ignoring however long typing takes. */
-export const INTRO_SCRIPTED_MS = Object.values(INTRO_STAGE_TIMINGS).reduce(
+/** What the stone performs unprompted, ignoring however long typing takes. */
+export const SHRINE_SCRIPTED_MS = Object.values(SHRINE_STAGE_TIMINGS).reduce(
   (total, value) => total + value,
   0,
 );
@@ -68,12 +82,17 @@ export function nextIntroStage(stage: IntroStage): IntroStage {
   return INTRO_STAGES[Math.min(index + 1, INTRO_STAGES.length - 1)];
 }
 
-export function isTimedIntroStage(stage: IntroStage): stage is TimedIntroStage {
-  return stage !== "TITLE" && stage !== "TYPING" && stage !== "WORLD";
+/** The beat after `stage` in the gate, or `null` once the stone has opened. */
+export function nextShrineStage(stage: ShrineStage): ShrineStage | null {
+  return SHRINE_STAGES[SHRINE_STAGES.indexOf(stage) + 1] ?? null;
 }
 
-export function isShrineStage(stage: IntroStage): stage is ShrineStage {
-  return stage !== "TITLE" && stage !== "PAN" && stage !== "WORLD";
+export function isTimedIntroStage(stage: IntroStage): stage is TimedIntroStage {
+  return stage === "PAN";
+}
+
+export function isTimedShrineStage(stage: ShrineStage): stage is TimedShrineStage {
+  return stage !== "TYPING";
 }
 
 export function getIntroStageDuration(
@@ -81,4 +100,11 @@ export function getIntroStageDuration(
   prefersReducedMotion: boolean,
 ) {
   return prefersReducedMotion ? 1 : INTRO_STAGE_TIMINGS[stage];
+}
+
+export function getShrineStageDuration(
+  stage: TimedShrineStage,
+  prefersReducedMotion: boolean,
+) {
+  return prefersReducedMotion ? 1 : SHRINE_STAGE_TIMINGS[stage];
 }

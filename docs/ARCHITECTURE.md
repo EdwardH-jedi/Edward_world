@@ -53,24 +53,36 @@ without being imported by the Next.js application. The generated
 ## Runtime flow
 
 ```text
-TITLE -> PAN -> SHRINE -> SELECTION -> NAME -> ASK -> TYPING -> UNLOCK -> WORLD
-                                                       ^                   |
-                                              waits for the visitor        |
-                                                                           v
-                                                        project locations · Edward's House
-                                                                           |
-INDEX  <------------------ available at every one of these ----------------+
+TITLE -> (Enter) -> PAN (800 ms) -> WORLD
+                                     |
+                      project locations · Edward's House
+                                     |                 INDEX  <---- available at every one of these            THE MONOLITH (easter egg)
+                                                         SHRINE -> SELECTION -> NAME
+                                                         -> ASK -> TYPING -> UNLOCK
+                                                              ^
+                                                     waits for the visitor
 ```
 
 `components/portfolio-experience.tsx` owns only top-level view and overlay
 state, and it is the one place that decides whether an interaction opens a full
-location experience or a summary dialog. The intro advances through the pure
-state model in `lib/game/intro-machine.ts`; the stage list is
-`INTRO_STAGES` in `types/intro.ts` and every automatic duration lives in
-`INTRO_STAGE_TIMINGS`. Eight of the nine stages are timed; `TYPING` is gated on
-the visitor and has no duration at all, which is why there is no single total
-for the sequence — only `INTRO_SCRIPTED_MS`, the eight seconds the world
-performs unprompted.
+location experience or a summary dialog. The default entry advances through the
+pure state model in `lib/game/intro-machine.ts`: the stage list is
+`INTRO_STAGES` in `types/intro.ts`, and the only automatic beat is the pan,
+`INTRO_STAGE_TIMINGS.PAN`, held to 900 ms or less (`INTRO_SCRIPTED_MS`).
+
+The name gate is no longer on that path. Its stages are `SHRINE_STAGES` and its
+durations `SHRINE_STAGE_TIMINGS`; five of the six are timed and `TYPING` is
+gated on the visitor and has no duration at all, so the only budget is
+`SHRINE_SCRIPTED_MS`, the eight seconds the stone performs unprompted. The
+ritual is run by `components/house/monolith-gate.tsx` when the visitor presses
+`E` at THE MONOLITH in Edward's House. Solving it plays `UNLOCK` and then
+leaves the house for the world, which is all `UNLOCK` ever did - nothing is
+persisted. `Escape` closes the gate and stays in the house.
+
+The first arrival in the world shows the EXPLORE hint for four ambient frames
+(`EXPLORE_HINT_FRAMES`), then hides it. `lib/storage/explore-hint.ts` remembers
+that it was shown in `localStorage`, guarded like the saved look, so a returning
+visitor never sees it; where storage is blocked it shows every visit.
 
 ## Project content
 
@@ -124,7 +136,7 @@ Three input surfaces, all of which are supported everywhere they apply.
 | Surface | Keys |
 | --- | --- |
 | Title screen | `Enter` starts |
-| Opening name gate | Any letter, `Backspace`, `Space`; `Escape` skips the gate |
+| Name gate (THE MONOLITH, in the house) | Any letter, `Backspace`, `Space`; `Escape` skips the gate |
 | Main world, Edward's House, arcade floor | `A` / `D` / `←` / `→` to walk, `E` to interact |
 | Golf | `Space` / `Enter` to stop each bar |
 | Basketball | Hold `Space` / `Enter`, release in the band |
@@ -154,7 +166,7 @@ its own native `Enter` and `Space`.
 - Each mini-game exposes its own tap controls through the same input hook.
 - The arcade floor, walk pace and cabinet position are derived from the measured
   viewport, so the cabinet is centre stage on a phone as well as a desktop.
-- The opening name gate is a real, visually suppressed text `<input>` sitting
+- The name gate is a real, visually suppressed text `<input>` sitting
   over the carved sockets: tapping the slab opens a phone's native keyboard, and
   assistive technology reads a labelled control. `lib/game/name-gate.ts` is
   modelled as a **text reducer** rather than a keystroke machine — the whole
@@ -367,20 +379,23 @@ proximity reach, and `E` to look — the same verbs as outside. Opening a
 non-project location goes through a typed `OPEN_LOCATION` action rather than
 being special-cased on a building id.
 
-## The opening ritual
+## The name gate
 
 The V4 eight-frame storyboard, and the one beat in the product that waits for
-the visitor rather than performing at them.
+the visitor rather than performing at them. It used to sit between the title and
+the world; it is now an easter egg, run from THE MONOLITH in Edward's House.
 
-`ENTER` on the title pans the camera east from pixel Sydney at dusk to a shrine
-clearing. The letters of a name pull free of a carved monolith face and assemble
-into SOON HYUN HWANG; an inscription slab surfaces and asks the visitor to type
-it back into thirteen carved sockets. The assembled name stays on screen the
-whole time — the gate tests presence, not memory. Completion unlocks the world.
+Pressing `E` at the stone opens the shrine clearing at dusk. The letters of a
+name pull free of a carved monolith face and assemble into SOON HYUN HWANG; an
+inscription slab surfaces and asks the visitor to type it back into thirteen
+carved sockets. The assembled name stays on screen the whole time - the gate
+tests presence, not memory. Completion unlocks the stone and returns the visitor
+to the world. (The title's own camera pan, `ENTER` to the world, is the default
+entry and is described under [Runtime flow](#runtime-flow).)
 
 | Module | Responsibility |
 | --- | --- |
-| `types/intro.ts` | `INTRO_STAGES`, and which of them are timed vs. shrine-drawn |
+| `types/intro.ts` | `INTRO_STAGES` (the default entry) and `SHRINE_STAGES` (the name gate), and which of each are timed |
 | `lib/game/intro-machine.ts` | Pure stage model, durations, and the camera pan easing |
 | `lib/game/name-gate.ts` | The gate as a pure text reducer (see [Input](#input)) |
 | `lib/pixel/opening.ts` | The dusk scenery — harbour, bridge, terraces, park — on its own palette, because the opening is a different time of day and place than the world |

@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { InteractionPrompt } from "@/components/world/interaction-prompt";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { WorldLabel } from "@/components/world/world-label";
@@ -18,6 +25,13 @@ import { useJoinTotal } from "@/lib/joins/use-join-total";
 import { play } from "@/lib/audio/sfx";
 import { prefersReducedMotion } from "@/lib/motion/animate-element";
 import { AMBIENT_FRAME_MS, useAmbientFrame } from "@/lib/motion/use-ambient-frame";
+
+import {
+  claimExploreHint,
+  EXPLORE_HINT_FRAMES,
+  getExploreHintServerSnapshot,
+  subscribeExploreHint,
+} from "@/lib/storage/explore-hint";
 import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
 import { worldExitArt } from "@/lib/pixel/world-exit";
@@ -80,6 +94,13 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const pressedKeys = useRef(new Set<string>());
   const ambientFrame = useAmbientFrame(!disabled);
+  // First arrival on this device only. The server snapshot is "no hint", so
+  // hydration agrees and the hint appears once the client has read storage.
+  const firstVisit = useSyncExternalStore(
+    subscribeExploreHint,
+    claimExploreHint,
+    getExploreHintServerSnapshot,
+  );
   const unit = usePixelUnit();
   // Null until a real total arrives, and null forever if the counter is
   // unreachable — the line is simply absent rather than guessed at.
@@ -313,10 +334,12 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
         </p>
       ) : null}
 
-      <div className="world-instructions">
-        <strong>Explore</strong>
-        <span>A / D or ← / → to move · E to interact</span>
-      </div>
+      {firstVisit && ambientFrame < EXPLORE_HINT_FRAMES ? (
+        <div className="world-instructions">
+          <strong>Explore</strong>
+          <span>A / D or ← / → to move · E to interact</span>
+        </div>
+      ) : null}
       <div
         aria-label="Edward's interactive portfolio world"
         className="world-viewport"

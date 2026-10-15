@@ -75,7 +75,7 @@ Read the [architecture reference](docs/ARCHITECTURE.md) for the component and do
 
 | Action | Control |
 | --- | --- |
-| Start exploring | `Enter`, click, or tap on the title screen |
+| Start exploring | `Enter`, click, or tap on the title screen; a sub-second camera pan then drops you into the world |
 | Read projects directly | **VIEW PROJECTS**, or the `WORLD / INDEX` control |
 | Walk | `A` / `D` or `←` / `→`; on-screen buttons are also available |
 | Interact | `E`, or tap the interaction bar |
@@ -86,7 +86,7 @@ Read the [architecture reference](docs/ARCHITECTURE.md) for the component and do
 | Running | `←` / `→` to run, `↑` / `↓` for lanes, hold `S` to sprint |
 | Arcade platformer | `A` / `D` or `←` / `→` to move; `Space` to jump |
 
-The experiences include touch controls. The opening name gate uses a text input for native mobile keyboards. Dialogs share focus-management and Escape handling, and the app includes reduced-motion behaviour. The index and standalone case-study pages provide access to professional content without playing the games.
+The experiences include touch controls. The name gate is an easter egg: walk to THE MONOLITH at the far end of Edward's House and press `E`. It uses a text input for native mobile keyboards. Dialogs share focus-management and Escape handling, and the app includes reduced-motion behaviour. The index and standalone case-study pages provide access to professional content without playing the games.
 
 ## Configuration and data
 
