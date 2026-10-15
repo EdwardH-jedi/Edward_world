@@ -1,3 +1,4 @@
+import { signBob } from "@/lib/pixel/ambient";
 import { palette } from "@/lib/pixel/palette";
 import type { BuildingArt } from "@/lib/pixel/buildings";
 
@@ -66,16 +67,17 @@ export const worldExitArt: BuildingArt = {
     draw(0, 3, ART_WIDTH, 3, palette.brown2);
     draw(0, 6, ART_WIDTH, 1, palette.brown3);
 
-    // The sign board hung from the beam.
-    draw(3, 7, 14, 9, palette.paper);
-    draw(3, 7, 14, 1, palette.stone);
-    draw(3, 15, 14, 1, palette.brown3);
-    drawExitWord(draw, 4, 9, palette.char);
+    // The sign board hung from the beam, dropping a pixel on every other frame.
+    const bob = signBob(frame);
+    draw(3, 7 + bob, 14, 9, palette.paper);
+    draw(3, 7 + bob, 14, 1, palette.stone);
+    draw(3, 15 + bob, 14, 1, palette.brown3);
+    drawExitWord(draw, 4, 9 + bob, palette.char);
 
     // An arrow under the word, pointing off the right-hand edge of the map.
-    draw(7, 18, 6, 1, palette.brown3);
-    draw(12, 17, 1, 1, palette.brown3);
-    draw(12, 19, 1, 1, palette.brown3);
+    draw(7, 18 + bob, 6, 1, palette.brown3);
+    draw(12, 17 + bob, 1, 1, palette.brown3);
+    draw(12, 19 + bob, 1, 1, palette.brown3);
 
     // A lantern on the left post, breathing on the ambient tick like the
     // world's other lights. The only motion the gate has.

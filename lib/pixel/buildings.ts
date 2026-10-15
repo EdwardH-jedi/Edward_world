@@ -1,3 +1,4 @@
+import { signBob } from "@/lib/pixel/ambient";
 import { palette } from "@/lib/pixel/palette";
 import type { ArtRoutine, Raster } from "@/lib/pixel/raster";
 import {
@@ -31,6 +32,21 @@ import type { WorldBuildingId } from "@/types/portfolio";
 export interface BuildingArt {
   readonly size: { readonly width: number; readonly height: number };
   readonly draw: ArtRoutine;
+  /**
+   * Drawn over `draw` once the entrance is opened; `frame` is the open step,
+   * 0 (ajar) then 1 (open). Absent for art with no entrance.
+   */
+  readonly openDoor?: ArtRoutine;
+}
+
+/** The "open" variant of a doorway: dark interior, with the leaf swung back. */
+function doorway(x: number, y: number, width: number, height: number): ArtRoutine {
+  return (draw, step) => {
+    const leaf = step === 0 ? Math.ceil(width / 3) : 1;
+    draw(x, y, width, height, "#0B0906");
+    draw(x, y, leaf, height, palette.brown2);
+    draw(x + leaf, y + height - 2, width - leaf, 1, "#4A4438");
+  };
 }
 
 /** The 2px stone plinth every facade stands on. */
@@ -108,7 +124,7 @@ const edwardsHouse: ArtRoutine = (draw, frame) => {
 };
 
 /** LOCAL ARCHIVE — restrained charcoal signage, rack and mannequin behind glass. */
-const wardrobe: ArtRoutine = (draw) => {
+const wardrobe: ArtRoutine = (draw, frame) => {
   const groundY = 44;
   plinth(draw, 1, 74, groundY);
 
@@ -116,10 +132,12 @@ const wardrobe: ArtRoutine = (draw) => {
   draw(3, 9, 70, 34, palette.paper);
   draw(3, 9, 70, 1, palette.stone);
 
-  draw(2, 1, 72, 7, palette.char);
-  dashes(draw, 8, 4, 48, palette.cream);
-  draw(64, 3, 4, 4, palette.cream);
-  draw(65, 4, 2, 2, palette.char);
+  // The hanging sign band drops a pixel on every other frame.
+  const bob = signBob(frame);
+  draw(2, 1 + bob, 72, 7, palette.char);
+  dashes(draw, 8, 4 + bob, 48, palette.cream);
+  draw(64, 3 + bob, 4, 4, palette.cream);
+  draw(65, 4 + bob, 2, 2, palette.char);
 
   for (let index = 0; index < 14; index += 1) {
     draw(5 + index * 5, 14, 4, 3, index % 2 ? palette.stone : palette.cream);
@@ -368,22 +386,44 @@ const constructionArea: ArtRoutine = (draw, frame) => {
 /** The directions post by the start of the path. */
 export const signpostArt: BuildingArt = {
   size: { width: 11, height: 15 },
-  draw: (draw) => {
+  draw: (draw, frame) => {
+    const bob = signBob(frame);
     draw(5, 5, 1, 10, palette.brown3);
-    draw(0, 0, 11, 6, palette.paper);
-    draw(0, 0, 11, 1, palette.brown3);
-    draw(0, 5, 11, 1, palette.brown3);
-    dashes(draw, 2, 2, 7, palette.ink);
-    draw(2, 4, 5, 1, palette.stone3);
+    draw(0, bob, 11, 6, palette.paper);
+    draw(0, bob, 11, 1, palette.brown3);
+    draw(0, 5 + bob, 11, 1, palette.brown3);
+    dashes(draw, 2, 2 + bob, 7, palette.ink);
+    draw(2, 4 + bob, 5, 1, palette.stone3);
     draw(3, 14, 5, 1, palette.green3);
   },
 };
 
 export const buildingArt: Readonly<Record<WorldBuildingId, BuildingArt>> = {
-  "edwards-house": { size: { width: 68, height: 50 }, draw: edwardsHouse },
-  wardrobe: { size: { width: 76, height: 44 }, draw: wardrobe },
-  sportsgang: { size: { width: 92, height: 44 }, draw: sportsgang },
-  "afl-lab": { size: { width: 72, height: 48 }, draw: aflLab },
-  arcade: { size: { width: 76, height: 46 }, draw: arcade },
+  "edwards-house": {
+    size: { width: 68, height: 50 },
+    draw: edwardsHouse,
+    openDoor: doorway(34, 32, 9, 18),
+  },
+  wardrobe: {
+    size: { width: 76, height: 44 },
+    draw: wardrobe,
+    openDoor: doorway(53, 22, 10, 22),
+  },
+  // The court has no door; its gate in the fence opens instead.
+  sportsgang: {
+    size: { width: 92, height: 44 },
+    draw: sportsgang,
+    openDoor: doorway(53, 25, 7, 15),
+  },
+  "afl-lab": {
+    size: { width: 72, height: 48 },
+    draw: aflLab,
+    openDoor: doorway(52, 30, 8, 18),
+  },
+  arcade: {
+    size: { width: 76, height: 46 },
+    draw: arcade,
+    openDoor: doorway(38, 24, 14, 22),
+  },
   "construction-area": { size: { width: 84, height: 38 }, draw: constructionArea },
 };

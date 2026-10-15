@@ -141,17 +141,21 @@ export function dashes(
   }
 }
 
-/** Chimney smoke, rising and dispersing on the ambient frame counter. */
+/** Smoke puff colours by age: fresh and grey, thinning into the sky. */
+const SMOKE_AGES = [palette.stone, palette.smoke, "#DDD5BE", palette.sky2] as const;
+
+/**
+ * Chimney smoke: three puffs on a four-frame loop. Each puff rises three
+ * pixels per frame and fades with age, and the puffs are a frame apart, so at
+ * most one is on its last, near-invisible frame and the plume never vanishes
+ * all at once.
+ */
 export function smoke(draw: Raster, x: number, y: number, frame: number) {
+  const lanes = [0, 2, 1] as const;
   for (let puff = 0; puff < 3; puff += 1) {
-    const rise = (frame * 2 + puff * 3) % 10;
-    draw(
-      x + (puff % 2) - (rise > 5 ? 1 : 0),
-      y - rise,
-      2,
-      2,
-      palette.smoke,
-    );
+    const age = (frame + puff) % 4;
+    const size = age === 3 ? 1 : 2;
+    draw(x + lanes[puff] - (age > 1 ? 1 : 0), y - age * 3, size, size, SMOKE_AGES[age]);
   }
 }
 
@@ -173,11 +177,17 @@ export function tree(
   draw(x + crownWidth - 3, groundY - height + 3, 2, 1, palette.green2);
 }
 
-/** A street lamp with a warm head. */
-export function lamp(draw: Raster, x: number, groundY: number, height = 18) {
+/**
+ * A street lamp with a warm head. Given an ambient `frame`, a one-pixel glow
+ * beside the head flickers: lit on three frames, dark on the fourth.
+ */
+export function lamp(draw: Raster, x: number, groundY: number, height = 18, frame?: number) {
   draw(x, groundY - height, 1, height, palette.char);
   draw(x, groundY - height, 3, 1, palette.char);
   draw(x + 2, groundY - height + 1, 2, 2, palette.warmGlow);
+  if (frame !== undefined && frame % 4 !== 3) {
+    draw(x + 4, groundY - height + 1, 1, 1, palette.glow);
+  }
 }
 
 /** A hollow wheel, used for the bicycle by Edward's door. */

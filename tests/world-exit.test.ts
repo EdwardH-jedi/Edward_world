@@ -125,7 +125,7 @@ describe("the exit gate", () => {
     expect(opening).toHaveLength(0);
   });
 
-  it("only animates its lantern", () => {
+  it("only animates its lantern and its hanging board", () => {
     const render = (frame: number) => {
       const boxes: string[] = [];
       worldExitArt.draw(
@@ -134,12 +134,18 @@ describe("the exit gate", () => {
       );
       return boxes;
     };
-    const a = render(0);
-    const b = render(1);
-    expect(a).toHaveLength(b.length);
-    // Exactly one box differs between frames.
-    const differing = a.filter((box, index) => box !== b[index]);
-    expect(differing).toHaveLength(1);
+    const differing = (from: number, to: number) => {
+      const a = render(from);
+      const b = render(to);
+      expect(a).toHaveLength(b.length);
+      return a.filter((box, index) => box !== b[index]);
+    };
+    // Same board position, different lantern: exactly one box differs.
+    expect(differing(0, 2)).toHaveLength(1);
+    // Neither moves between these two frames.
+    expect(differing(1, 3)).toHaveLength(0);
+    // The board drops a pixel, so far more than the lantern differs.
+    expect(differing(0, 1).length).toBeGreaterThan(1);
   });
 });
 
