@@ -198,9 +198,22 @@ routine per canvas, and `MainWorld` places those canvases *inside* the existing
 text and the interaction dispatch are all unchanged — canvases are decorative
 and `aria-hidden`, and the charcoal label chips carry the accessible names.
 
-Scale is fixed: `PIXEL_UNIT` CSS pixels per art pixel, and every position and
-size in `data/world.ts` is a whole multiple of it. `tests/world-art.test.ts`
-fails if any art routine stops matching its object's world footprint.
+World data is authored at `PIXEL_UNIT` (4) CSS pixels per art pixel, and every
+position and size in `data/world.ts` is a whole multiple of it.
+`tests/world-art.test.ts` fails if any art routine stops matching its object's
+world footprint.
+
+What is *drawn* uses a live unit instead. `usePixelUnit()`
+(`lib/game/use-pixel-unit.ts`) picks the largest whole `u` in 2..8 whose scaled
+world height (`BACKDROP_ART_SIZE.height * u`) fits the viewport, so the world
+fills the screen with no fractional pixel. Movement, collision and the camera
+stay in authored pixels; `MainWorld` converts at the DOM boundary (`toCss` for
+grid-aligned values, `snapToCss` for the continuous player and camera x) and
+exposes `--unit` to the stylesheet, where all in-world type, chips, borders and
+shadows are unit multiples. Only the world, title and intro read the live unit;
+the project locations still draw at `PIXEL_UNIT`. On landscape the title and
+intro stage is scaled to cover the viewport (non-integer, as before); a portrait
+phone keeps the contained frame so the intro's name slab is never cropped.
 
 ## Project location experiences
 

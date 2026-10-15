@@ -1,4 +1,8 @@
 :root {
+  /* Bitmap type is drawn at a whole number of units. `--k` is how many: three
+     on a roomy screen, more where the unit is small enough that three would
+     fall below legibility (a landscape phone's unit is 2px). */
+  --k: 3;
   color-scheme: light;
   --background: #f4f2ec;
   --foreground: #181816;
@@ -25,6 +29,14 @@
    */
   --focus-inner: #2b2823;
   --focus-outer: #efe7d3;
+}
+
+@media (max-height: 599px) {
+  :root { --k: 4; }
+}
+
+@media (max-height: 400px) {
+  :root { --k: 5; }
 }
 
 * {
@@ -153,6 +165,7 @@ p {
    whichever beat it is on, so this stylesheet holds a stage box and a bloom —
    the choreography is inside the art, where it can be composed. */
 .intro-screen {
+  --unit: 4px;
   align-items: center;
   background: #161713;
   display: flex;
@@ -255,14 +268,17 @@ p {
 }
 
 .intro-skip {
-  background: rgb(43 40 35 / 90%);
-  border: 1px solid #57534a;
+  background: #2b2823;
+  border: var(--unit) solid #efe7d3;
+  border-radius: 0;
+  box-shadow: var(--unit) var(--unit) 0 #14120f;
   color: #efe7d3;
   cursor: pointer;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.18em;
-  padding: 0.55rem 0.8rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 3);
+  text-transform: uppercase;
 }
 
 .intro-skip:hover,
@@ -291,9 +307,11 @@ p {
 /* ── Title screen ────────────────────────────────────────────────────────────
    A game waiting for Start, composed like a poster. The world behind it is the
    real world — the same backdrop and the same building art the player walks
-   through a moment later. */
+   through a moment later. Type is the bitmap face at unit multiples (`--unit`
+   is set inline by the component), with no blur and no rounding. */
 
 .title-screen {
+  --unit: 4px;
   align-items: center;
   background: #161713;
   display: flex;
@@ -323,7 +341,7 @@ p {
 }
 
 /* The sky the type sits over is the scene's own dusk cream, so the wordmark
-   stays dark ink and only needs a breath of lift behind it. */
+   stays dark ink. */
 .title-copy {
   left: 50%;
   position: absolute;
@@ -335,37 +353,33 @@ p {
 
 .title-welcome {
   color: #57473a;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: clamp(0.6rem, 1.1vw, 0.8rem);
-  letter-spacing: 0.62em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: calc(var(--unit) * 2);
   margin: 0;
-  text-indent: 0.62em;
+  text-indent: calc(var(--unit) * 2);
+  text-transform: uppercase;
 }
 
 .title-wordmark {
   color: #2b2823;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: clamp(1.4rem, 3.6vw, 2.4rem);
+  font-size: calc(var(--unit) * (var(--k) + 4));
   font-weight: 700;
-  letter-spacing: 0.06em;
-  line-height: 1.3;
-  margin: 0.8rem 0 0;
-  text-shadow: 0 2px 0 rgb(239 231 211 / 50%);
+  letter-spacing: 0;
+  line-height: calc(var(--unit) * (var(--k) + 6));
+  margin: calc(var(--unit) * 2) 0 0;
+  text-transform: uppercase;
 }
 
 .title-purpose {
-  bottom: calc(100% + 0.75rem);
-  color: #efe7d3;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: clamp(0.78rem, 1.1vw, 0.875rem);
-  left: 50%;
-  line-height: 1.5;
-  margin: 0;
+  color: #57473a;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  line-height: calc(var(--unit) * (var(--k) + 1));
+  margin: calc(var(--unit) * 3) auto 0;
   max-width: 100%;
-  position: absolute;
-  text-align: center;
-  transform: translateX(-50%);
-  width: max-content;
+  text-transform: uppercase;
 }
 
 .doc-copy {
@@ -383,50 +397,57 @@ p {
   padding-left: 0.7rem;
 }
 
-/* Sits low, over the dark earth, so cream type reads against it. */
+/* Sits low, over the dark earth, so cream type reads against it. It blinks by
+   toggling on the ambient tick (the component flips `data-lit`), so it keeps
+   the same cadence as the rest of the scene; reduced motion freezes that tick
+   and leaves it lit. */
 .title-enter {
-  animation: title-blink 1.4s step-end infinite;
   background: transparent;
   border: 0;
+  border-radius: 0;
   bottom: 5%;
   color: #f7f1e2;
   cursor: pointer;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: clamp(0.8rem, 1.6vw, 1rem);
+  font-size: calc(var(--unit) * (var(--k) + 1));
   left: 50%;
-  letter-spacing: 0.14em;
-  padding: 0.8rem 1.2rem;
+  letter-spacing: 0;
+  padding: calc(var(--unit) * 3) calc(var(--unit) * 4);
   position: absolute;
-  text-shadow: 0 2px 0 rgb(34 27 21 / 75%);
+  text-shadow: none;
+  text-transform: uppercase;
   transform: translateX(-50%);
   z-index: 3;
 }
 
+.title-enter[data-lit="false"] {
+  opacity: 0;
+}
+
 .title-enter:hover,
 .title-enter:focus-visible {
-  animation: none;
   background: #f7f1e2;
   color: #2b2823;
-  text-shadow: none;
+  opacity: 1;
 }
 
-@keyframes title-blink {
-  0%, 60% { opacity: 1; }
-  65%, 100% { opacity: 0.45; }
-}
-
+/* VIEW PROJECTS: a pixel button — one-unit border, one-unit hard shadow. */
 .title-skip {
-  background: rgb(43 40 35 / 88%);
-  border: 0;
-  bottom: 1rem;
+  background: #2b2823;
+  border: var(--unit) solid #efe7d3;
+  border-radius: 0;
+  bottom: calc(var(--unit) * 4);
+  box-shadow: var(--unit) var(--unit) 0 #14120f;
   color: #efe7d3;
   cursor: pointer;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.66rem;
-  letter-spacing: 0.2em;
-  padding: 0.6rem 0.9rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: 0;
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 3);
   position: absolute;
-  right: 1.2rem;
+  right: calc(var(--unit) * 4);
+  text-shadow: none;
+  text-transform: uppercase;
   z-index: 3;
 }
 
@@ -436,16 +457,19 @@ p {
   color: #2b2823;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .title-enter { animation: none; }
-}
-
 @media (max-width: 640px) {
+  /* The strip of sky is too narrow for the sentence, so it gets a panel. */
+  .title-purpose {
+    background: #2b2823;
+    border: var(--unit) solid #14120f;
+    color: #efe7d3;
+    padding: var(--unit) calc(var(--unit) * 2);
+  }
   .title-copy { top: 11%; width: 94%; }
-  .title-welcome { letter-spacing: 0.4em; }
   .title-wordmark {
-    font-size: clamp(1.1rem, 4.7vw, 1.8rem);
-    margin-top: 0.5rem;
+    font-size: calc(var(--unit) * 4);
+    line-height: calc(var(--unit) * 6);
+    margin-top: calc(var(--unit) * 2);
     white-space: nowrap;
   }
 }
@@ -476,8 +500,9 @@ p {
   }
   .title-copy { top: 8%; width: 94%; }
   .title-wordmark {
-    font-size: 1.1rem;
-    margin-top: 0.35rem;
+    font-size: calc(var(--unit) * (var(--k) + 4));
+    line-height: calc(var(--unit) * (var(--k) + 6));
+    margin-top: calc(var(--unit) * 2);
     white-space: nowrap;
   }
 }
@@ -491,6 +516,37 @@ p {
     bottom: auto;
     right: 0;
     top: calc(100% + 0.5rem);
+  }
+}
+
+/* Landscape screens: the stage is scaled to cover the viewport rather than sit
+   in it, and the screen simply clips what overhangs. The stage stays one 16:9
+   box, so everything positioned in percentages (the name slab's tap target
+   above all) stays aligned with the art. Controls are pinned to the viewport,
+   not the stage, so a clipped edge can never hide them. A portrait phone keeps
+   the contained frame above: covering it would crop the name slab. */
+@media (min-aspect-ratio: 1/1) {
+  .intro-stage,
+  .title-stage {
+    --stage-w: max(100vw, calc(100dvh * 16 / 9));
+    left: calc(50% - var(--stage-w) / 2);
+    max-height: none;
+    position: absolute;
+    top: calc(50% - var(--stage-w) * 9 / 32);
+    width: var(--stage-w);
+  }
+
+  .intro-actions,
+  .title-skip {
+    bottom: calc(var(--unit) * 4);
+    position: fixed;
+    right: calc(var(--unit) * 4);
+    top: auto;
+  }
+
+  .title-enter {
+    bottom: calc(var(--unit) * 6);
+    position: fixed;
   }
 }
 
@@ -516,6 +572,11 @@ p {
   to { opacity: 1; transform: none; }
 }
 
+/* The world is the whole screen. Every in-world measurement below is a whole
+   multiple of `--unit` (the live art-pixel size, set inline by the component),
+   type is the bitmap face at a unit multiple, and nothing is blurred or
+   rounded: a 1-unit border and a 1-unit hard offset shadow are the only
+   depth. */
 .world-screen {
   animation: world-arrive 520ms ease-out both;
   --world-sky: #e9e0c8;
@@ -523,34 +584,43 @@ p {
   --world-cream: #efe7d3;
   --world-orange: #c98a52;
   --world-muted: #9c9482;
+  --world-ink: #14120f;
+  --unit: 4px;
 
-  background: #221f1a;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+  background: var(--world-sky);
   height: 100dvh;
-  min-height: 34rem;
-  padding-top: 4.5rem;
+  overflow: hidden;
+  position: relative;
 }
 
-/* The visitor's own arrival, stated once and quietly. Sits with the other
-   world chrome rather than over the play area, and is absent entirely when
-   the counter has nothing true to say.
+/* The pixel panel every piece of world chrome shares. */
+.world-instructions,
+.world-join,
+.world-object__label,
+.world-object__prompt {
+  border: var(--unit) solid var(--world-ink);
+  border-radius: 0;
+  box-shadow: var(--unit) var(--unit) 0 var(--world-ink);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-shadow: none;
+  text-transform: uppercase;
+}
 
-   `--world-muted`, not `--muted`: the latter is tuned for the cream document
-   pages and lands at 3:1 on this dark bar, which is under AA for text this
-   small. This is the token the neighbouring EXPLORE hint already uses on the
-   same surface; the smaller type is what keeps the line secondary. */
+/* The visitor's own arrival, stated once and quietly, and absent entirely when
+   the counter has nothing true to say. */
 .world-join {
   animation: world-join-settle 600ms ease-out both;
+  background: var(--world-char);
+  bottom: calc(var(--unit) * 14);
   color: var(--world-muted);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.16em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  left: calc(var(--unit) * 2);
+  line-height: calc(var(--unit) * var(--k));
   margin: 0;
+  padding: var(--unit) calc(var(--unit) * 2);
   position: absolute;
-  right: 1.5rem;
-  text-transform: uppercase;
-  top: 4.2rem;
   z-index: 3;
 }
 
@@ -559,48 +629,45 @@ p {
   to { opacity: 1; transform: none; }
 }
 
-@media (max-width: 640px) {
-  /* Tucked left of the music control, which owns the corner itself at this
-     width. The line stays right-aligned; it simply stops at the button. */
-  .world-join { font-size: 0.55rem; right: 4.5rem; top: 3.4rem; }
-}
-
 .world-instructions {
   align-items: baseline;
+  background: var(--world-char);
   color: var(--world-cream);
   display: flex;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  gap: 1rem;
-  padding: 0 1rem 0.75rem;
+  flex-wrap: wrap;
+  gap: 0 calc(var(--unit) * 2);
+  left: calc(var(--unit) * 2);
+  line-height: calc(var(--unit) * (var(--k) + 1));
+  max-width: calc(100% - var(--unit) * 4);
+  padding: 0 calc(var(--unit) * 2);
+  position: absolute;
+  top: calc(var(--unit) * 2);
+  z-index: 3;
 }
 
 .world-instructions strong {
-  font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.78rem;
+  font-size: calc(var(--unit) * var(--k));
   font-weight: 400;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
 }
 
 .world-instructions span {
   color: var(--world-muted);
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+}
+
+/* The top-right corner belongs to the HUD strip, so on a narrow screen the
+   hint drops a row beneath it instead of running underneath. */
+@media (max-width: 640px) {
+  .world-instructions {
+    top: calc(var(--unit) * 14);
+  }
 }
 
 .world-viewport {
-  /* The world is authored at a fixed height with a deliberate 72/28 split of
-     sky to land. Letting the viewport grow past it would just add dead sky, so
-     it is capped to the world and centred; the dark frame around it reads as
-     the cartridge the world is running on. */
-  align-self: center;
   background: var(--world-sky);
-  border-block: 1px solid #3a362c;
-  height: min(100%, 552px);
+  inset: 0;
   overflow: hidden;
-  position: relative;
-  width: 100%;
+  position: absolute;
 }
 
 .world-track {
@@ -637,36 +704,33 @@ p {
 }
 
 /* The signage posts carry the real labels, so the label chips are both the
-   approved world callout and the object's accessible name. */
+   approved world callout and the object's accessible name. A chip is six units
+   tall: four of line, two of border. */
 .world-object__label {
   background: var(--world-char);
+  border-color: var(--world-cream);
   color: var(--world-cream);
-  transition: background-color 180ms ease-out, color 180ms ease-out;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.625rem;
-  left: 50%;
-  letter-spacing: 0.1em;
-  padding: 0.25rem 0.45rem;
+  font-size: calc(var(--unit) * var(--k));
+  left: var(--chip-left, 50%);
+  line-height: calc(var(--unit) * (var(--k) + 1));
+  padding: 0 calc(var(--unit) * 2);
   position: absolute;
-  text-transform: uppercase;
-  top: -1.7rem;
-  transform: translateX(-50%);
+  text-align: center;
+  top: calc(var(--unit) * (var(--k) + 6) * -1);
   white-space: nowrap;
   z-index: 2;
 }
 
 .world-object__prompt {
   background: var(--world-orange);
-  color: #241f18;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.625rem;
-  font-weight: 500;
-  left: 50%;
-  letter-spacing: 0.12em;
-  padding: 0.25rem 0.45rem;
+  color: var(--world-ink);
+  font-size: calc(var(--unit) * var(--k));
+  left: var(--chip-left, 50%);
+  line-height: calc(var(--unit) * (var(--k) + 1));
+  padding: 0 calc(var(--unit) * 2);
   position: absolute;
-  top: -3.3rem;
-  transform: translateX(-50%);
+  text-align: center;
+  top: calc(var(--unit) * (2 * var(--k) + 11) * -1);
   white-space: nowrap;
   z-index: 2;
 }
@@ -674,12 +738,21 @@ p {
 /* Proximity reads as the label waking up, not as a border slapped on the art. */
 .world-object[data-nearby="true"] .world-object__label {
   background: var(--world-cream);
+  border-color: var(--world-ink);
   color: var(--world-char);
 }
 
+/* The bottom bar: touch pad on the left, the interaction readout beside it. */
 .world-controls {
   align-items: stretch;
+  background: var(--world-char);
+  border-top: var(--unit) solid var(--world-cream);
+  bottom: 0;
   display: flex;
+  left: 0;
+  position: absolute;
+  right: 0;
+  z-index: 4;
 }
 
 .world-touch {
@@ -689,12 +762,14 @@ p {
 .world-touch__button {
   background: var(--world-char);
   border: 0;
-  border-right: 1px solid #3a362c;
+  border-radius: 0;
+  border-right: var(--unit) solid var(--world-cream);
   color: var(--world-cream);
   cursor: pointer;
-  font-size: 1rem;
-  min-width: 4rem;
-  padding: 0 1rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) + 1));
+  min-width: calc(var(--unit) * 14);
+  padding: 0 calc(var(--unit) * 3);
   touch-action: none;
   user-select: none;
 }
@@ -707,18 +782,87 @@ p {
 .interaction-status {
   align-items: center;
   background: var(--world-char);
+  border: 0;
+  border-radius: 0;
   color: var(--world-cream);
   display: flex;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.7rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * var(--k));
   justify-content: center;
-  letter-spacing: 0.16em;
-  min-height: 3.25rem;
-  padding: 0.75rem 1rem;
+  letter-spacing: 0;
+  line-height: calc(var(--unit) * (var(--k) + 1));
+  min-height: calc(var(--unit) * (var(--k) + 8));
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 3);
+  text-align: left;
+  text-shadow: none;
   text-transform: uppercase;
 }
 
 .interaction-status span {
+  color: var(--world-muted);
+}
+
+/* The HUD strip: WORLD / INDEX and the music note, pinned top-right inside the
+   scene. Both controls are mounted outside the world (the nav by the shell,
+   the music toggle by the root layout) so they stay reachable on the title and
+   intro too; this restyles them as one pixel strip wherever a game surface is
+   on screen. The 44px floor is rounded up to a unit multiple. */
+.experience-shell:has(.world-screen, .title-screen, .intro-screen) .world-index-control,
+body:has(.world-screen, .title-screen, .intro-screen) > .music-control {
+  --world-char: #2b2823;
+  --world-cream: #efe7d3;
+  --world-ink: #14120f;
+  --world-muted: #9c9482;
+  --hud-h: calc(var(--unit) * 11);
+  top: calc(var(--unit) * 2);
+}
+
+@supports (height: round(up, 44px, 4px)) {
+  .experience-shell:has(.world-screen, .title-screen, .intro-screen) .world-index-control,
+  body:has(.world-screen, .title-screen, .intro-screen) > .music-control {
+    --hud-h: round(up, 44px, var(--unit));
+  }
+}
+
+.experience-shell:has(.world-screen, .title-screen, .intro-screen) .world-index-control {
+  gap: var(--unit);
+  right: calc(var(--unit) * 5 + var(--hud-h));
+}
+
+.experience-shell:has(.world-screen, .title-screen, .intro-screen) .world-index-control > span {
+  display: none;
+}
+
+.experience-shell:has(.world-screen, .title-screen, .intro-screen) .world-index-control button,
+body:has(.world-screen, .title-screen, .intro-screen) > .music-control {
+  background: var(--world-char);
+  border: var(--unit) solid var(--world-cream);
+  border-radius: 0;
+  box-shadow: var(--unit) var(--unit) 0 var(--world-ink);
+  color: var(--world-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * var(--k));
+  font-weight: 400;
+  height: var(--hud-h);
+  letter-spacing: 0;
+  min-height: 0;
+  padding: 0 calc(var(--unit) * 2);
+  text-shadow: none;
+}
+
+.experience-shell:has(.world-screen, .title-screen, .intro-screen) .world-index-control button[aria-pressed="true"],
+body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pressed="true"] {
+  background: var(--world-cream);
+  color: var(--world-char);
+}
+
+body:has(.world-screen, .title-screen, .intro-screen) > .music-control {
+  padding: 0;
+  right: calc(var(--unit) * 2);
+  width: var(--hud-h);
+}
+
+body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pressed="false"] {
   color: var(--world-muted);
 }
 
@@ -4457,12 +4601,6 @@ p {
   .intro-stage {
     gap: 1rem;
     grid-template-columns: 5rem 5rem 6rem;
-  }
-
-  .world-instructions {
-    align-items: start;
-    flex-direction: column;
-    gap: 0.25rem;
   }
 
 }

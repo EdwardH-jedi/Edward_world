@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { InteractionPrompt } from "@/components/world/interaction-prompt";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
+import { WorldLabel } from "@/components/world/world-label";
 import { initialPlayer, WORLD_CONFIG, worldObjects } from "@/data/world";
 import { findNearestInteractable, getInteractionPrompt } from "@/lib/game/interactions";
 import {
@@ -11,6 +12,7 @@ import {
   type HorizontalDirection,
 } from "@/lib/game/movement";
 import { getGroundYForFootprint, PIXEL_UNIT } from "@/lib/game/terrain";
+import { snapToCss, toCss, usePixelUnit } from "@/lib/game/use-pixel-unit";
 import { formatJoinLine } from "@/lib/joins/ordinal";
 import { useJoinTotal } from "@/lib/joins/use-join-total";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
@@ -68,6 +70,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const pressedKeys = useRef(new Set<string>());
   const ambientFrame = useAmbientFrame(!disabled);
+  const unit = usePixelUnit();
   // Null until a real total arrives, and null forever if the counter is
   // unreachable — the line is simply absent rather than guessed at.
   const joinTotal = useJoinTotal();
@@ -201,10 +204,12 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     else pressedKeys.current.delete(key);
   }, []);
 
+  // Movement, collision and the camera stay in authored pixels; only what is
+  // drawn is scaled, so the unit can change without touching the simulation.
   const cameraX = getCameraX({
     playerX: player.position.x,
     playerWidth: player.size.width,
-    viewportWidth,
+    viewportWidth: (viewportWidth * PIXEL_UNIT) / unit,
     worldWidth: WORLD_CONFIG.width,
   });
 
@@ -241,7 +246,11 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   const spriteFrame = moving ? walkFrame : pose === "walk" ? 0 : ambientFrame;
 
   return (
-    <main className="world-screen" inert={disabled || undefined}>
+    <main
+      className="world-screen"
+      inert={disabled || undefined}
+      style={{ "--unit": `${unit}px` } as React.CSSProperties}
+    >
       {joinTotal !== null ? (
         <p className="world-join" role="status">
           {formatJoinLine(joinTotal)}
@@ -261,9 +270,9 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
         <div
           className="world-track"
           style={{
-            height: WORLD_CONFIG.height,
-            transform: `translate3d(${-cameraX}px, 0, 0)`,
-            width: WORLD_CONFIG.width,
+            height: toCss(WORLD_CONFIG.height, unit),
+            transform: `translate3d(${-snapToCss(cameraX, unit)}px, 0, 0)`,
+            width: toCss(WORLD_CONFIG.width, unit),
           }}
         >
           <PixelCanvas
@@ -272,7 +281,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
             className="world-backdrop"
             draw={drawBackdrop}
             frame={ambientFrame}
-            unit={PIXEL_UNIT}
+            unit={unit}
           />
           {worldObjects.map((object) => {
             const art = getObjectArt(object);
@@ -284,10 +293,10 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
                 data-object-id={object.id}
                 key={object.id}
                 style={{
-                  height: object.size.height,
-                  left: object.position.x,
-                  top: object.position.y,
-                  width: object.size.width,
+                  height: toCss(object.size.height, unit),
+                  left: toCss(object.position.x, unit),
+                  top: toCss(object.position.y, unit),
+                  width: toCss(object.size.width, unit),
                 }}
               >
                 <PixelCanvas
@@ -295,12 +304,18 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
                   artWidth={art.size.width}
                   draw={art.draw}
                   frame={ambientFrame}
-                  unit={PIXEL_UNIT}
+                  unit={unit}
                 />
-                <span className="world-object__label">{object.label}</span>
+                <WorldLabel
+                  anchorUnits={object.size.width / PIXEL_UNIT}
+                  text={object.label}
+                  unit={unit}
+                />
                 {isNearby && object.interaction ? (
                   <InteractionPrompt
+                    anchorUnits={object.size.width / PIXEL_UNIT}
                     text={getInteractionPrompt(object.interaction)}
+                    unit={unit}
                   />
                 ) : null}
               </div>
@@ -314,10 +329,10 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
             data-moving={moving || undefined}
             data-pose={pose}
             style={{
-              height: avatar.height,
-              left: player.position.x + avatar.left,
-              top: player.position.y + avatar.top,
-              width: avatar.width,
+              height: toCss(avatar.height, unit),
+              left: snapToCss(player.position.x + avatar.left, unit),
+              top: toCss(player.position.y + avatar.top, unit),
+              width: toCss(avatar.width, unit),
             }}
           >
             <PixelCanvas
@@ -326,7 +341,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
               draw={edwardPoses[pose]}
               flipX={player.facing === "left"}
               frame={spriteFrame}
-              unit={PIXEL_UNIT}
+              unit={unit}
             />
           </div>
         </div>

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect } from "react";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
+import { usePixelUnit } from "@/lib/game/use-pixel-unit";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { APPROACH_ART_SIZE, drawApproach } from "@/lib/pixel/monolith";
 import type { ArtRoutine } from "@/lib/pixel/raster";
@@ -22,6 +22,7 @@ interface TitleScreenProps {
  */
 export function TitleScreen({ onEnter, onOpenIndex }: TitleScreenProps) {
   const frame = useAmbientFrame(true);
+  const unit = usePixelUnit();
 
   // The camera has not moved yet, so the scene draws its title composition.
   const draw = useCallback<ArtRoutine>(
@@ -42,7 +43,10 @@ export function TitleScreen({ onEnter, onOpenIndex }: TitleScreenProps) {
   }, [onEnter]);
 
   return (
-    <main className="title-screen">
+    <main
+      className="title-screen"
+      style={{ "--unit": `${unit}px` } as React.CSSProperties}
+    >
       <div className="title-stage">
         <PixelCanvas
           artHeight={APPROACH_ART_SIZE.height}
@@ -51,7 +55,7 @@ export function TitleScreen({ onEnter, onOpenIndex }: TitleScreenProps) {
           draw={draw}
           fill
           frame={frame}
-          unit={PIXEL_UNIT}
+          unit={unit}
         />
 
         <div className="title-copy">
@@ -61,13 +65,18 @@ export function TitleScreen({ onEnter, onOpenIndex }: TitleScreenProps) {
             <br />
             WORLD
           </h1>
+          <p className="title-purpose">
+            A software and AI portfolio you can explore.
+          </p>
         </div>
 
-        <p className="title-purpose">
-          A software and AI portfolio you can explore.
-        </p>
-
-        <button className="title-enter" onClick={onEnter} type="button">
+        {/* Blinks on the ambient tick, like the rest of the scene. */}
+        <button
+          className="title-enter"
+          data-lit={frame % 2 === 0}
+          onClick={onEnter}
+          type="button"
+        >
           [ PRESS ENTER ]
         </button>
 
