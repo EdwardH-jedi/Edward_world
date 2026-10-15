@@ -3,6 +3,8 @@ import type { ArtRoutine, Raster } from "@/lib/pixel/raster";
 import {
   dashes,
   digit,
+  doorFrame,
+  glowEdge,
   roofPitch,
   sprite,
   wheel,
@@ -79,7 +81,9 @@ const edwardsHouse: ArtRoutine = (draw, frame) => {
   draw(18, 33, 12, 1, palette.brown3);
   draw(22, 28, 4, 3, palette.blue2);
   draw(23, 29, 2, 1, frame % 2 ? palette.blue : palette.blue2);
+  glowEdge(draw, 18, 26, 12);
 
+  doorFrame(draw, 34, 32, 9, 18);
   draw(34, 32, 9, 18, palette.brown3);
   draw(41, 41, 1, 1, palette.orange);
 
@@ -139,11 +143,14 @@ const wardrobe: ArtRoutine = (draw) => {
     }
   }
 
+  glowEdge(draw, 7, 21, 40);
+
   draw(42, 23, 3, 3, palette.cream);
   draw(41, 26, 5, 9, palette.cream);
   draw(43, 35, 1, 6, palette.brown3);
   draw(41, 41, 5, 1, palette.brown3);
 
+  doorFrame(draw, 53, 22, 10, 22);
   draw(53, 22, 10, 22, palette.char);
   draw(54, 23, 8, 8, "#4A4438");
   draw(61, 35, 1, 1, palette.orange);
@@ -176,6 +183,7 @@ const sportsgang: ArtRoutine = (draw, frame) => {
   draw(19, 17, 2, 7, palette.char);
   draw(6, 3, 20, 14, palette.char);
   draw(7, 4, 18, 12, "#37332B");
+  draw(6, 3, 20, 1, palette.signAccent);
   digit(draw, 10, 7, "3", palette.cream);
   draw(15, 9, 1, 1, palette.stone3);
   digit(draw, 18, 7, "2", palette.orange);
@@ -244,7 +252,9 @@ const aflLab: ArtRoutine = (draw, frame) => {
   // The one warm window: the desk lamp still on inside.
   draw(26, 34, 6, 5, palette.warm);
   draw(25, 33, 8, 1, palette.brown3);
+  glowEdge(draw, 26, 34, 6);
 
+  doorFrame(draw, 52, 30, 8, 18);
   draw(52, 30, 8, 18, palette.char);
   draw(58, 39, 1, 1, palette.orange);
 
@@ -275,11 +285,12 @@ const arcade: ArtRoutine = (draw, frame) => {
       17,
       1,
       1,
-      (index + frame) % 2 ? palette.warm : palette.orange2,
+      (index + frame) % 2 ? palette.warmGlow : palette.orange2,
     );
   }
 
   windowPane(draw, 12, 24, 18, 18, palette.warm);
+  glowEdge(draw, 12, 24, 18);
   draw(15, 27, 11, 14, palette.char);
   const screenColours = [palette.blue2, palette.orange, palette.green3] as const;
   draw(16, 28, 8, 6, screenColours[frame % 3]);
@@ -288,8 +299,9 @@ const arcade: ArtRoutine = (draw, frame) => {
   draw(22, 36, 2, 1, palette.cream);
 
   draw(38, 24, 14, 22, "#14110D");
-  draw(38, 24, 1, 22, "#6B5A3C");
-  draw(51, 24, 1, 22, "#6B5A3C");
+  draw(38, 24, 1, 22, palette.signAccent);
+  draw(51, 24, 1, 22, palette.signAccent);
+  draw(38, 23, 14, 1, palette.signAccent);
   draw(41, 30, 7, 10, "#26221D");
   draw(42, 31, 5, 4, frame % 2 ? palette.blue3 : "#3A4A52");
 

@@ -27,8 +27,9 @@ const EDWARD_MAP: SpriteMap = {
   f: palette.skin,
   g: palette.skinShade,
   e: palette.ink,
-  c: palette.navy,
-  C: palette.navy2,
+  c: palette.blue3,
+  C: palette.navy,
+  o: palette.playerOutline,
   w: palette.shirt,
   p: palette.denim,
   s: palette.ink,
@@ -156,6 +157,28 @@ const EDWARD_INSPECT: SpriteRows = [
   ...EDWARD_LEGS[0],
 ];
 
+/* ── Outline ────────────────────────────────────────────────────────────── */
+
+/**
+ * Turns the outermost ring of a sprite into the 1px player outline.
+ *
+ * Done inside the 12x16 grid, replacing edge pixels rather than adding a ring
+ * outside them, so the silhouette — and with it the hitbox, the anchor and
+ * every bounds test — is exactly what it was. A pixel is "edge" when any of
+ * its four neighbours is transparent or off the sprite.
+ */
+function outlined(rows: SpriteRows): SpriteRows {
+  const solid = (x: number, y: number) => (rows[y]?.[x] ?? ".") !== ".";
+  return rows.map((row, y) =>
+    Array.from(row, (cell, x) =>
+      cell !== "." &&
+      !(solid(x - 1, y) && solid(x + 1, y) && solid(x, y - 1) && solid(x, y + 1))
+        ? "o"
+        : cell,
+    ).join(""),
+  );
+}
+
 /* ── Drawing ────────────────────────────────────────────────────────────── */
 
 /** Art pixels of travel per walk frame. Tied to distance, not to time. */
@@ -188,7 +211,8 @@ function shadow(draw: Raster) {
  * one pixel on every other beat while the feet stay planted. One pixel at
  * 450ms is deliberately below the threshold of looking animated.
  */
-function drawStanding(rows: SpriteRows, draw: Raster, frame: number) {
+function drawStanding(source: SpriteRows, draw: Raster, frame: number) {
+  const rows = outlined(source);
   const bob = frame % 2 === 1 ? 1 : 0;
   shadow(draw);
   sprite(draw, 0, bob, rows.slice(0, 12), EDWARD_MAP);
@@ -198,11 +222,11 @@ function drawStanding(rows: SpriteRows, draw: Raster, frame: number) {
 function drawSide(draw: Raster, frame: number) {
   const index = frame % EDWARD_WALK.length;
   shadow(draw);
-  sprite(draw, 0, 0, EDWARD_WALK[index], EDWARD_MAP);
+  sprite(draw, 0, 0, outlined(EDWARD_WALK[index]), EDWARD_MAP);
   // Passing frames get the coat hem lifting off the leg and the bag catching
   // up half a beat late. Two pixels is the whole of the secondary motion.
   if (index % 2 === 1) {
-    draw(10, 12, 1, 1, palette.navy);
+    draw(10, 12, 1, 1, palette.blue3);
     draw(1, 12, 1, 1, palette.brown3);
   }
 }

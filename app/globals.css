@@ -583,6 +583,7 @@ p {
   --world-char: #2b2823;
   --world-cream: #efe7d3;
   --world-orange: #c98a52;
+  --world-sign: #a9482c; /* palette.signAccent */
   --world-muted: #9c9482;
   --world-ink: #14120f;
   --unit: 4px;
@@ -722,8 +723,8 @@ p {
 }
 
 .world-object__prompt {
-  background: var(--world-orange);
-  color: var(--world-ink);
+  background: var(--world-sign);
+  color: var(--world-cream);
   font-size: calc(var(--unit) * var(--k));
   left: var(--chip-left, 50%);
   line-height: calc(var(--unit) * (var(--k) + 1));

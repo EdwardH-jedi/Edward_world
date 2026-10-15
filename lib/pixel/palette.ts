@@ -58,6 +58,12 @@ export const palette = {
   shirt: "#DCD5C0",
   hairLift: "#453D34",
   skinShade: "#BC946E",
+  // Accents. They mark what can be used, so they are spent only on the player
+  // and on enterable places — the scaffolding and backdrop stay plain, which is
+  // how the eye learns "accent = interactive".
+  warmGlow: "#F2C14E", // lamp, window and marquee light
+  signAccent: "#A9482C", // door frames, signs and the interaction chip
+  playerOutline: "#2A1F18", // Edward's 1px outline
 } as const;
 
 export type PaletteColor = (typeof palette)[keyof typeof palette];
