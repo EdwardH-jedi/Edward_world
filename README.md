@@ -1,5 +1,7 @@
 # Edward's World
 
+[![CI](https://github.com/EdwardH-jedi/Edward_world/actions/workflows/ci.yml/badge.svg)](https://github.com/EdwardH-jedi/Edward_world/actions/workflows/ci.yml)
+
 An interactive developer portfolio built as a side-scrolling pixel town. Explore four project demos and a personal room, or choose **VIEW PROJECTS** on the title screen to go straight to the reading view.
 
 **[Explore the world](https://edwards-world.vercel.app)** · **[Read the project index](https://edwards-world.vercel.app/?view=index)** · [Background and contact](https://edwards-world.vercel.app/resume)
@@ -136,7 +138,7 @@ This project uses AI-assisted planning, implementation, and review. Product dire
 
 ## License and assets
 
-**There is no license file in this repository.** No open-source reuse license is granted. This README does not change the licensing of the code, art, music, or personal portfolio content.
+The source code is released under the [MIT License](LICENSE). The license does not extend to the personal portfolio content or the music file listed below, and third-party fonts keep their own licenses.
 
 - **Code and artwork:** world art is authored as procedural drawing code in `lib/pixel/`, rather than sprite sheets or stock photography
 - **Portfolio content:** biography, contact details, and project write-ups live in `data/personal.ts` and `data/projects.ts`
