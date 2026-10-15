@@ -142,7 +142,7 @@ export function dashes(
 }
 
 /** Smoke puff colours by age: fresh and grey, thinning into the sky. */
-const SMOKE_AGES = [palette.stone, palette.smoke, "#DDD5BE", palette.sky2] as const;
+const SMOKE_AGES = [palette.stone2, palette.stone, palette.smoke, palette.sky2] as const;
 
 /**
  * Chimney smoke: three puffs on a four-frame loop. Each puff rises three
