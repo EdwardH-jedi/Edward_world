@@ -1,4 +1,5 @@
 import { DIRT_START_X, getGroundY, PIXEL_UNIT } from "@/lib/game/terrain";
+import { drawBird, drawClouds } from "@/lib/pixel/ambient";
 import { palette } from "@/lib/pixel/palette";
 import type { ArtRoutine, Raster } from "@/lib/pixel/raster";
 import { dashes, hills, lamp, scatter, smoke, tree } from "@/lib/pixel/raster";
@@ -29,39 +30,8 @@ function sky(draw: Raster, frame: number) {
   draw(0, 54, W, 18, "#E4D9BF");
   draw(0, 72, W, H - 72, palette.sky2);
 
-  // Clouds drift; the world is wide, so they wrap rather than pile up.
-  const clouds = [
-    [40, 14, 16],
-    [170, 30, 11],
-    [250, 21, 16],
-    [370, 9, 12],
-    [470, 26, 16],
-    [560, 16, 10],
-    [640, 34, 16],
-    [750, 12, 13],
-    [830, 24, 16],
-    [910, 38, 11],
-  ] as const;
-  for (const [startX, y, width] of clouds) {
-    // Higher cloud banks drift a little slower, which reads as depth.
-    const drift = y < 20 ? frame >> 2 : frame >> 1;
-    const x = ((startX + drift) % (W + 40)) - 20;
-    draw(x, y, width, 3, "#F2EAD6");
-    draw(x + 3, y - 2, Math.max(5, width - 7), 2, "#F2EAD6");
-  }
-
-  // A loose skein of birds crossing, spread across the width.
-  const birds = [
-    [0, 34],
-    [330, 41],
-    [346, 38],
-    [700, 27],
-  ] as const;
-  for (const [offset, y] of birds) {
-    const x = ((frame * 3 + offset) % (W + 40)) - 20;
-    draw(x, y + (frame % 2), 2, 1, palette.brown3);
-    draw(x + 3, y - 1 + (frame % 2), 2, 1, palette.brown3);
-  }
+  drawClouds(draw, frame, W);
+  drawBird(draw, frame, W);
 }
 
 function distantLand(draw: Raster) {
@@ -209,8 +179,8 @@ function aflOval(draw: Raster) {
  */
 function townCluster(draw: Raster, frame: number) {
   const ground = groundArtY(360);
-  lamp(draw, 334, ground);
-  lamp(draw, 398, ground);
+  lamp(draw, 334, ground, 18, frame);
+  lamp(draw, 398, ground, 18, frame);
   for (let x = 336; x <= 398; x += 2) {
     const t = (x - 336) / 62;
     draw(x, ground - 17 + Math.round(14 * t * (1 - t)), 1, 1, palette.char);
