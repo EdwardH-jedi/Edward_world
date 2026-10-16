@@ -182,7 +182,8 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
   const thingRefs = useRef(new Map<HouseThingId, HTMLButtonElement>());
 
   const { consume } = useMinigameInput(openId === null && !gateOpen);
-  const ambientFrame = useAmbientFrame(true);
+  // The monolith gate covers the house and runs its own ambient tick.
+  const ambientFrame = useAmbientFrame(!gateOpen);
   const reducedMotion = useReducedMotion();
 
   const nearest = useMemo(() => {

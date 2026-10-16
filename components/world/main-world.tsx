@@ -28,7 +28,7 @@ import { AMBIENT_FRAME_MS, useAmbientFrame } from "@/lib/motion/use-ambient-fram
 
 import {
   claimExploreHint,
-  EXPLORE_HINT_FRAMES,
+  EXPLORE_HINT_MS,
   getExploreHintServerSnapshot,
   subscribeExploreHint,
 } from "@/lib/storage/explore-hint";
@@ -101,6 +101,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     claimExploreHint,
     getExploreHintServerSnapshot,
   );
+  const [hintExpired, setHintExpired] = useState(false);
   const unit = usePixelUnit();
   // Null until a real total arrives, and null forever if the counter is
   // unreachable — the line is simply absent rather than guessed at.
@@ -152,6 +153,12 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   useEffect(() => {
     if (locked) pressedKeys.current.clear();
   }, [locked]);
+
+  useEffect(() => {
+    if (!firstVisit) return;
+    const timer = window.setTimeout(() => setHintExpired(true), EXPLORE_HINT_MS);
+    return () => window.clearTimeout(timer);
+  }, [firstVisit]);
 
   // Settling is what lets him hold his walking stance for a beat before he
   // turns to face the visitor; moving un-settles him again from the frame loop.
@@ -329,7 +336,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
         </p>
       ) : null}
 
-      {firstVisit && ambientFrame < EXPLORE_HINT_FRAMES ? (
+      {firstVisit && !hintExpired ? (
         <div className="world-instructions">
           <strong>Explore</strong>
           <span>A / D or ← / → to move · E to interact</span>
