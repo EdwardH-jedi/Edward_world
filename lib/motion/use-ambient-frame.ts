@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 
 /**
@@ -12,6 +12,30 @@ import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
  */
 export const AMBIENT_FRAME_MS = 450;
 
+/** One ambient frame counter, read as an external store. */
+export interface AmbientClock {
+  subscribe: (onChange: () => void) => () => void;
+  getSnapshot: () => number;
+}
+
+function createAmbientClock() {
+  let frame = 0;
+  const listeners = new Set<() => void>();
+  return {
+    subscribe(onChange: () => void) {
+      listeners.add(onChange);
+      return () => void listeners.delete(onChange);
+    },
+    getSnapshot: () => frame,
+    tick() {
+      frame += 1;
+      listeners.forEach((listener) => listener());
+    },
+  };
+}
+
+const getServerFrame = () => 0;
+
 /**
  * Drives environmental animation from a single shared frame counter.
  *
@@ -21,20 +45,31 @@ export const AMBIENT_FRAME_MS = 450;
  * its current frame and simply stops advancing. The preference is read
  * reactively, so turning it on mid-visit freezes the world and turning it off
  * resumes it.
+ *
+ * The clock is a store rather than state, so the component that owns it does
+ * not re-render on every tick; only the leaves that read it with
+ * `useAmbientClockFrame` do. One clock per owner, because surfaces with
+ * different `active` answers can be mounted at once.
  */
-export function useAmbientFrame(active: boolean) {
-  const [frame, setFrame] = useState(0);
+export function useAmbientClock(active: boolean): AmbientClock {
+  const [clock] = useState(createAmbientClock);
   const reduced = useReducedMotion();
 
   useEffect(() => {
     if (!active || reduced) return;
-
-    const interval = window.setInterval(() => {
-      setFrame((current) => current + 1);
-    }, AMBIENT_FRAME_MS);
-
+    const interval = window.setInterval(clock.tick, AMBIENT_FRAME_MS);
     return () => window.clearInterval(interval);
-  }, [active, reduced]);
+  }, [active, clock, reduced]);
 
-  return frame;
+  return clock;
+}
+
+/** The current frame of a clock; re-renders only the caller on each tick. */
+export function useAmbientClockFrame(clock: AmbientClock) {
+  return useSyncExternalStore(clock.subscribe, clock.getSnapshot, getServerFrame);
+}
+
+/** Owns a clock and reads it in the same component, for small scenes. */
+export function useAmbientFrame(active: boolean) {
+  return useAmbientClockFrame(useAmbientClock(active));
 }

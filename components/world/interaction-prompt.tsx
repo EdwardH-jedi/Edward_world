@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import { useUnitChipWidth } from "@/components/world/world-label";
 import { play } from "@/lib/audio/sfx";
 
@@ -9,7 +9,7 @@ import { play } from "@/lib/audio/sfx";
  * to. It mounts once per target, so the two-step pop (CSS) and the blip both
  * happen once per arrival.
  */
-export function InteractionPrompt({
+export const InteractionPrompt = memo(function InteractionPrompt({
   text,
   unit,
   anchorUnits,
@@ -31,4 +31,4 @@ export function InteractionPrompt({
       {text}
     </span>
   );
-}
+});

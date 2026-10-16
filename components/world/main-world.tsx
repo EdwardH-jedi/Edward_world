@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  type ComponentProps,
   useCallback,
   useEffect,
   useMemo,
@@ -24,7 +25,12 @@ import { formatJoinLine } from "@/lib/joins/ordinal";
 import { useJoinTotal } from "@/lib/joins/use-join-total";
 import { play } from "@/lib/audio/sfx";
 import { prefersReducedMotion } from "@/lib/motion/animate-element";
-import { AMBIENT_FRAME_MS, useAmbientFrame } from "@/lib/motion/use-ambient-frame";
+import {
+  AMBIENT_FRAME_MS,
+  type AmbientClock,
+  useAmbientClock,
+  useAmbientClockFrame,
+} from "@/lib/motion/use-ambient-frame";
 
 import {
   claimExploreHint,
@@ -81,6 +87,23 @@ function getObjectArt(object: WorldObject): BuildingArt {
   return signpostArt;
 }
 
+/**
+ * A canvas that redraws on the ambient tick by itself, so the tick never
+ * re-renders the world, its labels or its prompt. `frameFor` maps the tick to
+ * the frame to draw, for a sprite that only sometimes follows it.
+ */
+function AmbientCanvas({
+  clock,
+  frameFor,
+  ...canvas
+}: Omit<ComponentProps<typeof PixelCanvas>, "frame"> & {
+  clock: AmbientClock;
+  frameFor?: (ambientFrame: number) => number;
+}) {
+  const frame = useAmbientClockFrame(clock);
+  return <PixelCanvas {...canvas} frame={frameFor ? frameFor(frame) : frame} />;
+}
+
 export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   const [player, setPlayer] = useState<Player>(() => ({
     ...initialPlayer,
@@ -93,7 +116,9 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   const [viewportWidth, setViewportWidth] = useState(0);
   const viewportRef = useRef<HTMLDivElement>(null);
   const pressedKeys = useRef(new Set<string>());
-  const ambientFrame = useAmbientFrame(!disabled);
+  // Mirrors `moving` for the frame loop, so idle frames call no setters.
+  const movingRef = useRef(false);
+  const ambient = useAmbientClock(!disabled);
   // First arrival on this device only. The server snapshot is "no hint", so
   // hydration agrees and the hint appears once the client has read storage.
   const firstVisit = useSyncExternalStore(
@@ -177,9 +202,12 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
       const deltaSeconds = Math.min((time - lastTime) / 1_000, 0.05);
       lastTime = time;
 
-      // Same value bails out of a re-render, so this is safe every frame.
-      setMoving((current) => (current === (direction !== 0) ? current : direction !== 0));
-      if (direction !== 0) setSettled((current) => (current ? false : current));
+      // Setters only on a change: an idle frame must not schedule renders.
+      if ((direction !== 0) !== movingRef.current) {
+        movingRef.current = direction !== 0;
+        setMoving(movingRef.current);
+        if (movingRef.current) setSettled(false);
+      }
 
       if (direction !== 0) {
         setPlayer((current) => {
@@ -191,10 +219,13 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
             worldWidth: WORLD_CONFIG.width,
             playerWidth: current.size.width,
           });
+          const facing = direction < 0 ? "left" : "right";
+          // Held against the world's edge: nothing moved, so keep the same state.
+          if (nextX === current.position.x && facing === current.facing) return current;
 
           return {
             ...current,
-            facing: direction < 0 ? "left" : "right",
+            facing,
             position: {
               x: nextX,
               // Follow the terraced ground so Edward walks down the hill
@@ -315,14 +346,16 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
    * raises a hand at anything he can interact with, and otherwise settles and
    * looks out at the visitor, which is the pose that reads as the protagonist.
    */
-  const { pose, frame: spriteFrame } = selectEdwardLook({
+  // The ambient part of his frame is read by his canvas alone, so a standing
+  // Edward breathing on the tick does not re-render the world.
+  const look = {
     moving,
     settled,
     nearBuildingLocked: locked && nearbyObject?.kind === "building",
     nearObject: Boolean(nearbyObject),
     walkFrame,
-    ambientFrame,
-  });
+  };
+  const { pose } = selectEdwardLook({ ...look, ambientFrame: 0 });
 
   return (
     <main
@@ -357,12 +390,12 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
             width: toCss(WORLD_CONFIG.width, unit),
           } as React.CSSProperties}
         >
-          <PixelCanvas
+          <AmbientCanvas
             artHeight={BACKDROP_ART_SIZE.height}
             artWidth={BACKDROP_ART_SIZE.width}
             className="world-backdrop"
+            clock={ambient}
             draw={drawBackdrop}
-            frame={ambientFrame}
             unit={unit}
           />
           {worldObjects.map((object) => {
@@ -381,11 +414,11 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
                   width: toCss(object.size.width, unit),
                 }}
               >
-                <PixelCanvas
+                <AmbientCanvas
                   artHeight={art.size.height}
                   artWidth={art.size.width}
+                  clock={ambient}
                   draw={object.id === openingId && openDoorDraw ? openDoorDraw : art.draw}
-                  frame={ambientFrame}
                   unit={unit}
                 />
                 <WorldLabel
@@ -417,12 +450,13 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
               width: toCss(avatar.width, unit),
             }}
           >
-            <PixelCanvas
+            <AmbientCanvas
               artHeight={EDWARD_ART_SIZE.height}
               artWidth={EDWARD_ART_SIZE.width}
+              clock={ambient}
               draw={edwardPoses[pose]}
               flipX={player.facing === "left"}
-              frame={spriteFrame}
+              frameFor={(ambientFrame) => selectEdwardLook({ ...look, ambientFrame }).frame}
               unit={unit}
             />
           </div>
