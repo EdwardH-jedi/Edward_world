@@ -7,8 +7,10 @@ see the [README](../README.md); for the product thinking behind it, see the
 The layering is deliberate and load-bearing: portfolio content, world rules,
 motion and rendering are separate, so any one of them can change without
 replacing the others. Two rules hold across every surface — **simulations are
-pure** (no React, no DOM, no `requestAnimationFrame`), and **timers drive state
-while animation never does.**
+pure** (no React, no DOM, no `requestAnimationFrame`), and **timers drive rule
+and stage state while animation never does** — animation may only write
+presentation values and live simulation (see
+[Timers and animation](#timers-and-animation)).
 
 ## Application structure
 
@@ -123,6 +125,31 @@ experience is drawn in
 [Project location experiences](#project-location-experiences): every project
 gets the same building, proximity reach, typed action and return trip, and then
 its interior is entirely its own.
+
+## Timers and animation
+
+The invariant distinguishes three kinds of state:
+
+| Kind | Examples | Who may write it |
+| --- | --- | --- |
+| **Rule and stage state** | Which intro, shrine, SportsGang or AFL stage is showing; reducer state such as the wardrobe archive or the name gate | Timers (`setTimeout`) and input handlers only. Never an animation callback, so a throttled background tab cannot stall a stage |
+| **Presentation values** | A camera offset, how many letters have lifted, a revealed probability | anime.js may tween these into React state through `driveValue` (`lib/motion/intro-choreography.ts`). They change what is drawn, never which stage is current |
+| **Live simulation** | The walking player's position and pose | A `requestAnimationFrame` loop, because the player is driving in real time |
+
+The existing presentation and live-simulation writers are:
+
+- `components/intro/intro-sequence.tsx:51` — `driveValue(setPanOffset, …)`, the
+  title's camera pan. The `PAN` → `WORLD` step is a separate `setTimeout`.
+- `components/house/monolith-gate.tsx:86` — `driveValue(setLifted, …)`, letters
+  leaving the stone during `SELECTION`. The shrine stages advance on timers.
+- `components/afl/afl-experience.tsx:145` — `driveValue(setRevealed, …)`, the
+  calibrated probability counting up in `RESULT`.
+- `components/world/main-world.tsx:174` — the world's rAF loop sets
+  `moving`, `settled` and `player` as the visitor walks.
+
+The wardrobe's garment flight also finishes in an animation callback
+(`lib/motion/wardrobe-choreography.ts`), but it only removes the flying ghost and
+settles the figure; the archive reducer has already run before it takes off.
 
 ## Data and domain boundaries
 
@@ -283,10 +310,12 @@ player takes, and the mini-game reports its own completion.
 
 Two rules make the sequence robust:
 
-1. **Timers drive state; animation never does.** anime.js runs on
-   `requestAnimationFrame`, which browsers throttle hard in background tabs, so
-   a stage that waited on a timeline's completion would stall. Stages advance on
-   `setTimeout`; choreography is fired and forgotten.
+1. **Timers drive rule and stage state; animation never does.** anime.js runs
+   on `requestAnimationFrame`, which browsers throttle hard in background tabs,
+   so a stage that waited on a timeline's completion would stall. Stages advance
+   on `setTimeout`; choreography is fired and forgotten. See
+   [Timers and animation](#timers-and-animation) for what animation *is*
+   allowed to write.
 2. **End states are pinned, not tweened into.** `settleCourtExpansion` sets the
    post-transition state explicitly when the stage leaves, so a timeline still
    mid-flight cannot strand the phone half-faded.
