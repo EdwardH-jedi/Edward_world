@@ -15,8 +15,10 @@ import { WorldLabel } from "@/components/world/world-label";
 import { initialPlayer, WORLD_CONFIG, worldObjects } from "@/data/world";
 import { findNearestInteractable, getInteractionPrompt } from "@/lib/game/interactions";
 import {
+  createLookAhead,
   getCameraX,
   movePlayerX,
+  stepLookAhead,
   type HorizontalDirection,
 } from "@/lib/game/movement";
 import { getGroundYForFootprint, PIXEL_UNIT } from "@/lib/game/terrain";
@@ -64,9 +66,6 @@ const MOVEMENT_KEYS = new Set(["a", "d", "arrowleft", "arrowright"]);
  * strobe him between the side and front poses.
  */
 const SETTLE_MS = 420;
-
-/** The camera leads the player by one art pixel in the way he faces. */
-const LOOK_AHEAD = PIXEL_UNIT;
 
 /** Ambient frames the door stays open before the scene changes. */
 const DOOR_OPEN_FRAMES = 2;
@@ -118,6 +117,11 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   const pressedKeys = useRef(new Set<string>());
   // Mirrors `moving` for the frame loop, so idle frames call no setters.
   const movingRef = useRef(false);
+  // The look-ahead's hysteresis state lives in the frame loop; only the
+  // offset the camera reads is state, set when it actually steps.
+  const [initialLook] = useState(() => createLookAhead(initialPlayer.facing === "left" ? -1 : 1));
+  const lookRef = useRef(initialLook);
+  const [lookAhead, setLookAhead] = useState(initialLook.offset);
   const ambient = useAmbientClock(!disabled);
   // First arrival on this device only. The server snapshot is "no hint", so
   // hydration agrees and the hint appears once the client has read storage.
@@ -208,6 +212,15 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
         setMoving(movingRef.current);
         if (movingRef.current) setSettled(false);
       }
+
+      const look = stepLookAhead(
+        lookRef.current,
+        direction,
+        Math.abs(direction) * initialPlayer.speed * deltaSeconds,
+        deltaSeconds * 1_000,
+      );
+      if (look.offset !== lookRef.current.offset) setLookAhead(look.offset);
+      lookRef.current = look;
 
       if (direction !== 0) {
         setPlayer((current) => {
@@ -309,7 +322,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     playerWidth: player.size.width,
     viewportWidth: (viewportWidth * PIXEL_UNIT) / unit,
     worldWidth: WORLD_CONFIG.width,
-    lookAhead: player.facing === "left" ? -LOOK_AHEAD : LOOK_AHEAD,
+    lookAhead,
   });
 
   const walkFrame = getWalkFrame(player.position.x, PIXEL_UNIT, moving);
