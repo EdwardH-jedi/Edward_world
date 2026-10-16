@@ -40,7 +40,7 @@ import {
   edwardPoses,
   getAvatarAnchor,
   getWalkFrame,
-  type EdwardPose,
+  selectEdwardLook,
 } from "@/lib/pixel/characters";
 import type { Player, WorldObject } from "@/types/world";
 import type { InteractionAction } from "@/types/world";
@@ -308,19 +308,14 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
    * raises a hand at anything he can interact with, and otherwise settles and
    * looks out at the visitor, which is the pose that reads as the protagonist.
    */
-  const pose: EdwardPose = moving
-    ? "walk"
-    : locked && nearbyObject?.kind === "building"
-      ? "back"
-      : nearbyObject
-        ? "inspect"
-        : settled
-          ? "front"
-          : "walk";
-
-  // The walk cycle steps with distance; the standing poses breathe on the
-  // ambient tick. A stopped-but-not-settled Edward holds the idle frame.
-  const spriteFrame = moving ? walkFrame : pose === "walk" ? 0 : ambientFrame;
+  const { pose, frame: spriteFrame } = selectEdwardLook({
+    moving,
+    settled,
+    nearBuildingLocked: locked && nearbyObject?.kind === "building",
+    nearObject: Boolean(nearbyObject),
+    walkFrame,
+    ambientFrame,
+  });
 
   return (
     <main

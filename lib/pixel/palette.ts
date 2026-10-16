@@ -63,6 +63,7 @@ export const palette = {
   // how the eye learns "accent = interactive".
   warmGlow: "#F2C14E", // lamp, window and marquee light
   signAccent: "#A9482C", // door frames, signs and the interaction chip
+  signBackplate: "#14110D", // 1px dark plate behind signAccent on dark surfaces
   playerOutline: "#2A1F18", // Edward's 1px outline
 } as const;
 

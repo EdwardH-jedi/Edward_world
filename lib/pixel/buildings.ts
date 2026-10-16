@@ -200,8 +200,9 @@ const sportsgang: ArtRoutine = (draw, frame) => {
   draw(11, 17, 2, 7, palette.char);
   draw(19, 17, 2, 7, palette.char);
   draw(6, 3, 20, 14, palette.char);
-  draw(7, 4, 18, 12, "#37332B");
+  draw(7, 5, 18, 11, "#37332B");
   draw(6, 3, 20, 1, palette.signAccent);
+  draw(6, 4, 20, 1, palette.signBackplate);
   digit(draw, 10, 7, "3", palette.cream);
   draw(15, 9, 1, 1, palette.stone3);
   digit(draw, 18, 7, "2", palette.orange);
@@ -316,7 +317,10 @@ const arcade: ArtRoutine = (draw, frame) => {
   draw(18, 36, 2, 1, palette.orange);
   draw(22, 36, 2, 1, palette.cream);
 
-  draw(38, 24, 14, 22, "#14110D");
+  draw(37, 22, 16, 1, palette.signBackplate);
+  draw(37, 23, 1, 23, palette.signBackplate);
+  draw(52, 23, 1, 23, palette.signBackplate);
+  draw(38, 24, 14, 22, palette.signBackplate);
   draw(38, 24, 1, 22, palette.signAccent);
   draw(51, 24, 1, 22, palette.signAccent);
   draw(38, 23, 14, 1, palette.signAccent);

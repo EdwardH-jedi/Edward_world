@@ -123,17 +123,47 @@ describe("the bird", () => {
     expect(wings(3)).not.toEqual(wings(2));
   });
 
-  it("crosses the sky and despawns, then repeats every BIRD_PERIOD frames", () => {
+  it("crosses the sky and despawns", () => {
     expect(BIRD_PERIOD).toBe(40);
     const x = (frame: number) => record(routine, frame)[0][0];
     expect(x(5)).toBeGreaterThan(x(2));
     expect(record(routine, 34)).toHaveLength(0);
     expect(record(routine, 39)).toHaveLength(0);
-    // The first cycle is fixed; the next bird starts a new crossing.
-    expect(record(routine, 42)).toHaveLength(3);
-    for (const frame of FRAMES) {
-      expect(record(routine, frame)).toEqual(record(routine, frame)); // pure
+  });
+
+  /*
+   * Deliberately not "the output repeats every 40 frames": each cycle is seeded
+   * to a new origin, so the full pattern never repeats. What does repeat, and
+   * what is asserted here, is the cadence, the wing phase and the path shape.
+   */
+  it("spawns on a 40-frame cadence with the same wing phase and path shape each cycle", () => {
+    const normalised = (frame: number) => {
+      const calls = record(routine, frame);
+      return calls.map(([x, y, w, h, colour]) => [x - calls[0][0], y - calls[0][1], w, h, colour]);
+    };
+    for (let cycle = 1; cycle <= 4; cycle += 1) {
+      for (let phase = 0; phase < BIRD_PERIOD; phase += 1) {
+        const first = record(routine, phase);
+        const again = record(routine, phase + cycle * BIRD_PERIOD);
+        expect(again.length, `cycle ${cycle} phase ${phase}`).toBe(first.length);
+        if (first.length === 0) continue;
+        // Wings: same shape on the same two-frame phase.
+        expect(normalised(phase + cycle * BIRD_PERIOD)).toEqual(normalised(phase));
+      }
     }
+    // Path: three pixels of travel per frame in every cycle.
+    for (const cycle of [0, 1, 2]) {
+      const at = (phase: number) => record(routine, cycle * BIRD_PERIOD + phase)[0][0];
+      expect(at(5) - at(2)).toBe(9);
+    }
+  });
+
+  it("starts each crossing from a new seeded origin", () => {
+    const origin = (cycle: number) => record(routine, cycle * BIRD_PERIOD + 2)[0];
+    const origins = [0, 1, 2, 3].map((cycle) => origin(cycle).slice(0, 2).join(","));
+    expect(new Set(origins).size).toBe(origins.length);
+    // Still deterministic: the same cycle always starts from the same place.
+    expect(origin(2)).toEqual(origin(2));
   });
 });
 

@@ -219,16 +219,23 @@ function drawStanding(source: SpriteRows, draw: Raster, frame: number) {
   sprite(draw, 0, 12, rows.slice(12), EDWARD_MAP);
 }
 
+/**
+ * Passing frames get the coat hem lifting off the leg and the bag catching up
+ * half a beat late. Two pixels is the whole of the secondary motion, and they
+ * are added to the rows *before* outlining so the outline is always the last
+ * word on the silhouette.
+ */
+function withPassingHem(rows: SpriteRows): SpriteRows {
+  return rows.map((row, y) =>
+    y === 12 ? `${row[0]}b${row.slice(2, 10)}c${row.slice(11)}` : row,
+  );
+}
+
 function drawSide(draw: Raster, frame: number) {
   const index = frame % EDWARD_WALK.length;
+  const rows = index % 2 === 1 ? withPassingHem(EDWARD_WALK[index]) : EDWARD_WALK[index];
   shadow(draw);
-  sprite(draw, 0, 0, outlined(EDWARD_WALK[index]), EDWARD_MAP);
-  // Passing frames get the coat hem lifting off the leg and the bag catching
-  // up half a beat late. Two pixels is the whole of the secondary motion.
-  if (index % 2 === 1) {
-    draw(10, 12, 1, 1, palette.blue3);
-    draw(1, 12, 1, 1, palette.brown3);
-  }
+  sprite(draw, 0, 0, outlined(rows), EDWARD_MAP);
 }
 
 /**
@@ -244,6 +251,28 @@ export const edwardPoses: Readonly<Record<EdwardPose, ArtRoutine>> = {
   back: (draw, frame) => drawStanding(EDWARD_BACK, draw, frame),
   inspect: (draw, frame) => drawStanding(EDWARD_INSPECT, draw, frame),
 };
+
+/**
+ * Which pose and frame to draw. Standing animation (inspect, breathing) waits
+ * for him to settle: an Edward who has only just stopped holds the walk's idle
+ * frame, even beside something he could look over.
+ */
+export function selectEdwardLook(state: {
+  moving: boolean;
+  settled: boolean;
+  nearBuildingLocked: boolean;
+  nearObject: boolean;
+  walkFrame: number;
+  ambientFrame: number;
+}): { pose: EdwardPose; frame: number } {
+  if (state.moving) return { pose: "walk", frame: state.walkFrame };
+  if (state.nearBuildingLocked) return { pose: "back", frame: state.ambientFrame };
+  if (!state.settled) return { pose: "walk", frame: 0 };
+  return {
+    pose: state.nearObject ? "inspect" : "front",
+    frame: state.ambientFrame,
+  };
+}
 
 /** The side walk cycle, for the surfaces that only ever walk him left and right. */
 export const drawEdward: ArtRoutine = edwardPoses.walk;
