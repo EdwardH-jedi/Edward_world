@@ -7,8 +7,11 @@
 
 export const EXPLORE_HINT_KEY = "edwards-world:explore-hint-seen";
 
-/** How long the hint stays up, in ambient frames (450ms each). */
-export const EXPLORE_HINT_FRAMES = 4;
+/**
+ * How long the hint stays up, in milliseconds. Its own timer, not the ambient
+ * counter, so it still expires when reduced motion freezes the world.
+ */
+export const EXPLORE_HINT_MS = 1_800;
 
 /** Latched per page load, so every render of the world agrees on the answer. */
 let claimed: boolean | undefined;

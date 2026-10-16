@@ -85,8 +85,9 @@ ritual is run by `components/house/monolith-gate.tsx` when the visitor presses
 leaves the house for the world, which is all `UNLOCK` ever did - nothing is
 persisted. `Escape` closes the gate and stays in the house.
 
-The first arrival in the world shows the EXPLORE hint for four ambient frames
-(`EXPLORE_HINT_FRAMES`), then hides it. `lib/storage/explore-hint.ts` remembers
+The first arrival in the world shows the EXPLORE hint for 1.8 seconds
+(`EXPLORE_HINT_MS`, its own timer so it also expires under reduced motion), then
+hides it. `lib/storage/explore-hint.ts` remembers
 that it was shown in `localStorage`, guarded like the saved look, so a returning
 visitor never sees it; where storage is blocked it shows every visit.
 

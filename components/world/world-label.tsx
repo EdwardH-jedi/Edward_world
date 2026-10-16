@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, type RefObject } from "react";
+import { memo, useLayoutEffect, useRef, type RefObject } from "react";
 
 /**
  * Snaps a chip to the unit grid.
@@ -52,7 +52,11 @@ interface WorldLabelProps {
 }
 
 /** The name chip over an object. It is also the object's accessible name. */
-export function WorldLabel({ text, unit, anchorUnits }: WorldLabelProps) {
+export const WorldLabel = memo(function WorldLabel({
+  text,
+  unit,
+  anchorUnits,
+}: WorldLabelProps) {
   const ref = useRef<HTMLSpanElement>(null);
   useUnitChipWidth(ref, unit, anchorUnits, text);
   return (
@@ -60,4 +64,4 @@ export function WorldLabel({ text, unit, anchorUnits }: WorldLabelProps) {
       {text}
     </span>
   );
-}
+});
