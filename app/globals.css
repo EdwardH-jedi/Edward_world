@@ -222,6 +222,7 @@ p {
 }
 
 .intro-inscription::selection { background: transparent; }
+.intro-inscription::placeholder { color: transparent; }
 
 /* On a phone the whole frame is small, so 14% of it is a target too fine for
    a fingertip. The slab keeps its drawn size; only what is tappable grows. */
@@ -555,7 +556,8 @@ p {
    strip, then the purpose panel, PRESS ENTER and VIEW PROJECTS stacked in the
    bottom quarter. Every block is in flow, so none can overlap another. */
 @media (max-aspect-ratio: 1/1) {
-  .intro-stage,
+  /* The monolith gate shares .intro-stage but lays out its own bands below. */
+  .intro-screen:not(.intro-screen--gate) .intro-stage,
   .title-stage {
     aspect-ratio: auto;
     inset: 0;
@@ -564,13 +566,13 @@ p {
     width: auto;
   }
 
-  .intro-scene,
+  .intro-screen:not(.intro-screen--gate) .intro-scene,
   .title-scene {
     object-fit: cover;
     object-position: 50% 50%;
   }
 
-  .intro-actions {
+  .intro-screen:not(.intro-screen--gate) .intro-actions {
     bottom: calc(var(--unit) * 4);
     right: calc(var(--unit) * 4);
     top: auto;
@@ -6387,4 +6389,43 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   inset: 0;
   position: fixed;
   z-index: 20;
+}
+
+/* Portrait: three bands, none over another. The art is contained, so the name
+   it holds up as the reference stays whole; the input is its own visible band
+   under the art instead of a target over a slab too small to tap; Skip sits at
+   the foot. The top padding clears the WORLD / INDEX / music bar. */
+@media (max-aspect-ratio: 1/1) {
+  .intro-screen--gate {
+    justify-content: flex-start;
+    padding-top: calc(var(--unit) * 15);
+  }
+
+  .intro-screen--gate .intro-stage {
+    max-height: none;
+    width: 100vw;
+  }
+
+  .intro-screen--gate .intro-inscription {
+    background: #2b2823;
+    border: var(--unit) solid #efe7d3;
+    font-family: var(--font-bitmap), var(--font-mono), monospace;
+    height: calc(var(--unit) * 12);
+    left: calc(var(--unit) * 4);
+    top: calc(100% + var(--unit) * 4);
+    width: calc(100% - var(--unit) * 8);
+  }
+
+  .intro-screen--gate .intro-inscription::placeholder {
+    color: #efe7d3;
+  }
+
+  .intro-screen--gate .intro-actions {
+    bottom: calc(var(--unit) * 4 + env(safe-area-inset-bottom, 0px));
+    justify-content: center;
+    left: calc(var(--unit) * 4);
+    position: fixed;
+    right: calc(var(--unit) * 4);
+    top: auto;
+  }
 }
