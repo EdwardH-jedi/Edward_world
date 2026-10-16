@@ -817,6 +817,7 @@ export function draftGolfRun(
   };
 }
 
+/** test contract */
 /**
  * The result panel's view of the hole.
  *

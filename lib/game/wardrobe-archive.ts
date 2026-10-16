@@ -162,11 +162,6 @@ export function archiveReducer(
   }
 }
 
-/** Garments that belong in a given slot. */
-export function garmentsForSlot(slot: OutfitSlot): readonly Garment[] {
-  return garments.filter((garment) => garment.slot === slot);
-}
-
 /** What the archive holds in a given layer, in the order it was captured. */
 export function archivedInSlot(
   state: ArchiveState,

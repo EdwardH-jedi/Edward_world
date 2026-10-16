@@ -86,10 +86,6 @@ export function storeNickname(name: string): void {
   write(NICKNAME_KEY, name);
 }
 
-export function hasConsented(): boolean {
-  return read(CONSENT_KEY) === CONSENT_VERSION;
-}
-
 export function storeConsent(): void {
   write(CONSENT_KEY, CONSENT_VERSION);
 }

@@ -64,15 +64,6 @@ export function serializeOutfit(outfit: Outfit) {
   return JSON.stringify(outfit);
 }
 
-export function readSavedLook(): Outfit | null {
-  if (typeof window === "undefined") return null;
-  try {
-    return deserializeOutfit(window.localStorage.getItem(SAVED_LOOK_KEY));
-  } catch {
-    return null;
-  }
-}
-
 /** Returns whether the write actually landed, so the UI can tell the truth. */
 export function writeSavedLook(outfit: Outfit) {
   if (typeof window === "undefined") return false;

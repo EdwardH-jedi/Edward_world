@@ -17,6 +17,7 @@ export const INTRO_STAGE_TIMINGS: Readonly<Record<TimedIntroStage, number>> = {
   PAN: 800,
 };
 
+/** test contract */
 /** What the default entry performs unprompted. */
 export const INTRO_SCRIPTED_MS = Object.values(INTRO_STAGE_TIMINGS).reduce(
   (total, value) => total + value,
@@ -40,6 +41,7 @@ export const SHRINE_STAGE_TIMINGS: Readonly<Record<TimedShrineStage, number>> = 
   UNLOCK: 1_600,
 };
 
+/** test contract */
 /** What the stone performs unprompted, ignoring however long typing takes. */
 export const SHRINE_SCRIPTED_MS = Object.values(SHRINE_STAGE_TIMINGS).reduce(
   (total, value) => total + value,
@@ -80,6 +82,7 @@ export function nextShrineStage(stage: ShrineStage): ShrineStage | null {
   return SHRINE_STAGES[SHRINE_STAGES.indexOf(stage) + 1] ?? null;
 }
 
+/** test contract */
 export function isTimedIntroStage(stage: IntroStage): stage is TimedIntroStage {
   return stage === "PAN";
 }
