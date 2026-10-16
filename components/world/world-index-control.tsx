@@ -1,6 +1,6 @@
 "use client";
 
-import { usePixelUnit } from "@/lib/game/use-pixel-unit";
+import { usePixelUnit } from "@/lib/motion/use-pixel-unit";
 
 interface WorldIndexControlProps {
   activeView: "world" | "index";

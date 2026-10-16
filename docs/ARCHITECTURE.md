@@ -204,7 +204,7 @@ position and size in `data/world.ts` is a whole multiple of it.
 world footprint.
 
 What is *drawn* uses a live unit instead. `usePixelUnit()`
-(`lib/game/use-pixel-unit.ts`) picks the largest whole `u` in 2..8 whose scaled
+(`lib/game/pixel-unit.ts`, hook in `lib/motion/use-pixel-unit.ts`) picks the largest whole `u` in 2..8 whose scaled
 world height (`BACKDROP_ART_SIZE.height * u`) fits the viewport, so the world
 fills the screen with no fractional pixel. Movement, collision and the camera
 stay in authored pixels; `MainWorld` converts at the DOM boundary (`toCss` for
