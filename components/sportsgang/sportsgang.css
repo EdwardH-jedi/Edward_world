@@ -1,0 +1,1908 @@
+.sg-court {
+  /* Anchored by its playing surface, not by its box.
+     The backdrop is object-fit: cover, so its ground line sits at a fixed
+     fraction of the viewport height (28.9%, where the art's horizon falls)
+     whenever the viewport is taller than the art's 16:9. Positioning the box
+     bottom would leave the players hovering above the surface, so the offset
+     backs out the surface band's own height instead.
+     The court is 225x85 art pixels at a whole court unit, set inline by
+     useCourtUnit; sprites on it are sized in the same unit. */
+  --loc-court-width: calc(var(--sg-court-unit, 4px) * 225);
+  --loc-court-surface: 22%;
+
+  aspect-ratio: 900 / 340;
+  bottom: var(--loc-ground);
+  left: calc(50% - var(--loc-court-width) / 2);
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transform-origin: 0 0;
+  width: var(--loc-court-width);
+  z-index: 3;
+}
+
+.loc-experience[data-stage="SEARCHING"] .sg-court,
+.loc-experience[data-stage="MATCH_FOUND"] .sg-court,
+.loc-experience[data-stage="COURT_TRANSITION"] .sg-court,
+.loc-experience[data-stage="MEET"] .sg-court,
+.loc-experience[data-stage="PLAY"] .sg-court,
+.loc-experience[data-stage="RESULT"] .sg-court,
+.loc-experience[data-stage="RANK"] .sg-court,
+.loc-experience[data-stage="COMPLETE"] .sg-court {
+  opacity: 1;
+}
+
+.sg-court__surface {
+  background: var(--loc-court);
+  border-top: 2px solid #c2955f;
+  bottom: 0;
+  height: 22%;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.sg-court[data-sport="GOLF"] .sg-court__surface {
+  background: #8fa06b;
+  border-top-color: #a3b47d;
+}
+
+.sg-court[data-sport="RUNNING"] .sg-court__surface {
+  background: #9e6b45;
+  border-top-color: #b57f55;
+}
+
+.sg-court__surface::after {
+  background: var(--loc-court-dark);
+  bottom: 0;
+  content: "";
+  height: 22%;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.sg-court__line {
+  background: var(--loc-cream);
+  bottom: 22%;
+  height: 34%;
+  position: absolute;
+  width: 0.5%;
+}
+
+.sg-court__line--near { left: 6%; }
+
+.sg-court__line--service-near { left: 28%; opacity: 0.6; }
+
+.sg-court__line--centre { left: 50%; opacity: 0.35; }
+
+.sg-court__line--service-far { left: 72%; opacity: 0.6; }
+
+.sg-court__line--far { left: 94%; }
+
+.sg-court__net {
+  background: rgb(43 40 35 / 78%);
+  bottom: 22%;
+  height: 20%;
+  left: 49.6%;
+  position: absolute;
+  width: 0.9%;
+}
+
+.sg-court__net-tape {
+  background: var(--loc-cream);
+  height: 12%;
+  left: -45%;
+  position: absolute;
+  right: -45%;
+  top: 0;
+}
+
+.sg-court__player {
+  bottom: 22%;
+  height: calc(var(--sg-court-unit, 4px) * 16);
+  position: absolute;
+}
+
+.sg-court__player canvas {
+  height: 100%;
+  width: auto;
+}
+
+/* Centring lives on the inner box so anime.js owns the outer transform alone. */
+.sg-court__player > * {
+  transform: translateX(-50%);
+}
+
+.sg-court__player--near { left: 16%; }
+
+.sg-court__player--far { left: 84%; }
+
+.sg-court__ball {
+  aspect-ratio: 1;
+  background: var(--loc-orange);
+  bottom: 23%;
+  box-shadow: inset -2px -2px 0 #a96e3d;
+  left: 16%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 1.5%;
+}
+
+.sg-phone {
+  height: calc(var(--unit) * 95);
+  left: 50%;
+  margin-left: calc(var(--unit) * -28);
+  margin-top: calc(var(--unit) * -49);
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  visibility: hidden;
+  width: calc(var(--unit) * 55);
+  z-index: 2;
+}
+
+.loc-experience[data-stage="PHONE"] .sg-phone,
+.loc-experience[data-stage="SPORT_SELECT"] .sg-phone,
+.loc-experience[data-stage="SEARCHING"] .sg-phone,
+.loc-experience[data-stage="MATCH_FOUND"] .sg-phone,
+.loc-experience[data-stage="COURT_TRANSITION"] .sg-phone {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sg-phone__chassis {
+  background: #3a362f;
+  border: var(--unit) solid var(--loc-char);
+  box-shadow: var(--u2) var(--u2) 0 rgb(24 22 18 / 45%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--u2);
+  height: 100%;
+  padding: var(--u3) var(--u2);
+}
+
+.sg-phone__speaker {
+  background: #57534a;
+  height: var(--unit);
+  margin: var(--unit) auto 0;
+  width: calc(var(--unit) * 11);
+}
+
+.sg-phone__screen {
+  background: #1e1b17;
+  border: var(--unit) solid #57534a;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--u2);
+  padding: var(--u3) var(--u2);
+}
+
+.sg-phone__home {
+  background: #57534a;
+  height: var(--u2);
+  margin: 0 auto;
+  width: calc(var(--unit) * 14);
+}
+
+.sg-phone__brand {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.sg-phone__hint,
+.sg-phone__label,
+.sg-phone__status {
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.sg-phone__status {
+  color: var(--loc-cream);
+}
+
+.sg-phone__panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u2);
+}
+
+.sg-phone__sports {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sg-phone__sport {
+  align-items: center;
+  background: transparent;
+  border: var(--unit) solid #57534a;
+  color: var(--loc-muted);
+  display: flex;
+  font-size: var(--t0);
+  justify-content: space-between;
+  letter-spacing: 0;
+  padding: var(--u2) var(--u2);
+  width: 100%;
+}
+
+.sg-phone__sport[data-playable] {
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
+  color: #241f18;
+}
+
+.sg-phone__sport:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.sg-phone__soon {
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.sg-phone__sweep-track {
+  background: #2b2823;
+  height: var(--u2);
+  overflow: hidden;
+  position: relative;
+}
+
+.sg-phone__sweep {
+  background: linear-gradient(90deg, transparent, var(--loc-orange), transparent);
+  height: 100%;
+  position: absolute;
+  width: 60%;
+}
+
+.sg-phone__versus {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit);
+  text-align: center;
+}
+
+.sg-phone__player {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.sg-phone__vs {
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.sg-phone__accept {
+  background: var(--loc-orange);
+  border: 0;
+  color: #241f18;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  padding: var(--u2);
+}
+
+/* The court preview slot. Empty on purpose — the real court is transformed
+   into this box, so anything drawn here would sit behind it. */
+.sg-phone__slot {
+  aspect-ratio: 900 / 340;
+  background: #14110d;
+  border: var(--unit) solid #3a362f;
+  margin-top: auto;
+  opacity: 0;
+  width: 100%;
+}
+
+.sg-phone__slot[data-visible] {
+  opacity: 1;
+}
+
+.sg-court__key {
+  border: 2px solid rgb(239 231 211 / 55%);
+  border-bottom: 0;
+  border-right: 0;
+  bottom: 0;
+  height: 46%;
+  left: 62%;
+  position: absolute;
+  right: 8%;
+}
+
+.sg-court__lane {
+  background: rgb(239 231 211 / 45%);
+  height: 2px;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.sg-court__finish {
+  background: repeating-linear-gradient(
+    180deg,
+    var(--loc-cream) 0 4px,
+    var(--loc-char) 4px 8px
+  );
+  bottom: 0;
+  left: 88%;
+  position: absolute;
+  top: 0;
+  width: 6px;
+}
+
+.sg-court__tee {
+  background: #6f7f4f;
+  bottom: 60%;
+  left: 5%;
+  position: absolute;
+  height: 22%;
+  width: 6%;
+}
+
+.sg-court__green {
+  background: #a8ba81;
+  border-radius: 50%;
+  bottom: 30%;
+  height: 46%;
+  left: 78%;
+  position: absolute;
+  width: 16%;
+}
+
+/* Stands on the surface like a real hoop: post, backboard, ring. */
+.sg-court__hoop {
+  bottom: 22%;
+  height: 46%;
+  left: 84%;
+  position: absolute;
+  width: 8%;
+}
+
+.sg-court__hoop::before {
+  background: var(--loc-char);
+  bottom: 0;
+  content: "";
+  position: absolute;
+  right: 8%;
+  top: 40%;
+  width: 4px;
+}
+
+.sg-court__backboard {
+  background: var(--loc-cream);
+  border: 2px solid var(--loc-char);
+  height: 34%;
+  position: absolute;
+  right: 0;
+  top: 8%;
+  width: 30%;
+}
+
+.sg-court__ring {
+  background: var(--loc-orange);
+  height: 4px;
+  left: 0;
+  position: absolute;
+  top: 35%;
+  width: 72%;
+}
+
+/* Stands on the surface, like everything else that is on the ground. */
+.sg-court__flag {
+  background: var(--loc-cream);
+  bottom: 22%;
+  height: 26%;
+  left: 86%;
+  position: absolute;
+  width: 2px;
+}
+
+.sg-court__flag-cloth {
+  background: var(--loc-orange);
+  height: 34%;
+  left: 2px;
+  position: absolute;
+  top: 0;
+  width: 14px;
+}
+
+/* Sports stand their players in different places. */
+.sg-court__player--near[data-sport="BASKETBALL"] { left: 20%; }
+
+.sg-court__player--far[data-sport="BASKETBALL"] { left: 74%; }
+
+.sg-court__player--near[data-sport="GOLF"] { left: 8%; }
+
+.sg-court__player--far[data-sport="GOLF"] { left: 18%; }
+
+.sg-play {
+  --loc-court-width: calc(var(--sg-court-unit, 4px) * 225);
+
+  aspect-ratio: 900 / 340;
+  bottom: var(--loc-ground);
+  left: calc(50% - var(--loc-court-width) / 2);
+  pointer-events: none;
+  position: absolute;
+  width: var(--loc-court-width);
+  z-index: 4;
+}
+
+/* ── Golf: the fairway the camera tracks down ────────────────────────────────
+   Three frames wide, sliding under a ball that is held a third of the way in.
+   The distance posts are what make the movement legible — a plain green strip
+   translating under the ball reads as nothing happening at all. */
+.sg-play__field {
+  bottom: 0;
+  position: absolute;
+  top: 0;
+  /* Camera moves are position changes, not transforms: the ball and the posts
+     are positioned inside this element and must travel with it exactly. */
+  transition: none;
+}
+
+/* Posts stand on the ball's own ground line (bottom 23%), not in the air
+   above it — measured against the play box rather than guessed. */
+.sg-play__marker {
+  bottom: 23%;
+  height: 9%;
+  position: absolute;
+  width: 0;
+}
+
+.sg-play__marker::before {
+  background: rgb(87 83 74 / 55%);
+  content: "";
+  inset: 0 auto 0 0;
+  position: absolute;
+  width: var(--unit);
+}
+
+/* The yardage reads on the grass below the post, where there is nothing to
+   compete with, rather than up against the venue's fence. */
+.sg-play__marker span {
+  color: rgb(60 58 50 / 80%);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  left: 0;
+  letter-spacing: 0;
+  position: absolute;
+  top: calc(100% + var(--unit));
+  transform: translateX(-50%);
+}
+
+.sg-play__ball {
+  aspect-ratio: 1;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 1.5%;
+}
+
+.sg-play__ball--tennis {
+  background: var(--loc-orange);
+  box-shadow: inset -2px -2px 0 #a96e3d;
+}
+
+.sg-play__ball--golf {
+  background: var(--loc-glow, #f7f1e2);
+  box-shadow: inset -2px -2px 0 #c4baa3;
+  width: 1.1%;
+}
+
+.sg-play__ball--basketball {
+  background: #c07a3f;
+  box-shadow: inset -2px -2px 0 #8e5626;
+  width: 2%;
+}
+
+.sg-play__readout {
+  color: var(--loc-char);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+  position: absolute;
+  top: 6%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.sg-play__verdict {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t1);
+  left: 50%;
+  letter-spacing: 0;
+  margin: 0;
+  position: absolute;
+  text-shadow: 0 var(--unit) 0 rgb(34 31 26 / 60%);
+  top: 4%;
+  transform: translateX(-50%);
+}
+
+.sg-play__verdict[data-verdict="PERFECT"] { color: var(--loc-orange); }
+
+.sg-play__verdict[data-verdict="MISS"] { color: #b9ada0; }
+
+.sg-play__runner {
+  bottom: 22%;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.sg-play__runner canvas {
+  height: calc(var(--sg-court-unit, 4px) * 16);
+  width: auto;
+}
+
+.sg-play__runner span {
+  color: var(--loc-cream);
+  display: block;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  text-shadow: 0 var(--unit) 0 rgb(34 31 26 / 60%);
+}
+
+.sg-play__runner--pacer { opacity: 0.75; }
+
+.sg-play__runner--player[data-pushing] span { color: var(--loc-orange); }
+
+.sg-play__hud {
+  background: rgb(34 31 26 / 92%);
+  border: var(--unit) solid #57534a;
+  bottom: calc(100% + var(--u4));
+  display: flex;
+  flex-direction: column;
+  gap: var(--u2);
+  left: 50%;
+  padding: var(--u4) var(--u4);
+  pointer-events: auto;
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(92vw, calc(var(--unit) * 120));
+}
+
+.sg-play__prompt {
+  color: var(--loc-cream);
+  font-size: var(--t0);
+  letter-spacing: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.sg-play__tally {
+  color: var(--loc-muted);
+  display: flex;
+  font-size: var(--t-1);
+  justify-content: space-between;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.sg-play__hint {
+  color: #7d766a;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.sg-play__action {
+  background: var(--loc-orange);
+  border: 0;
+  color: #241f18;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  letter-spacing: 0;
+  padding: var(--u2);
+  touch-action: none;
+  user-select: none;
+  width: 100%;
+}
+
+.sg-play__action--quiet {
+  background: transparent;
+  border: var(--unit) solid #57534a;
+  color: var(--loc-cream);
+}
+
+.sg-play__pair {
+  display: flex;
+  gap: var(--u2);
+}
+
+.sg-play__gauges {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u2);
+}
+
+.sg-meter__label,
+.sg-gauge__label {
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0 0 var(--unit);
+}
+
+.sg-gauge__label {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sg-meter__track,
+.sg-gauge__track {
+  background: #14110d;
+  border: var(--unit) solid #3a362f;
+  height: var(--u4);
+  overflow: hidden;
+  position: relative;
+}
+
+.sg-meter__fill,
+.sg-gauge__fill {
+  background: var(--loc-orange);
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+}
+
+.sg-meter[data-tone="timing"] .sg-meter__fill {
+  background: #57534a;
+}
+
+.sg-meter__target {
+  background: rgb(201 138 82 / 45%);
+  bottom: 0;
+  position: absolute;
+  top: 0;
+}
+
+.sg-meter__centre {
+  background: var(--loc-cream);
+  bottom: 0;
+  left: 50%;
+  position: absolute;
+  top: 0;
+  width: var(--unit);
+}
+
+.sg-meter__marker {
+  background: var(--loc-cream);
+  bottom: 0;
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  width: var(--unit);
+}
+
+.sg-gauge[data-tone="pace"] .sg-gauge__fill { background: #6f8892; }
+
+.sg-gauge[data-low] .sg-gauge__fill { background: #a96e3d; }
+
+.sg-result {
+  background: rgb(34 31 26 / 92%);
+  border: var(--unit) solid #57534a;
+  left: 50%;
+  padding: var(--u4) var(--u6);
+  position: absolute;
+  text-align: center;
+  top: 12%;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.sg-result__heading {
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0 0 var(--u3);
+}
+
+.sg-result__score {
+  align-items: center;
+  color: var(--loc-cream);
+  display: flex;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  gap: var(--u4);
+  justify-content: center;
+  margin: 0;
+}
+
+.sg-result__numbers {
+  color: var(--loc-orange);
+  font-size: var(--t2);
+}
+
+.sg-result__divider {
+  color: #57534a;
+}
+
+.sg-result__note {
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: var(--u3) 0 0;
+}
+
+/* ── SportsGang: the RANK beat ───────────────────────────────────────────────
+   Where a finished run goes. Built like the result card it follows, so the two
+   read as one thought, and explicit that the standings are the visitor's own —
+   there is nobody else in this world to be ranked against. */
+.sg-rank {
+  background: rgb(34 31 26 / 95%);
+  border: var(--unit) solid #57534a;
+  left: 50%;
+  max-width: min(92vw, calc(var(--unit) * 120));
+  padding: var(--u5) var(--u6) var(--u5);
+  position: absolute;
+  text-align: center;
+  top: 10%;
+  transform: translateX(-50%);
+  z-index: 6;
+}
+
+.sg-rank__heading {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t1);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.sg-rank__scope {
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: var(--unit) 0 var(--u4);
+}
+
+.sg-rank__table {
+  display: grid;
+  gap: var(--unit);
+  list-style: none;
+  margin: 0 0 var(--u4);
+  padding: 0;
+}
+
+.sg-rank__row {
+  align-items: baseline;
+  border-left: var(--unit) solid transparent;
+  color: var(--loc-cream);
+  display: grid;
+  font-size: var(--t-1);
+  gap: var(--u2);
+  grid-template-columns: 1fr auto auto;
+  letter-spacing: 0;
+  padding: var(--unit) var(--u2);
+  text-align: left;
+}
+
+/* The sport just played, picked out of its own board. */
+.sg-rank__row[data-current] {
+  background: rgb(201 138 82 / 14%);
+  border-left-color: var(--loc-orange);
+}
+
+.sg-rank__best {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+}
+
+.sg-rank__attempts {
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  min-width: calc(var(--unit) * 17);
+  text-align: right;
+}
+
+.sg-rank__verdict {
+  color: var(--loc-cream);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0 0 var(--u3);
+}
+
+.sg-rank__footnote {
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t0);
+  margin: 0 0 var(--u4);
+  text-transform: none;
+}
+
+@media (max-width: 640px) {
+  .sg-rank { padding: var(--u4) var(--u4) var(--u4); top: 8%; }
+  .sg-rank__row { grid-template-columns: 1fr auto; }
+  .sg-rank__attempts { display: none; }
+}
+
+@media (max-width: 640px) {
+  .sg-phone {
+    height: calc(var(--unit) * 82);
+    margin-left: calc(var(--unit) * -24);
+    margin-top: calc(var(--unit) * -44);
+    width: calc(var(--unit) * 48);
+  }.sg-result {
+    padding: var(--u4) var(--u4);
+  }.sg-result__score {
+    font-size: var(--t-1);
+    gap: var(--u2);
+  }.sg-play__hud {
+    bottom: auto;
+    padding: var(--u3) var(--u3);
+    top: calc(100% + var(--u3));
+    width: 94vw;
+  }
+}
+
+.sg-tennis__court {
+  inset: 0;
+  position: absolute;
+}
+
+.sg-tennis__court:focus-visible {
+  outline: none;
+}
+
+.sg-tennis__figure {
+  bottom: 22%;
+  height: calc(var(--sg-court-unit, 4px) * 16);
+  position: absolute;
+  transition: none;
+  will-change: left;
+}
+
+/* The canvas is sized to its backing store by the component: a whole court
+   unit per art pixel, with no scale anywhere above or on it. */
+.sg-tennis__figure canvas {
+  transform: translateX(-50%);
+}
+
+/* The racket arm. A whole-unit move on the sprite only — the simulation's idea
+   of where this player is standing never moves. */
+.sg-tennis__figure[data-swinging] canvas {
+  transform: translate(-50%, calc(var(--sg-court-unit, 4px) * -1));
+}
+
+.sg-tennis__ball {
+  /* Drawn on the same grid as everything around it: an eight-sided pixel ball
+     with a one-step dark rim, not a browser circle. The rim is what keeps it
+     readable against the cream sky, which the pale felt alone vanished into. */
+  --sg-ball: polygon(
+    25% 0, 75% 0, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0 75%, 0 25%
+  );
+
+  aspect-ratio: 1;
+  background: #2b2823;
+  clip-path: var(--sg-ball);
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 1.8%;
+  z-index: 2;
+}
+
+.sg-tennis__ball::before {
+  background: #f2e4a8;
+  clip-path: var(--sg-ball);
+  content: "";
+  inset: 3px;
+  position: absolute;
+}
+
+/* Squashed for a frame or two on contact. Reads as impact at any speed. */
+.sg-tennis__ball[data-struck] {
+  transform: translate(-50%, 50%) scale(1.5, 0.7);
+}
+
+.sg-tennis__shadow {
+  background: rgb(40 30 18 / 55%);
+  bottom: 21%;
+  height: 1%;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 2.2%;
+}
+
+.sg-tennis__spark {
+  background: var(--loc-cream);
+  height: 2.4%;
+  position: absolute;
+  transform: translate(-50%, 50%) rotate(45deg);
+  width: 2.4%;
+  z-index: 2;
+}
+
+.sg-tennis__hud {
+  /* The panel is not decoration. This sits over the venue's cream sky, and
+     cream lettering on it was very nearly invisible — the score is the one
+     thing a match must never make you hunt for. */
+  align-items: center;
+  background: rgb(34 31 26 / 92%);
+  border: var(--unit) solid #57534a;
+  bottom: calc(100% + var(--u4));
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit);
+  left: 50%;
+  padding: var(--u2) var(--u4);
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(92vw, calc(var(--unit) * 88));
+}
+
+.sg-tennis__score {
+  align-items: baseline;
+  color: var(--loc-cream);
+  display: flex;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  gap: var(--u2);
+  letter-spacing: 0;
+  margin: 0;
+  text-shadow: 0 var(--unit) 0 rgb(34 31 26 / 70%);
+}
+
+.sg-tennis__score strong {
+  font-size: var(--t2);
+  font-weight: 400;
+}
+
+/* The number that just changed lifts, once. */
+.sg-tennis__score strong[data-scored] {
+  animation: sg-tennis-scored 460ms ease-out;
+  color: var(--loc-orange);
+}
+
+@keyframes sg-tennis-scored {
+  0% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-6px) scale(1.3); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.sg-tennis__colon { color: #7d766a; }
+
+.sg-tennis__prompt {
+  color: #b5ab97;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.sg-tennis__prompt[data-match-point] {
+  animation: sg-tennis-pulse 900ms ease-in-out infinite;
+  color: var(--loc-orange);
+}
+
+@keyframes sg-tennis-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+.sg-tennis__verdict {
+  animation: sg-tennis-verdict 700ms ease-out forwards;
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t1);
+  left: 50%;
+  letter-spacing: 0;
+  margin: 0;
+  pointer-events: none;
+  position: absolute;
+  text-shadow: 0 var(--unit) 0 rgb(34 31 26 / 60%);
+  top: 6%;
+  transform: translateX(-50%);
+}
+
+.sg-tennis__verdict[data-quality="PERFECT"] { color: var(--loc-orange); }
+
+.sg-tennis__verdict[data-quality="EARLY"],
+.sg-tennis__verdict[data-quality="LATE"] { color: #8f8574; }
+
+@keyframes sg-tennis-verdict {
+  0% { opacity: 0; transform: translate(-50%, 8px); }
+  25% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -10px); }
+}
+
+.sg-tennis__controls {
+  bottom: calc(calc(var(--unit) * -13));
+  display: flex;
+  gap: var(--u2);
+  justify-content: center;
+  left: 50%;
+  pointer-events: auto;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.sg-tennis__button {
+  background: rgb(34 31 26 / 92%);
+  border: var(--unit) solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  min-height: calc(var(--unit) * 11);
+  min-width: calc(var(--unit) * 11);
+  padding: 0 var(--u4);
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-tennis__button--swing {
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
+  color: #241f18;
+}
+
+.sg-tennis__hint {
+  bottom: calc(var(--unit) * -22);
+  color: #a29a8a;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  left: 50%;
+  letter-spacing: 0;
+  margin: 0;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+@media (max-height: 500px) and (max-width: 950px) and (orientation: landscape) {
+  .sg-court,
+  .sg-play {
+    left: var(--u4);
+  }.sg-play__hud,
+  .sg-tennis__hud {
+    bottom: auto;
+    left: calc(100% + var(--u4));
+    top: calc(var(--unit) * -10);
+    transform: none;
+    width: calc(var(--unit) * 64);
+  }.sg-play__hud { padding: var(--u3); }
+  .sg-play__action { min-height: 44px; }
+  .sg-tennis__hud { padding: var(--u2); }.sg-tennis__controls {
+    bottom: auto;
+    left: calc(100% + var(--u4));
+    top: calc(var(--unit) * 12);
+    transform: none;
+    width: calc(var(--unit) * 64);
+  }.sg-tennis__hint {
+    background: rgb(34 31 26 / 92%);
+    bottom: auto;
+    color: #b5ab97;
+    left: calc(100% + var(--u4));
+    padding: var(--u2);
+    top: calc(var(--unit) * 26);
+    transform: none;
+    white-space: normal;
+    width: calc(var(--unit) * 64);
+  }
+}
+
+/* The matched player's card, in the phone. */
+.sg-phone__profile {
+  display: grid;
+  gap: var(--unit);
+  margin: 0;
+}
+
+.sg-phone__profile > div {
+  display: flex;
+  justify-content: space-between;
+}
+
+.sg-phone__profile dt {
+  color: #7d766a;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.sg-phone__profile dd {
+  color: var(--loc-cream);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-tennis__score strong[data-scored],
+  .sg-tennis__prompt[data-match-point],
+  .sg-tennis__verdict {
+    animation: none;
+  }.sg-tennis__verdict { opacity: 1; }
+}
+
+/* The toss reads as the same ball, dimmer, because it is not live yet. */
+.sg-tennis__ball--toss {
+  opacity: 0.85;
+  z-index: 1;
+}
+
+/* Each swing gets its own weight shift. The racket itself is drawn by the
+   sprite — the serve and smash rise onto the toes by one court unit; the
+   groundstrokes and volley stay planted. A scale would put art pixels off the
+   grid, so nothing here is one. */
+.sg-tennis__figure[data-swing] canvas {
+  transform: translateX(-50%);
+}
+
+.sg-tennis__figure[data-swing="SERVE"] canvas,
+.sg-tennis__figure[data-swing="SMASH"] canvas {
+  transform: translate(-50%, calc(var(--sg-court-unit, 4px) * -1));
+}
+
+/* Diagnostic overlay. Rendered only when `debug` is passed, which nothing in
+   the application does — the venue mounts the game with `active` and
+   `onFinish` and nothing else. */
+.sg-tennis-debug__box {
+  border: 1px solid rgb(201 138 82 / 90%);
+  position: absolute;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.sg-tennis-debug__anchor {
+  background: #c98a52;
+  height: 0.8%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.8%;
+  z-index: 5;
+}
+
+.sg-tennis-debug__ball {
+  background: #6f8892;
+  height: 0.6%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.6%;
+  z-index: 5;
+}
+
+.sg-tennis-debug__read {
+  background: rgb(34 31 26 / 92%);
+  color: var(--loc-cream);
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.5rem;
+  left: 0;
+  letter-spacing: 0.04em;
+  margin: 0;
+  padding: 0.2rem 0.4rem;
+  position: absolute;
+  top: 0;
+  z-index: 6;
+}
+
+.sg-golf__scene {
+  inset: 0;
+  overflow: hidden;
+  position: absolute;
+}
+
+.sg-golf__ground {
+  background: linear-gradient(
+    180deg,
+    #93a06c 0%,
+    #7d8b5c 45%,
+    rgb(109 122 79 / 0%) 100%
+  );
+  bottom: 0;
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+/* Distance posts stand on the ball's own ground line, so the camera moving
+   under them is the thing that reads as travel. */
+.sg-golf__marker {
+  height: 9%;
+  position: absolute;
+  width: 0;
+}
+
+.sg-golf__marker::before {
+  background: rgb(87 83 74 / 55%);
+  content: "";
+  inset: 0 auto 0 0;
+  position: absolute;
+  width: var(--unit);
+}
+
+.sg-golf__marker span {
+  color: rgb(52 50 42 / 85%);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  left: 0;
+  letter-spacing: 0;
+  position: absolute;
+  top: calc(100% + var(--unit));
+  transform: translateX(-50%);
+}
+
+/* The putting surface, and the cup cut into it. Both are sized from the
+   camera's span in metres, so walking up to the hole makes it bigger on
+   screen the way walking up to a hole does. */
+.sg-golf__green {
+  background: #a8b47c;
+  border-radius: 50%;
+  box-shadow: inset 0 -2px 0 rgb(109 122 79 / 60%);
+  /* Width follows the camera so walking up to the green makes it bigger.
+     Height does not: a 32 m green inside a 14 m frame was drawing a dome
+     two-thirds of the screen tall. */
+  height: 22%;
+  min-width: 10px;
+  position: absolute;
+  transform: translate(-50%, 50%);
+}
+
+.sg-golf__hole {
+  aspect-ratio: 2.2;
+  background: #17140f;
+  border-radius: 50%;
+  box-shadow: 0 -1px 0 rgb(240 235 216 / 45%);
+  min-width: 5px;
+  position: absolute;
+  transform: translate(-50%, 50%);
+}
+
+/* Anchored by the base of its own pin, with the cloth flying right — so the
+   flag marks the cup without standing in front of it. */
+.sg-golf__flag {
+  /* A definite box, not a shrink-to-fit one: the anchor below is a percentage
+     of this element, so its height and width both have to be known. */
+  aspect-ratio: 14 / 24;
+  height: calc(var(--sg-court-unit, 4px) * 24);
+  position: absolute;
+}
+
+.sg-golf__flag canvas {
+  display: block;
+  height: 100%;
+  image-rendering: pixelated;
+  width: 100%;
+}
+
+.sg-golf__trail {
+  aspect-ratio: 1;
+  background: #55523f;
+  border-radius: 50%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.35%;
+}
+
+.sg-golf__shadow {
+  aspect-ratio: 3;
+  background: rgb(40 44 28 / 100%);
+  border-radius: 50%;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 1%;
+}
+
+.sg-golf__ball {
+  aspect-ratio: 1;
+  background: var(--loc-glow, #f7f1e2);
+  border-radius: 50%;
+  /* The ring is what makes a cream ball readable against a cream sky. */
+  box-shadow: inset -1px -1px 0 #c4baa3, 0 0 0 1px rgb(43 40 35 / 55%);
+  min-width: 5px;
+  position: absolute;
+  transform: translate(-50%, 50%);
+  width: 0.6%;
+}
+
+.sg-golf__ball[data-airborne] {
+  box-shadow: inset -1px -1px 0 #c4baa3, 0 0 0 1px rgb(43 40 35 / 75%);
+}
+
+/* Positioned by the club head of its own impact pose, as a share of its own
+   box — so the club meets the ball at any rendered size. */
+.sg-golf__figure {
+  aspect-ratio: 1;
+  height: calc(var(--sg-court-unit, 4px) * 26);
+  position: absolute;
+}
+
+.sg-golf__figure canvas {
+  display: block;
+  height: 100%;
+  image-rendering: pixelated;
+  width: 100%;
+}
+
+.sg-golf__readout {
+  color: #2b2823;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+  position: absolute;
+  text-shadow: 0 var(--unit) 0 rgb(239 231 211 / 70%);
+  top: 6%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* ── The course map, always up ─────────────────────────────────────────────
+   Seen from above, because line is the one thing a side-on view cannot show:
+   the ball's sideways error is its position across this strip. */
+.sg-golf__map {
+  background: rgb(34 31 26 / 88%);
+  border: var(--unit) solid #57534a;
+  bottom: calc(100% + var(--unit));
+  height: var(--u5);
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(92vw, calc(var(--unit) * 120));
+}
+
+.sg-golf__map-fairway {
+  background: #6d7a4f;
+  height: 45%;
+  left: 4%;
+  position: absolute;
+  top: 27.5%;
+  width: 91%;
+}
+
+.sg-golf__map-green {
+  background: #a8b47c;
+  border-radius: 50%;
+  height: 80%;
+  position: absolute;
+  right: 1.5%;
+  top: 10%;
+  width: 6%;
+}
+
+.sg-golf__map-flag {
+  background: var(--loc-orange);
+  height: 40%;
+  position: absolute;
+  right: 3.6%;
+  top: 30%;
+  width: 2px;
+}
+
+.sg-golf__map-ball {
+  background: var(--loc-cream);
+  border-radius: 50%;
+  height: 4px;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 4px;
+}
+
+/* ── HUD ───────────────────────────────────────────────────────────────── */
+.sg-golf__hud {
+  background: rgb(34 31 26 / 92%);
+  border: var(--unit) solid #57534a;
+  bottom: calc(100% + calc(var(--unit) * 7));
+  display: flex;
+  flex-direction: column;
+  gap: var(--u2);
+  left: 50%;
+  padding: var(--u2) var(--u4);
+  pointer-events: auto;
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(92vw, calc(var(--unit) * 120));
+}
+
+.sg-golf__line {
+  align-items: baseline;
+  color: #8d8575;
+  display: flex;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  gap: var(--u2);
+  justify-content: space-between;
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.sg-golf__line strong {
+  color: var(--loc-cream);
+  font-size: var(--t-1);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.sg-golf__stats {
+  display: grid;
+  gap: var(--unit) var(--u3);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.sg-golf__stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit);
+}
+
+.sg-golf__stats dt {
+  color: #7d766a;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.sg-golf__stats dd {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+/* A penalty raises the score without giving you another ball, so the two
+   numbers have to be able to disagree on screen as well as in the record. */
+.sg-golf__stats dd[data-penalised] {
+  color: var(--loc-orange);
+}
+
+.sg-golf__prompt {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  letter-spacing: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.sg-golf__aim {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Controls ──────────────────────────────────────────────────────────── */
+.sg-golf__controls {
+  bottom: calc(var(--unit) * -13);
+  display: flex;
+  gap: var(--u2);
+  justify-content: center;
+  left: 50%;
+  pointer-events: auto;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.sg-golf__button {
+  background: #3a352c;
+  border: var(--unit) solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  min-height: 44px;
+  min-width: 44px;
+  padding: var(--u2) var(--u3);
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-golf__button:disabled {
+  color: #6d675c;
+  opacity: 0.55;
+}
+
+.sg-golf__button--action {
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
+  color: #241f18;
+  min-width: calc(var(--unit) * 32);
+}
+
+.sg-golf__button--quiet {
+  background: transparent;
+  color: #a29a8a;
+  font-size: var(--t-1);
+}
+
+.sg-golf__hint {
+  bottom: calc(var(--unit) * -21);
+  color: #a29a8a;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  left: 50%;
+  letter-spacing: 0;
+  margin: 0;
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+@media (max-height: 500px) and (max-width: 950px) and (orientation: landscape) {
+  .sg-golf__hud,
+  .sg-golf__map {
+    bottom: auto;
+    left: calc(100% + var(--u4));
+    transform: none;
+    width: calc(var(--unit) * 64);
+  }.sg-golf__hud { top: calc(var(--unit) * -10); }
+  .sg-golf__map { top: calc(var(--unit) * 38); }.sg-golf__controls {
+    bottom: auto;
+    flex-wrap: wrap;
+    left: calc(100% + var(--u4));
+    top: calc(var(--unit) * 46);
+    transform: none;
+    width: calc(var(--unit) * 64);
+  }.sg-golf__hint {
+    bottom: auto;
+    left: calc(100% + var(--u4));
+    top: calc(var(--unit) * 62);
+    transform: none;
+    white-space: normal;
+    width: calc(var(--unit) * 64);
+  }
+}
+
+@media (max-width: 620px) {
+  .sg-golf__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sg-golf__button--action { min-width: calc(var(--unit) * 24); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-golf__trail { opacity: 0.25 !important; }
+}
+
+/* @owner:C basketball — the ball itself
+   Sizing only. Position, the 1:1 box and the `translate(-50%, 50%)` that puts
+   the simulation's ball centre at the element's centre all stay on the frozen
+   `.sg-play__ball` rule above, so the arc, the ring and the judging are
+   measured against exactly what they were before. Scoped to `.sg-ball`, which
+   only basketball carries: the tennis and golf balls are untouched. */
+.sg-ball {
+  /* The court is `min(92vw, 900px)`, and the ring inside it is 5.76% of that.
+     3% puts the ball at just under half the ring's width, which is where a
+     basketball sits against a real hoop. On a phone that percentage would come
+     out near 10px, too small for four seams to survive, so it is floored — the
+     floor is reached only below about 500px of court, and takes the ball to
+     roughly three quarters of the ring rather than past it. */
+  width: clamp(15px, 3%, 30px);
+}
+
+.sg-ball__art {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/* @owner:C running — steering pad and held spurt
+   The runner's own `bottom` is set inline from the simulation's lane, so the
+   frozen `.sg-play__runner` rule keeps owning everything else about it. */
+.sg-run-controls {
+  align-items: stretch;
+  display: flex;
+  gap: var(--u2);
+}
+
+/* Four keys on a cross, so a thumb finds a direction without looking. The two
+   that matter most — left and right, which are the race — get the middle row
+   to themselves and the width that goes with it. */
+.sg-run-pad {
+  display: grid;
+  flex: 1 1 auto;
+  gap: var(--unit);
+  grid-template-areas: ". up ."
+    "left . right"
+    ". down .";
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.sg-run-pad__key {
+  background: transparent;
+  border: var(--unit) solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  line-height: var(--t0);
+  min-height: calc(var(--unit) * 8);
+  padding: var(--unit) 0;
+  /* Stops a drag off the key turning into a page scroll mid-race, and stops a
+     double tap being read as a zoom. */
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-run-pad__key--up { grid-area: up; }
+
+.sg-run-pad__key--down { grid-area: down; }
+
+.sg-run-pad__key--left { grid-area: left; }
+
+.sg-run-pad__key--right { grid-area: right; }
+
+/* The spurt sits apart from the pad rather than in it: it is a different kind
+   of control — held, not aimed — and a thumb on it must never be near enough to
+   a direction key to catch one by accident. */
+.sg-run-sprint {
+  align-items: center;
+  align-self: stretch;
+  display: flex;
+  flex: 0 0 7rem;
+  flex-direction: column;
+  gap: var(--unit);
+  justify-content: center;
+  width: auto;
+}
+
+.sg-run-sprint span {
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+
+/* Held, by either a finger or the S key. */
+.sg-run-sprint[aria-pressed="true"] {
+  background: var(--loc-cream);
+}
+
+@media (max-width: 640px) {
+  .sg-run-pad {
+    grid-template-areas: "left up down right";
+    grid-template-columns: repeat(4, 1fr);
+  }.sg-run-pad__key {
+    font-size: var(--t1);
+    min-height: calc(var(--unit) * 11);
+  }.sg-run-sprint {
+    flex-basis: calc(var(--unit) * 22);
+  }
+}
+
+/* Sits above the per-visit RANK panel, which keeps its own place: the two are
+   deliberately different things and are never merged into one list. */
+.sg-board {
+  background: rgb(34 31 26 / 95%);
+  border: var(--unit) solid #57534a;
+  left: 50%;
+  max-width: min(92vw, calc(var(--unit) * 136));
+  padding: var(--u4) var(--u5);
+  position: absolute;
+  top: 4%;
+  transform: translateX(-50%);
+  width: min(92vw, calc(var(--unit) * 136));
+  z-index: 7;
+}
+
+.sg-board__head {
+  align-items: baseline;
+  display: flex;
+  gap: var(--u2);
+  justify-content: space-between;
+}
+
+.sg-board__title {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.sg-board__scope,
+.sg-board__honesty {
+  color: #8d8578;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+/* The claim the board makes about itself. Never quiet, never optional. */
+.sg-board__honesty {
+  border-bottom: var(--unit) solid #3a362f;
+  color: #b2a894;
+  margin: var(--u2) 0 var(--u2);
+  padding-bottom: var(--u2);
+}
+
+.sg-board__table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit);
+  list-style: none;
+  margin: 0;
+  max-height: 34vh;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.sg-board__row {
+  align-items: baseline;
+  border-bottom: var(--unit) solid rgb(87 83 74 / 35%);
+  display: grid;
+  gap: var(--u2);
+  grid-template-columns: var(--u6) 1fr auto;
+  padding-bottom: var(--unit);
+}
+
+/* The asking visitor's own row, marked without naming anyone. */
+.sg-board__row[data-you] {
+  background: rgb(201 138 82 / 14%);
+}
+
+.sg-board__rank {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+}
+
+.sg-board__name {
+  color: var(--loc-cream);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.sg-board__strokes {
+  color: var(--loc-cream);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.sg-board__strokes small {
+  color: #8d8578;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.sg-board__aside {
+  color: #8d8578;
+  font-size: var(--t-1);
+  grid-column: 2 / -1;
+  letter-spacing: 0;
+}
+
+.sg-board__state {
+  color: #b2a894;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: var(--u2) 0 0;
+  text-align: center;
+}
+
+.sg-board__state--error {
+  color: #d99a6c;
+}
+
+.sg-board__state--ok {
+  color: var(--loc-orange);
+}
+
+.sg-board__state button {
+  margin-top: var(--u2);
+}
+
+.sg-board__yours {
+  border-top: var(--unit) solid #3a362f;
+  margin-top: var(--u3);
+  padding-top: var(--u3);
+  text-align: center;
+}
+
+/* ATTEMPT and TOTAL STROKES are named in full, because SHOT, TOTAL STROKES,
+   ATTEMPT, RANK and VISITOR NUMBER are five different numbers. */
+.sg-board__attempt {
+  color: #8d8578;
+  display: flex;
+  font-size: var(--t-1);
+  justify-content: space-between;
+  letter-spacing: 0;
+  margin: 0 0 var(--u2);
+}
+
+.sg-board__attempt span {
+  color: var(--loc-cream);
+}
+
+/*
+ * When the public board is on screen, the per-visit panel moves out from
+ * behind it and sits underneath.
+ *
+ * The two are deliberately separate things — one is best-per-player across
+ * everyone, the other is this visitor's own attempts — and they were reading
+ * as one smudged panel because both are absolutely positioned near the top.
+ * The selector is anchored on this session's own class and only matches when
+ * the board is rendered, so the frozen `.sg-rank` rule is untouched and every
+ * other sport's RANK beat is exactly where it was.
+ */
+.sg-board ~ .sg-rank {
+  bottom: 4%;
+  top: auto;
+}
+
+.sg-name {
+  max-width: min(92vw, calc(var(--unit) * 104));
+}
+
+.sg-name__label {
+  color: #8d8578;
+  display: block;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: var(--u2) 0 var(--unit);
+}
+
+.sg-name__input {
+  background: #14110d;
+  border: var(--unit) solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  /* 16px keeps iOS Safari from zooming the page when the field takes focus. */
+  font-size: 16px;
+  padding: var(--u2) var(--u2);
+  width: 100%;
+}
+
+.sg-name__preview {
+  color: var(--loc-cream);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: var(--u3) 0 var(--unit);
+  overflow-wrap: anywhere;
+}
+
+.sg-name__preview strong {
+  color: var(--loc-orange);
+}
+
+.sg-name__scope {
+  color: #8d8578;
+  font-size: var(--t-1);
+  line-height: var(--t0);
+  margin: 0 0 var(--u2);
+}
+
+.sg-name__error {
+  color: #d99a6c;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0 0 var(--u2);
+}
+
+.sg-name__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--u2);
+}
+
+@media (max-width: 640px) {
+  .sg-board {
+    padding: var(--u3) var(--u4);
+    top: 2%;
+  }.sg-board__table {
+    max-height: 26vh;
+  }.sg-board__head {
+    flex-direction: column;
+    gap: var(--unit);
+  }
+}

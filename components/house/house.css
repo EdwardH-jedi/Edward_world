@@ -1,0 +1,264 @@
+.hs-house {
+  background: #1b1915;
+}
+
+/* The room strip. Sized inline at a whole unit that fits 98vw × 66vh, so the
+   art never lands on half pixels and the card and hint stay clear of it. */
+.hs-room {
+  box-shadow: var(--unit) var(--unit) 0 #14120f;
+  left: 50%;
+  position: absolute;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.hs-room__art {
+  height: 100%;
+  width: 100%;
+}
+
+.hs-thing {
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  outline-offset: var(--unit);
+  padding: 0;
+  position: absolute;
+  z-index: 4;
+}
+
+.hs-thing:hover {
+  outline: var(--unit) dashed rgb(201 138 82 / 50%);
+}
+
+.hs-thing[data-near] {
+  outline: var(--unit) solid var(--loc-orange);
+}
+
+.hs-thing__label {
+  background: rgb(27 25 21 / 92%);
+  border: var(--unit) solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  left: 50%;
+  letter-spacing: 0;
+  opacity: 0;
+  padding: var(--unit) var(--unit);
+  position: absolute;
+  top: calc(var(--unit) * -5);
+  transform: translateX(-50%);
+  transition: opacity 140ms linear;
+  white-space: nowrap;
+}
+
+.hs-thing[data-seen] .hs-thing__label {
+  color: var(--loc-muted);
+}
+
+.hs-thing:hover .hs-thing__label,
+.hs-thing:focus-visible .hs-thing__label,
+.hs-thing[data-near] .hs-thing__label {
+  opacity: 1;
+}
+
+/* The one key the room asks for, floated over whatever is within reach. */
+.hs-thing__key {
+  background: var(--loc-orange);
+  color: #241f18;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  left: 50%;
+  letter-spacing: 0;
+  padding: var(--unit) var(--u2);
+  position: absolute;
+  top: calc(var(--unit) * -9);
+  transform: translateX(-50%);
+}
+
+.hs-edward {
+  position: absolute;
+  z-index: 3;
+}
+
+.hs-edward canvas {
+  height: auto;
+  width: 100%;
+}
+
+.hs-hint {
+  background: rgb(27 25 21 / 92%);
+  border: var(--unit) solid #57534a;
+  bottom: 5%;
+  left: 50%;
+  padding: var(--u2) var(--u4);
+  position: absolute;
+  text-align: center;
+  transform: translateX(-50%);
+  z-index: 5;
+}
+
+.hs-hint p {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.hs-hint__progress {
+  color: #6c6559 !important;
+  font-size: var(--t-1) !important;
+  margin-top: var(--unit) !important;
+}
+
+/* The card is the object talking back, so it is made of what the object is
+   made of: paper for the map, the notebook and the drawer, a screen for the
+   two machines. */
+.hs-card {
+  border: var(--unit) solid #57534a;
+  bottom: 0;
+  left: 50%;
+  margin-left: calc(min(90vw, calc(var(--unit) * 176)) / -2);
+  max-height: 52vh;
+  overflow: auto;
+  padding: var(--u5) var(--u6) var(--u6);
+  position: absolute;
+  width: min(90vw, calc(var(--unit) * 176));
+  z-index: 6;
+}
+
+.hs-card[data-surface="paper"] {
+  background: var(--loc-cream);
+  border-color: #b3a68a;
+  border-top: var(--unit) solid var(--loc-orange);
+  color: var(--loc-char);
+}
+
+.hs-card[data-surface="screen"] {
+  background: rgb(20 22 24 / 97%);
+  border-top: var(--unit) solid var(--loc-court, #6f8892);
+  color: var(--loc-cream);
+}
+
+.hs-card__eyebrow {
+  color: var(--loc-orange);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.hs-card[data-surface="paper"] .hs-card__eyebrow {
+  color: #8a6a44;
+}
+
+.hs-card__heading {
+  color: inherit;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t1);
+  letter-spacing: 0;
+  margin: var(--u2) 0 0;
+}
+
+.hs-body {
+  display: grid;
+  gap: var(--u2);
+  margin-top: var(--u4);
+}
+
+.hs-body p {
+  color: inherit;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t1);
+  line-height: var(--t3);
+  margin: 0;
+  max-width: calc(var(--unit) * 160);
+}
+
+/* The shirt, said properly. The room can only draw the number; the name is a
+   name, and four art pixels tall is not where a name goes. */
+.hs-jersey {
+  align-items: center;
+  background: #23211c;
+  border: var(--unit) solid #57534a;
+  color: var(--loc-cream);
+  display: flex;
+  gap: var(--u4);
+  margin: var(--u4) 0 0;
+  padding: var(--u3) var(--u4);
+}
+
+.hs-jersey__number {
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t3);
+  line-height: var(--t3);
+}
+
+.hs-jersey__name {
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+/* The four fields the monitor is showing, as the client would list them. */
+.hs-client {
+  display: grid;
+  gap: var(--unit) var(--u6);
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--unit) * 28), 1fr));
+  margin: var(--u4) 0 0;
+}
+
+.hs-client div {
+  border-top: var(--unit) solid #3a3a3a;
+  padding-top: var(--unit);
+}
+
+.hs-client dt {
+  color: var(--loc-muted);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.hs-client dd {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  letter-spacing: 0;
+  margin: var(--unit) 0 0;
+}
+
+.hs-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--u2);
+  margin-top: var(--unit);
+}
+
+.hs-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--u2);
+  margin-top: var(--u5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hs-thing__label {
+    transition: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .hs-room {
+    top: 36%;
+  }.hs-card {
+    margin-left: -47vw;
+    max-height: 60vh;
+    padding: var(--u4);
+    width: 94vw;
+  }.hs-hint {
+    bottom: 3%;
+  }
+}

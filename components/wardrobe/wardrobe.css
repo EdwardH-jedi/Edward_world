@@ -1,0 +1,716 @@
+.wd-room {
+  --wd-wall: #d9cfb5;
+  --wd-wall-dark: #c3b79c;
+  --wd-floor: #7c6450;
+  --wd-wood: #8c7a63;
+  --wd-edge: #57473a;
+  --wd-paper: #efe7d3;
+  --wd-ink: #2b2823;
+  --wd-faint: #8d8271;
+
+  color: var(--wd-ink);
+}
+
+.wd-interior {
+  inset: 0;
+  position: absolute;
+}
+
+.wd-wall {
+  background: var(--wd-wall);
+  height: 76%;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+
+/* A picture rail keeps the wall from reading as a void. */
+.wd-wall::after {
+  background: var(--wd-wall-dark);
+  border-bottom: var(--unit) solid #ab9f85;
+  bottom: 16%;
+  content: "";
+  height: var(--unit);
+  left: 0;
+  position: absolute;
+  right: 0;
+}
+
+.wd-skirting {
+  background: var(--wd-wall-dark);
+  border-bottom: var(--unit) solid var(--wd-edge);
+  bottom: 20%;
+  height: var(--u3);
+  position: absolute;
+  width: 100%;
+}
+
+.wd-floor {
+  background: var(--wd-floor);
+  bottom: 0;
+  height: 20%;
+  position: absolute;
+  width: 100%;
+}
+
+.wd-floor::before {
+  background: repeating-linear-gradient(
+    90deg,
+    rgb(0 0 0 / 0%) 0 62px,
+    rgb(60 46 34 / 40%) 62px 66px
+  );
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.wd-studio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u3);
+  inset: 0;
+  padding: calc(var(--unit) * 13) calc(var(--unit) * 53) var(--u4) var(--u4);
+  position: absolute;
+  z-index: 3;
+}
+
+.wd-flow {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--t-1);
+  gap: var(--unit) var(--u2);
+  letter-spacing: 0;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wd-flow li {
+  color: var(--wd-faint);
+  padding-bottom: var(--unit);
+}
+
+.wd-flow li + li::before {
+  color: #b3a78e;
+  content: "→";
+  margin-right: var(--u2);
+}
+
+.wd-flow li[data-done] {
+  color: var(--wd-ink);
+}
+
+.wd-flow li[data-now] {
+  border-bottom: var(--unit) solid var(--loc-orange);
+  color: var(--loc-orange);
+}
+
+.wd-prompt {
+  color: var(--wd-ink);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t1);
+  line-height: var(--t2);
+  margin: 0;
+}
+
+/* Capped, so a tall window shows more room rather than a taller work table. */
+.wd-bays {
+  display: grid;
+  flex: 1;
+  gap: var(--u3);
+  max-height: calc(var(--unit) * 100);
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1.3fr) minmax(0, 0.95fr);
+  min-height: 0;
+}
+
+.wd-bay {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u2);
+  min-height: 0;
+}
+
+.wd-bay__name {
+  align-items: baseline;
+  border-bottom: var(--unit) solid var(--wd-edge);
+  color: var(--wd-ink);
+  display: flex;
+  font-size: var(--t0);
+  gap: var(--u2);
+  justify-content: space-between;
+  letter-spacing: 0;
+  margin: 0;
+  padding-bottom: var(--unit);
+}
+
+.wd-bay__name span {
+  color: var(--wd-edge);
+  font-size: var(--t0);
+  letter-spacing: 0;
+}
+
+.wd-rail__bar {
+  background: var(--wd-wood);
+  border-bottom: var(--unit) solid var(--wd-edge);
+  height: var(--u2);
+  margin: 0 calc(var(--unit) * -1) calc(var(--unit) * -1);
+}
+
+/* A tiered rack: every row hangs from its own rail rather than from nothing. */
+.wd-rail__items {
+  display: grid;
+  gap: var(--u2) var(--unit);
+  grid-template-columns: repeat(2, 1fr);
+  list-style: none;
+  margin: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.wd-rail__items li {
+  border-top: var(--unit) solid var(--wd-wood);
+}
+
+.wd-hanging {
+  align-items: center;
+  background: transparent;
+  border: var(--unit) solid transparent;
+  color: var(--wd-ink);
+  cursor: pointer;
+  display: grid;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  gap: var(--unit);
+  justify-items: center;
+  min-height: 46px;
+  padding: var(--unit) var(--unit) var(--unit);
+  width: 100%;
+}
+
+.wd-hanging:hover,
+.wd-hanging:focus-visible {
+  background: rgb(247 241 226 / 70%);
+  border-color: var(--wd-edge);
+}
+
+.wd-hanging[data-selected] {
+  background: rgb(247 241 226 / 92%);
+  border-color: var(--loc-orange);
+}
+
+.wd-hanging__art {
+  align-items: center;
+  display: grid;
+  justify-items: center;
+}
+
+.wd-hanging__name {
+  min-height: calc(var(--unit) * var(--k) * 2);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t0);
+  text-align: center;
+}
+
+.wd-hanging__tag {
+  color: var(--wd-edge);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.wd-hanging[data-archived] canvas {
+  opacity: 0.55;
+}
+
+.wd-table {
+  align-items: start;
+  background: var(--wd-paper);
+  border: var(--unit) solid var(--wd-edge);
+  border-top: var(--u2) solid var(--wd-wood);
+  box-shadow: 0 var(--u2) 0 rgb(87 71 58 / 20%);
+  display: flex;
+  gap: var(--u3);
+  min-height: calc(var(--unit) * 50);
+  overflow: auto;
+  padding: var(--u3);
+}
+
+.wd-table__art {
+  flex: none;
+}
+
+.wd-table__read {
+  min-width: 0;
+}
+
+.wd-table__name {
+  font-size: var(--t0);
+  letter-spacing: 0;
+  line-height: var(--t1);
+  margin: 0 0 var(--u2);
+}
+
+.wd-meta {
+  display: grid;
+  gap: var(--unit) var(--u4);
+  /* One column: bitmap labels are too wide to sit two abreast here. */
+  grid-template-columns: minmax(0, 1fr);
+  margin: 0;
+}
+
+.wd-meta div {
+  display: grid;
+  gap: var(--unit);
+}
+
+.wd-meta dt {
+  color: var(--wd-edge);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t0);
+}
+
+.wd-meta dd {
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t0);
+  margin: 0;
+}
+
+.wd-table__note {
+  color: var(--wd-faint);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t0);
+  margin: var(--u2) 0 0;
+}
+
+.wd-table__action {
+  align-self: start;
+}
+
+.wd-table__state {
+  color: var(--wd-edge);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t0);
+  margin: 0;
+  padding: var(--unit) 0;
+}
+
+.wd-empty {
+  color: var(--wd-edge);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t1);
+  margin: auto;
+  max-width: calc(var(--unit) * 60);
+  text-align: center;
+}
+
+.wd-shelves {
+  box-shadow: 0 var(--u2) 0 rgb(87 71 58 / 20%);
+  display: grid;
+  gap: 0;
+  grid-template-rows: repeat(4, minmax(3.4rem, auto));
+  min-height: 0;
+}
+
+.wd-shelf {
+  background: rgb(239 231 211 / 82%);
+  border: var(--unit) solid var(--wd-edge);
+  border-bottom-width: 0;
+  display: flex;
+  gap: var(--u2);
+  min-height: 0;
+  padding: var(--unit) var(--u2);
+}
+
+.wd-shelf:last-child {
+  border-bottom-width: 4px;
+}
+
+.wd-shelf__label {
+  color: var(--wd-edge);
+  flex: none;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+  padding-top: var(--unit);
+  width: calc(var(--unit) * 14);
+}
+
+.wd-shelf__empty {
+  align-self: center;
+  color: #b3a78e;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.wd-shelf ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--unit);
+  list-style: none;
+  margin: 0;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 0;
+}
+
+.wd-tile {
+  align-items: center;
+  background: var(--wd-paper);
+  border: var(--unit) solid var(--wd-edge);
+  color: var(--wd-ink);
+  cursor: pointer;
+  display: flex;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  gap: var(--unit);
+  letter-spacing: 0;
+  line-height: var(--t0);
+  min-height: 44px;
+  padding: var(--unit) var(--u2) var(--unit) var(--unit);
+}
+
+.wd-tile:hover,
+.wd-tile:focus-visible {
+  border-color: var(--loc-orange);
+}
+
+.wd-tile[data-worn] {
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
+  color: #241f18;
+}
+
+.wd-stand {
+  align-items: end;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  min-height: 0;
+  position: relative;
+}
+
+.wd-mirror {
+  background: linear-gradient(160deg, #dfe4e2 0%, #c2ccca 55%, #d5dbd9 100%);
+  border: var(--u2) solid var(--wd-wood);
+  box-shadow: 0 var(--unit) 0 rgb(87 71 58 / 22%);
+  height: 84%;
+  left: 50%;
+  margin-left: calc(var(--unit) * -16);
+  position: absolute;
+  top: 0;
+  width: calc(var(--unit) * 31);
+}
+
+.wd-figure {
+  position: relative;
+  z-index: 1;
+}
+
+.wd-worn {
+  display: grid;
+  gap: var(--unit);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wd-worn li {
+  align-items: center;
+  border: var(--unit) dashed #a9997f;
+  color: var(--wd-faint);
+  display: grid;
+  font-size: var(--t-1);
+  gap: var(--u2);
+  grid-template-columns: calc(var(--unit) * 14) 1fr auto;
+  letter-spacing: 0;
+  line-height: var(--t0);
+  min-height: 26px;
+  padding: var(--unit) var(--unit) var(--unit) var(--unit);
+}
+
+.wd-worn li[data-filled] {
+  background: var(--wd-paper);
+  border-style: solid;
+  border-color: var(--wd-edge);
+  color: var(--wd-ink);
+}
+
+.wd-worn__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wd-worn__off {
+  background: transparent;
+  border: var(--unit) solid var(--wd-edge);
+  color: var(--wd-ink);
+  cursor: pointer;
+  font-size: var(--t-1);
+  line-height: var(--t0);
+  min-height: 34px;
+  min-width: 34px;
+}
+
+.wd-worn__off:hover {
+  background: var(--wd-ink);
+  color: var(--wd-paper);
+}
+
+.wd-save {
+  margin-top: var(--unit);
+  min-height: 44px;
+}
+
+.wd-save__hint {
+  color: var(--wd-edge);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t0);
+  margin: 0;
+}
+
+/* Clear of the world/index control, which sits in the same corner. */
+.wd-saved {
+  display: flex;
+  flex-direction: column;
+  gap: var(--u2);
+  position: absolute;
+  right: var(--u4);
+  top: calc(var(--unit) * 18);
+  width: calc(var(--unit) * 46);
+  z-index: 4;
+}
+
+.wd-saved__name {
+  border-bottom: var(--unit) solid var(--wd-edge);
+  font-size: var(--t0);
+  letter-spacing: 0;
+  line-height: var(--t1);
+  margin: 0;
+  padding-bottom: var(--unit);
+}
+
+.wd-saved__frame {
+  align-items: center;
+  background: #cfc6ad;
+  border: var(--u2) solid var(--wd-wood);
+  box-shadow: 0 var(--u2) 0 rgb(87 71 58 / 22%);
+  display: flex;
+  justify-content: center;
+  min-height: calc(var(--unit) * 30);
+  padding: var(--u2);
+}
+
+.wd-saved__frame[data-filled] {
+  background: var(--wd-paper);
+}
+
+.wd-saved__empty {
+  color: var(--wd-edge);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t0);
+  text-align: center;
+  margin: 0;
+}
+
+.wd-saved__note {
+  color: var(--wd-edge);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t0);
+  margin: 0;
+}
+
+/* Specificity, not source order: `.loc-button` is defined after this block. */
+.loc-button.wd-saved__forget {
+  align-self: start;
+  border-color: transparent;
+  color: var(--wd-edge);
+  font-size: var(--t0);
+  min-height: 44px;
+  padding: var(--unit) 0;
+  text-decoration: underline;
+}
+
+.loc-button.wd-saved__forget:hover {
+  background: transparent;
+  color: var(--wd-ink);
+}
+
+.wd-final {
+  align-items: end;
+  display: flex;
+  height: 34%;
+  justify-content: center;
+  left: 16%;
+  position: absolute;
+  top: 20%;
+  width: calc(var(--unit) * 56);
+  z-index: 3;
+}
+
+.wd-summary__line {
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  line-height: var(--t1);
+  margin: 0 0 var(--u2);
+}
+
+/* A garment in flight: a throwaway clone, never the control it came from. */
+.wd-ghost {
+  margin: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 60;
+}
+
+.wd-visually-hidden {
+  clip-path: inset(50%);
+  height: var(--unit);
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: var(--unit);
+}
+
+@media (max-width: 1100px) {
+  /* The room stops being a wall of bays and becomes a scroll in loop order. */
+  .wd-room {
+    /* The scroll can travel beyond the backdrop's viewport-sized rectangle. */
+    background: var(--wd-wall);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }.wd-interior {
+    position: fixed;
+  }/* The room scrolls past a fixed backdrop, so the floor would cut the page in
+     half wherever the fold happened to land. On a phone the wall is the room. */
+  .wd-wall { height: 100%; }.wd-skirting,
+  .wd-floor {
+    display: none;
+  }.wd-studio {
+    inset: auto;
+    order: 2;
+    /* Clear of the unit-sized exit above it. */
+    padding: calc(var(--unit) * 17) var(--u4) var(--u4);
+    position: static;
+  }.wd-bays {
+    /* Stacked, the bays are as tall as their contents; the room scrolls. */
+    flex: none;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+    max-height: none;
+  }.wd-bay {
+    gap: var(--u2);
+  }.wd-rail__items {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    overflow: visible;
+  }.wd-table {
+    flex: none;
+    overflow: visible;
+  }.wd-shelves {
+    flex: none;
+  }.wd-shelf {
+    min-height: calc(var(--unit) * 14);
+  }.wd-stand {
+    flex: none;
+    min-height: calc(var(--unit) * 44);
+  }.wd-worn li {
+    min-height: 44px;
+  }.wd-worn__off {
+    min-height: 44px;
+    min-width: 44px;
+  }/* Scoped to this room rather than to every location's exit control. */
+  .wd-room .loc-exit {
+    min-height: 44px;
+  }.wd-saved {
+    order: 3;
+    padding: 0 var(--u4) var(--u6);
+    position: static;
+    width: auto;
+  }.wd-saved__frame {
+    max-width: calc(var(--unit) * 60);
+  }
+}
+
+@media (max-width: 520px) {
+  .wd-rail__items {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }.wd-table {
+    flex-direction: column;
+  }.wd-shelf__label {
+    width: calc(var(--unit) * 12);
+  }
+}
+
+.wd-content {
+  display: contents;
+}
+
+@media (max-width: 1100px), (max-height: 600px) {
+  .wd-room[data-complete] .wd-content {
+    align-content: start;
+    background: var(--wd-wall);
+    display: grid;
+    gap: var(--u4);
+    grid-template-columns: repeat(2, minmax(0, calc(var(--unit) * 78)));
+    inset: calc(var(--unit) * 16) 0 0;
+    justify-content: center;
+    overflow-y: auto;
+    padding: var(--u4) var(--u4) var(--u6);
+    position: absolute;
+  }.wd-room[data-complete] {
+    overflow: hidden;
+  }.wd-room[data-complete] .wd-saved {
+    align-self: start;
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: center;
+    order: 0;
+    padding: 0;
+    position: static;
+    width: min(100%, calc(var(--unit) * 60));
+  }.wd-room[data-complete] .wd-final {
+    align-self: center;
+    grid-column: 2;
+    grid-row: 1;
+    height: calc(var(--unit) * 44);
+    justify-self: center;
+    left: auto;
+    position: relative;
+    top: auto;
+    width: min(100%, calc(var(--unit) * 56));
+  }.wd-room[data-complete] .loc-caption {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: center;
+    left: auto;
+    line-height: 1.5;
+    max-width: 100%;
+    position: relative;
+    text-align: center;
+    top: auto;
+    transform: none;
+    white-space: normal;
+  }.wd-room[data-complete] .loc-summary {
+    bottom: auto;
+    grid-column: 1 / -1;
+    grid-row: 3;
+    left: auto;
+    max-height: none;
+    overflow: visible;
+    position: relative;
+    transform: none;
+    width: 100%;
+  }
+}

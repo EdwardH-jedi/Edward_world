@@ -33,6 +33,9 @@ import {
   type PipelineStage,
   type TeamPick,
 } from "@/types/afl";
+// Interior styles ship with this lazily loaded chunk, not the first paint.
+import "@/components/locations/location.css";
+import "@/components/afl/afl.css";
 
 interface AflExperienceProps {
   onExit: () => void;

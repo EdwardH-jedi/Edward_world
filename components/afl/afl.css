@@ -1,0 +1,425 @@
+.afl-lab {
+  --afl-screen: #1b2320;
+  --afl-screen-lit: #223029;
+  --afl-glow: #7fa38c;
+  --afl-glow-dim: #4a6357;
+  --afl-shell: #26221c;
+  --afl-shell-edge: #15130f;
+  --afl-shell-lit: #3a362f;
+  --afl-cable: #6c6559;
+  --afl-rig: min(94vw, 70rem);
+  /* Distance from the bottom of the stage up to the pixel bench: its 59 rows. */
+  --afl-bench: calc(var(--loc-art-bottom) + var(--unit) * 59);
+}
+
+.afl-edward {
+  bottom: 2%;
+  position: absolute;
+  right: 1.5%;
+  z-index: 2;
+}
+
+.afl-bay {
+  bottom: var(--afl-bench);
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  width: var(--afl-rig);
+  z-index: 3;
+}
+
+/* The rack's own contact shadow, so it reads as seated on the bench at any
+   viewport aspect rather than relying on the backdrop crop landing exactly. */
+.afl-bay::after {
+  background: linear-gradient(rgb(11 10 8 / 62%), rgb(11 10 8 / 0%));
+  content: "";
+  height: var(--u2);
+  left: -1%;
+  position: absolute;
+  right: -1%;
+  top: 100%;
+}
+
+.afl-rack {
+  display: grid;
+  gap: var(--u2);
+  grid-template-columns: repeat(6, 1fr);
+}
+
+.afl-crt {
+  background: var(--afl-shell);
+  border: var(--unit) solid var(--afl-shell-edge);
+  box-shadow: inset 0 0 0 var(--unit) var(--afl-shell-lit);
+  padding: var(--u2) var(--unit) var(--u2);
+  position: relative;
+}
+
+/* The run of cable between one panel and the next. It lights behind the
+   packet, so the finished bench reads as a circuit that has been through. */
+.afl-crt::after {
+  background: var(--afl-cable);
+  box-shadow: calc(var(--unit) * -1) 0 0 0 var(--afl-cable), var(--unit) 0 0 0 var(--afl-cable);
+  content: "";
+  height: var(--unit);
+  left: 100%;
+  position: absolute;
+  top: 50%;
+  width: var(--u2);
+  z-index: 1;
+}
+
+.afl-crt:last-child::after {
+  display: none;
+}
+
+.afl-crt:has(+ .afl-crt[data-state="done"])::after,
+.afl-crt:has(+ .afl-crt[data-state="active"])::after {
+  background: var(--loc-orange);
+  box-shadow: calc(var(--unit) * -1) 0 0 0 var(--loc-orange), var(--unit) 0 0 0 var(--loc-orange);
+}
+
+.afl-crt__label {
+  align-items: baseline;
+  color: var(--loc-muted);
+  display: flex;
+  font-size: var(--t-1);
+  gap: var(--unit);
+  letter-spacing: 0;
+  margin: 0 0 var(--unit);
+}
+
+.afl-crt__label span {
+  color: #6c6559;
+}
+
+.afl-crt__screen {
+  background: var(--afl-screen);
+  border: var(--unit) solid #0f1411;
+  min-height: calc(var(--unit) * 26);
+  overflow: hidden;
+  padding: var(--unit) var(--u2);
+  position: relative;
+}
+
+/* Scanlines, the cheapest way to say CRT. */
+.afl-crt__screen::after {
+  background: repeating-linear-gradient(
+    180deg,
+    rgb(255 255 255 / 0%) 0 2px,
+    rgb(0 0 0 / 22%) 2px 4px
+  );
+  content: "";
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+/* The phosphor bloom of a tube coming up. Driven by afl-choreography. */
+.afl-crt__flash {
+  background: var(--afl-glow);
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.afl-crt__standby {
+  color: var(--afl-glow-dim);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+  opacity: 0.7;
+}
+
+.afl-crt__screen dl {
+  display: grid;
+  gap: var(--unit);
+  margin: 0;
+}
+
+.afl-crt__screen div {
+  align-items: baseline;
+  display: flex;
+  gap: var(--unit);
+  justify-content: space-between;
+}
+
+.afl-crt__screen dt {
+  color: #5c7a6b;
+  flex: none;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.afl-crt__screen dd {
+  color: var(--afl-glow);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: 0;
+  text-align: right;
+}
+
+.afl-crt__screen dd[data-wide] {
+  color: var(--loc-orange);
+  font-size: var(--t-1);
+  line-height: var(--t0);
+  text-align: left;
+  width: 100%;
+}
+
+.afl-crt[data-state="active"] {
+  border-color: var(--loc-orange);
+}
+
+.afl-crt[data-state="active"] .afl-crt__screen {
+  background: var(--afl-screen-lit);
+}
+
+.afl-crt[data-state="active"] .afl-crt__label,
+.afl-crt[data-state="active"] .afl-crt__label span {
+  color: var(--loc-orange);
+}
+
+/* One round of data, in flight between two panels. */
+.afl-packet {
+  background: var(--loc-orange);
+  box-shadow: 0 0 0 var(--unit) rgb(201 138 82 / 30%);
+  height: var(--u2);
+  left: 0;
+  margin: calc(var(--unit) * -1) 0 0 calc(var(--unit) * -1);
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: var(--u2);
+  z-index: 6;
+}
+
+.afl-console {
+  background: rgb(24 22 18 / 95%);
+  border: var(--unit) solid #57534a;
+  border-bottom: none;
+  bottom: 0;
+  left: 50%;
+  max-height: 40vh;
+  overflow: auto;
+  padding: var(--u3) var(--u4) var(--u4);
+  position: absolute;
+  transform: translateX(-50%);
+  width: var(--afl-rig);
+  z-index: 5;
+}
+
+.afl-console__question {
+  align-items: baseline;
+  color: var(--loc-cream);
+  display: flex;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t1);
+  gap: var(--u2);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.afl-console__step {
+  color: var(--loc-orange);
+  font-size: var(--t0);
+}
+
+.afl-console__body {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  line-height: var(--t1);
+  margin: var(--u2) 0 0;
+  max-width: calc(var(--unit) * 184);
+}
+
+/* Pick A, pick B, and the run button — one row, because they are one
+   decision. The button is disabled until a side has actually been chosen. */
+.afl-deck {
+  align-items: stretch;
+  display: grid;
+  gap: var(--u2);
+  grid-template-columns: 1fr 1fr minmax(calc(var(--unit) * 44), auto);
+  margin-top: var(--u3);
+}
+
+.afl-pick {
+  background: rgb(43 40 35 / 92%);
+  border: var(--unit) solid #57534a;
+  color: var(--loc-cream);
+  cursor: pointer;
+  display: grid;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  gap: var(--unit);
+  justify-items: start;
+  padding: var(--u2) var(--u3);
+  text-align: left;
+}
+
+.afl-pick:hover,
+.afl-pick:focus-visible {
+  border-color: var(--loc-orange);
+}
+
+.afl-pick[data-selected] {
+  background: var(--loc-orange);
+  border-color: var(--loc-orange);
+  color: #241f18;
+}
+
+.afl-pick__name {
+  font-size: var(--t0);
+  letter-spacing: 0;
+}
+
+.afl-pick__form {
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.afl-pick__meta {
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  opacity: 0.75;
+}
+
+.afl-deck__go {
+  align-content: center;
+  display: grid;
+  gap: var(--u2);
+  justify-items: start;
+}
+
+.afl-console__hint {
+  color: #857d6f;
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.afl-console--running .afl-console__hint {
+  display: block;
+  margin-top: var(--u2);
+}
+
+.afl-verdict {
+  display: grid;
+  gap: var(--u2);
+  margin: var(--u4) 0 0;
+  max-width: calc(var(--unit) * 136);
+}
+
+.afl-verdict__cards {
+  display: grid;
+  gap: var(--u2);
+  grid-template-columns: 1fr 1fr;
+}
+
+.afl-verdict__card {
+  background: rgb(43 40 35 / 92%);
+  border: var(--unit) solid #57534a;
+  display: grid;
+  gap: var(--unit);
+  margin: 0;
+  padding: var(--u2) var(--u3);
+}
+
+.afl-verdict__card[data-model] {
+  border-color: var(--loc-orange);
+}
+
+.afl-verdict__label {
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+}
+
+.afl-verdict__value {
+  color: var(--loc-cream);
+  font-size: var(--t0);
+  letter-spacing: 0;
+}
+
+.afl-verdict__card[data-model] .afl-verdict__value {
+  color: var(--loc-orange);
+}
+
+/* The calibrated split, counted up from even by the same tween that drives
+   the number beneath it. Even is where an uninformative model would sit, so
+   it is the honest place for the bar to start. */
+.afl-split {
+  background: #3a362f;
+  border: var(--unit) solid #57534a;
+  height: var(--u3);
+  position: relative;
+}
+
+.afl-split__fill {
+  background: var(--afl-glow);
+  inset: 0 auto 0 0;
+  position: absolute;
+}
+
+.afl-split__mark {
+  background: var(--loc-cream);
+  bottom: calc(var(--unit) * -1);
+  left: 50%;
+  opacity: 0.55;
+  position: absolute;
+  top: calc(var(--unit) * -1);
+  width: var(--unit);
+}
+
+.afl-verdict__reading {
+  align-items: baseline;
+  color: var(--loc-cream);
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  gap: var(--u2);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.afl-verdict__divider {
+  color: #57534a;
+}
+
+.afl-verdict__agreement {
+  color: var(--loc-orange);
+  font-size: var(--t-1);
+}
+
+.afl-console__disclaimer {
+  border-left: var(--unit) solid var(--loc-orange);
+  color: var(--loc-muted);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t0);
+  line-height: var(--t2);
+  margin: var(--u3) 0 0;
+  max-width: calc(var(--unit) * 176);
+  padding-left: var(--u3);
+}
+
+@media (max-width: 1180px) {
+  .afl-edward { display: none; }.afl-crt__screen { min-height: calc(var(--unit) * 22); }
+}
+
+@media (max-width: 1180px) and (min-width: 821px) {
+  .afl-rack { grid-template-columns: repeat(3, 1fr); }.afl-crt:nth-child(3n)::after { display: none; }
+}
+
+@media (max-width: 820px) {
+  .afl-lab { --afl-rig: 94vw; }/* Three rows of panels will not fit above the bench line on a phone, so the
+     bench stops being the anchor and the rack hangs from the top instead. */
+  .afl-bay { bottom: auto; top: 8%; }.afl-bay::after { display: none; }.afl-rack {
+    gap: var(--unit);
+    grid-template-columns: repeat(2, 1fr);
+  }.afl-crt:nth-child(2n)::after { display: none; }.afl-crt__screen { min-height: calc(var(--unit) * 20); }.afl-console {
+    max-height: 52vh;
+    padding: var(--u3) var(--u3) var(--u4);
+  }.afl-console__question { font-size: var(--t0); }.afl-deck { grid-template-columns: 1fr; }.afl-verdict__cards { grid-template-columns: 1fr; }
+}

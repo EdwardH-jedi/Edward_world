@@ -1,0 +1,232 @@
+/* A location opening over the world. Enter-only, for the same reason the
+   world reveal is: `onExit` unmounts immediately, and making that wait would
+   touch the stage machines rather than the presentation. */
+@keyframes loc-open {
+  from { opacity: 0; transform: scale(1.008); }
+  to { opacity: 1; transform: none; }
+}
+
+.loc-experience {
+  animation: loc-open 320ms ease-out both;
+  --loc-sky: #e9e0c8;
+  --loc-char: #2b2823;
+  --loc-cream: #efe7d3;
+  --loc-muted: #9c9482;
+  --loc-orange: #c98a52;
+  --loc-court: #a97f52;
+  --loc-court-dark: #8e6a44;
+  /* Each interior sets its live unit inline; this is only the first paint. */
+  --unit: 4px;
+  /* The unit multiples the interiors repeat most, declared here so they take
+     this element's live --unit (set inline) and the root's --k. Spacing is
+     --u2..--u6; bitmap type is --t-1..--t3 (that many units off --k). */
+  --u2: calc(var(--unit) * 2);
+  --u3: calc(var(--unit) * 3);
+  --u4: calc(var(--unit) * 4);
+  --u5: calc(var(--unit) * 5);
+  --u6: calc(var(--unit) * 6);
+  --t-1: calc(var(--unit) * (var(--k) - 1));
+  --t0: calc(var(--unit) * var(--k));
+  --t1: calc(var(--unit) * (var(--k) + 1));
+  --t2: calc(var(--unit) * (var(--k) + 2));
+  --t3: calc(var(--unit) * (var(--k) + 3));
+  /* Distance from the stage's bottom edge up to the backdrop art's bottom row:
+     the 135-row art is centred, so half of what the stage has to spare. */
+  --loc-art-bottom: calc((100% - var(--unit) * 135) / 2);
+  /* Where the court's ground row falls: 39 art rows up from the art's bottom,
+     less the 19 court rows of surface band the court box stands on. */
+  --loc-ground: calc(
+    var(--loc-art-bottom) + var(--unit) * 39 - var(--sg-court-unit, 4px) * 19
+  );
+
+  background: #221f1a;
+  bottom: 0;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  left: 0;
+  overflow: hidden;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 10;
+}
+
+.loc-experience:focus-visible {
+  outline: none;
+}
+
+/* The art is drawn at the live unit and centred at exactly its backing size,
+   so every art pixel is a whole CSS pixel. A stage narrower than the art crops
+   it evenly; a taller one shows the stage background above and below. */
+.loc-backdrop {
+  display: grid;
+  inset: 0;
+  place-items: center;
+  position: absolute;
+}
+
+.loc-backdrop__canvas {
+  max-width: none;
+}
+
+.loc-backdrop--courtside {
+  opacity: 0;
+}
+
+.loc-exit {
+  background: rgb(43 40 35 / 88%);
+  border: var(--unit) solid #57534a;
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t-1);
+  left: var(--u4);
+  letter-spacing: 0;
+  padding: var(--u2) var(--u2);
+  position: absolute;
+  top: var(--u4);
+  z-index: 6;
+}
+
+.loc-exit:hover {
+  background: var(--loc-cream);
+  color: var(--loc-char);
+}
+
+.loc-caption {
+  background: var(--loc-char);
+  color: var(--loc-cream);
+  font-size: var(--t0);
+  left: 50%;
+  letter-spacing: 0;
+  margin: 0;
+  padding: var(--u2) var(--u3) var(--u2) var(--u4);
+  position: absolute;
+  top: 14%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  z-index: 5;
+}
+
+.loc-caption--title {
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t3);
+  letter-spacing: 0;
+  padding: var(--u2) var(--u4) var(--u2) var(--u5);
+}
+
+.loc-beat {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--u3);
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 16%;
+  z-index: 5;
+}
+
+.loc-beat__text {
+  background: var(--loc-char);
+  color: var(--loc-cream);
+  font-size: var(--t0);
+  letter-spacing: 0;
+  margin: 0;
+  padding: var(--u2) var(--u3) var(--u2) var(--u4);
+}
+
+.loc-summary {
+  background: rgb(34 31 26 / 95%);
+  border: var(--unit) solid #57534a;
+  bottom: 0;
+  left: 50%;
+  max-height: 78vh;
+  max-width: calc(var(--unit) * 160);
+  overflow: auto;
+  padding: var(--u6) calc(var(--unit) * 7) calc(var(--unit) * 7);
+  position: absolute;
+  transform: translateX(-50%);
+  width: min(94vw, calc(var(--unit) * 160));
+  z-index: 5;
+}
+
+.loc-summary__wordmark {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t1);
+  letter-spacing: 0;
+  margin: 0;
+}
+
+.loc-summary__role {
+  color: var(--loc-orange);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  margin: var(--u2) 0 0;
+}
+
+.loc-summary__descriptor {
+  color: var(--loc-cream);
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: var(--t1);
+  line-height: var(--t3);
+  margin: var(--u4) 0 0;
+}
+
+.loc-summary__flow {
+  color: var(--loc-muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: var(--t-1);
+  gap: var(--unit) var(--u2);
+  letter-spacing: 0;
+  list-style: none;
+  margin: var(--u4) 0 0;
+  padding: 0;
+}
+
+.loc-summary__flow li + li::before {
+  color: var(--loc-orange);
+  content: "→ ";
+}
+
+.loc-summary__stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--unit);
+  list-style: none;
+  margin: var(--u4) 0 0;
+  padding: 0;
+}
+
+.loc-summary__stack li {
+  border: var(--unit) solid #57534a;
+  color: var(--loc-muted);
+  font-size: var(--t-1);
+  letter-spacing: 0;
+  padding: var(--unit) var(--u2);
+}
+
+.loc-summary__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--u2);
+  margin-top: var(--u5);
+}
+
+@media (max-width: 640px) {.loc-caption--title {
+    font-size: var(--t1);
+  }.loc-summary {
+    max-height: 68vh;
+    padding: var(--u5) var(--u4) var(--u6);
+  }
+}
+
+@media (max-width: 640px), (max-height: 500px) and (max-width: 950px) {.loc-exit {
+    font-size: var(--t-1);
+    left: calc(var(--u2) + env(safe-area-inset-left, 0px));
+    letter-spacing: 0;
+    min-height: round(up, 44px, var(--unit));
+    padding: var(--u2) var(--u2);
+    top: calc(var(--u2) + env(safe-area-inset-top, 0px));
+  }
+}

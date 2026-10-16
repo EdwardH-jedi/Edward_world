@@ -22,7 +22,7 @@ no CSS framework and no component library; the runtime dependency list is
 | Path | What lives there |
 | --- | --- |
 | `app/` | Routes, the root layout and metadata, and `app/globals.css` |
-| `components/` | React surfaces, grouped by the place they render |
+| `components/` | React surfaces, grouped by the place they render. Each interior's stylesheet (`house.css`, `wardrobe.css`, `sportsgang.css`, `afl.css`, `arcade.css`, plus the shared `locations/location.css`) is imported by its lazily loaded component, so it ships with that chunk, not the first paint |
 | `lib/game/` | Pure rules and state machines. No React, no DOM |
 | `lib/pixel/` | Procedural art: art-pixel drawing routines and the palette |
 | `lib/motion/` | anime.js choreography, the shared rAF loop, motion preferences |
