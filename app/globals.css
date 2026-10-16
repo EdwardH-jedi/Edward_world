@@ -568,8 +568,8 @@ p {
    no exit counterpart, because leaving is driven by React state and an exit
    animation would mean delaying an unmount — a timing change, not polish. */
 @keyframes world-arrive {
-  from { opacity: 0; transform: scale(1.012); }
-  to { opacity: 1; transform: none; }
+  0% { transform: translateY(var(--unit)); }
+  50%, 100% { transform: none; }
 }
 
 /* The world is the whole screen. Every in-world measurement below is a whole
@@ -578,7 +578,7 @@ p {
    rounded: a 1-unit border and a 1-unit hard offset shadow are the only
    depth. */
 .world-screen {
-  animation: world-arrive 520ms ease-out both;
+  animation: world-arrive 160ms steps(1, end) both;
   --world-sky: #e9e0c8;
   --world-char: #2b2823;
   --world-cream: #efe7d3;
@@ -664,8 +664,13 @@ p {
   }
 }
 
+/* The bottom strip under the track (see .world-track) is the backdrop's own
+   deepest soil, so it reads as more ground. */
 .world-viewport {
-  background: var(--world-sky);
+  background: linear-gradient(
+    var(--world-sky) calc(100% - var(--unit)),
+    #4e3f33 calc(100% - var(--unit))
+  );
   inset: 0;
   overflow: hidden;
   position: absolute;
@@ -676,6 +681,17 @@ p {
   left: 0;
   position: absolute;
   will-change: transform;
+}
+
+/* Bottom-aligning the track leaves its origin off the unit grid
+   whenever the viewport height is not a multiple of the unit. The origin is
+   snapped down to the grid instead and the leftover strip is filled by the
+   viewport background. */
+@supports (top: round(down, 100%, 1px)) {
+  .world-track {
+    bottom: auto;
+    top: calc(round(down, 100%, var(--unit)) - var(--track-height));
+  }
 }
 
 /* Every canvas in the project is nearest-neighbour scaled art. */
@@ -736,15 +752,16 @@ p {
   z-index: 2;
 }
 
-/* Pops in over two hard steps (0 -> half -> full), never an eased grow. */
+/* Pops in over two hard one-unit steps up from below, never an eased grow, and
+   never a scale: that would halve the 1-unit border off the pixel grid. */
 .world-object__prompt {
   animation: prompt-pop 150ms steps(1, end) both;
 }
 
 @keyframes prompt-pop {
-  0% { scale: 0; }
-  40% { scale: 0.5; }
-  80%, 100% { scale: 1; }
+  0% { translate: 0 calc(var(--unit) * 2); }
+  40% { translate: 0 var(--unit); }
+  80%, 100% { translate: 0 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

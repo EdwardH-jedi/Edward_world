@@ -349,10 +349,11 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
         <div
           className="world-track"
           style={{
+            "--track-height": `${toCss(WORLD_CONFIG.height, unit)}px`,
             height: toCss(WORLD_CONFIG.height, unit),
             transform: `translate3d(${-snapToCss(cameraX, unit)}px, 0, 0)`,
             width: toCss(WORLD_CONFIG.width, unit),
-          }}
+          } as React.CSSProperties}
         >
           <PixelCanvas
             artHeight={BACKDROP_ART_SIZE.height}
