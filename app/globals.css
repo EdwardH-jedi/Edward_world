@@ -1355,18 +1355,14 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   background: #1b1915;
 }
 
-/* The room strip. A fixed aspect ratio keeps the art off half pixels, and the
-   height cap keeps the card and the hint clear of it on short viewports. */
+/* The room strip. Sized inline at a whole unit that fits 98vw × 66vh, so the
+   art never lands on half pixels and the card and hint stay clear of it. */
 .hs-room {
-  /* The aspect ratio is set inline from the art's own size, so the room can
-     never end up stretched by a stale number in here. */
-  box-shadow: 0 20px 54px rgb(0 0 0 / 55%);
+  box-shadow: var(--unit) var(--unit) 0 #14120f;
   left: 50%;
-  max-height: 66vh;
   position: absolute;
   top: 44%;
   transform: translate(-50%, -50%);
-  width: min(96vw, 1700px);
   z-index: 1;
 }
 
@@ -1381,32 +1377,32 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   background: transparent;
   border: 0;
   cursor: pointer;
-  outline-offset: 2px;
+  outline-offset: var(--unit);
   padding: 0;
   position: absolute;
   z-index: 4;
 }
 
 .hs-thing:hover {
-  outline: 2px dashed rgb(201 138 82 / 50%);
+  outline: var(--unit) dashed rgb(201 138 82 / 50%);
 }
 
 .hs-thing[data-near] {
-  outline: 2px solid var(--loc-orange);
+  outline: var(--unit) solid var(--loc-orange);
 }
 
 .hs-thing__label {
   background: rgb(27 25 21 / 92%);
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   color: var(--loc-cream);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.44rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
   left: 50%;
-  letter-spacing: 0.18em;
+  letter-spacing: 0;
   opacity: 0;
-  padding: 3px 5px;
+  padding: var(--unit) var(--unit);
   position: absolute;
-  top: -1.15rem;
+  top: calc(var(--unit) * -5);
   transform: translateX(-50%);
   transition: opacity 140ms linear;
   white-space: nowrap;
@@ -1426,13 +1422,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .hs-thing__key {
   background: var(--loc-orange);
   color: #241f18;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.46rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
   left: 50%;
-  letter-spacing: 0.1em;
-  padding: 3px 6px;
+  letter-spacing: 0;
+  padding: var(--unit) calc(var(--unit) * 2);
   position: absolute;
-  top: -2.3rem;
+  top: calc(var(--unit) * -9);
   transform: translateX(-50%);
 }
 
@@ -1450,10 +1446,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .hs-hint {
   background: rgb(27 25 21 / 92%);
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   bottom: 5%;
   left: 50%;
-  padding: 0.6rem 0.9rem;
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 4);
   position: absolute;
   text-align: center;
   transform: translateX(-50%);
@@ -1462,52 +1458,52 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .hs-hint p {
   color: var(--loc-cream);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
 }
 
 .hs-hint__progress {
   color: #6c6559 !important;
-  font-size: 0.46rem !important;
-  margin-top: 0.3rem !important;
+  font-size: calc(var(--unit) * (var(--k) - 1)) !important;
+  margin-top: var(--unit) !important;
 }
 
 /* The card is the object talking back, so it is made of what the object is
    made of: paper for the map, the notebook and the drawer, a screen for the
    two machines. */
 .hs-card {
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   bottom: 0;
   left: 50%;
-  margin-left: calc(min(90vw, 44rem) / -2);
+  margin-left: calc(min(90vw, calc(var(--unit) * 176)) / -2);
   max-height: 52vh;
   overflow: auto;
-  padding: 1.2rem 1.4rem 1.4rem;
+  padding: calc(var(--unit) * 5) calc(var(--unit) * 6) calc(var(--unit) * 6);
   position: absolute;
-  width: min(90vw, 44rem);
+  width: min(90vw, calc(var(--unit) * 176));
   z-index: 6;
 }
 
 .hs-card[data-surface="paper"] {
   background: var(--loc-cream);
   border-color: #b3a68a;
-  border-top: 3px solid var(--loc-orange);
+  border-top: var(--unit) solid var(--loc-orange);
   color: var(--loc-char);
 }
 
 .hs-card[data-surface="screen"] {
   background: rgb(20 22 24 / 97%);
-  border-top: 3px solid var(--loc-court, #6f8892);
+  border-top: var(--unit) solid var(--loc-court, #6f8892);
   color: var(--loc-cream);
 }
 
 .hs-card__eyebrow {
   color: var(--loc-orange);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.48rem;
-  letter-spacing: 0.22em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -1518,24 +1514,24 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .hs-card__heading {
   color: inherit;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 1.05rem;
-  letter-spacing: 0.06em;
-  margin: 0.4rem 0 0;
+  font-size: calc(var(--unit) * (var(--k) + 1));
+  letter-spacing: 0;
+  margin: calc(var(--unit) * 2) 0 0;
 }
 
 .hs-body {
   display: grid;
-  gap: 0.6rem;
-  margin-top: 0.9rem;
+  gap: calc(var(--unit) * 2);
+  margin-top: calc(var(--unit) * 4);
 }
 
 .hs-body p {
   color: inherit;
-  font-family: var(--font-archivo), Arial, sans-serif;
-  font-size: 0.88rem;
-  line-height: 1.6;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) + 1));
+  line-height: calc(var(--unit) * (var(--k) + 3));
   margin: 0;
-  max-width: 40rem;
+  max-width: calc(var(--unit) * 160);
 }
 
 /* The shirt, said properly. The room can only draw the number; the name is a
@@ -1543,66 +1539,66 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .hs-jersey {
   align-items: center;
   background: #23211c;
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   color: var(--loc-cream);
   display: flex;
-  gap: 0.9rem;
-  margin: 0.9rem 0 0;
-  padding: 0.7rem 0.9rem;
+  gap: calc(var(--unit) * 4);
+  margin: calc(var(--unit) * 4) 0 0;
+  padding: calc(var(--unit) * 3) calc(var(--unit) * 4);
 }
 
 .hs-jersey__number {
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 1.6rem;
-  line-height: 1;
+  font-size: calc(var(--unit) * (var(--k) + 3));
+  line-height: calc(var(--unit) * (var(--k) + 3));
 }
 
 .hs-jersey__name {
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.22em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 /* The four fields the monitor is showing, as the client would list them. */
 .hs-client {
   display: grid;
-  gap: 0.35rem 1.4rem;
-  grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
-  margin: 1rem 0 0;
+  gap: var(--unit) calc(var(--unit) * 6);
+  grid-template-columns: repeat(auto-fit, minmax(calc(var(--unit) * 28), 1fr));
+  margin: calc(var(--unit) * 4) 0 0;
 }
 
 .hs-client div {
-  border-top: 1px solid #3a3a3a;
-  padding-top: 0.35rem;
+  border-top: var(--unit) solid #3a3a3a;
+  padding-top: var(--unit);
 }
 
 .hs-client dt {
   color: var(--loc-muted);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.46rem;
-  letter-spacing: 0.2em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .hs-client dd {
   color: var(--loc-cream);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  margin: 0.2rem 0 0;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: 0;
+  margin: var(--unit) 0 0;
 }
 
 .hs-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.3rem;
+  gap: calc(var(--unit) * 2);
+  margin-top: var(--unit);
 }
 
 .hs-card__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 1.2rem;
+  gap: calc(var(--unit) * 2);
+  margin-top: calc(var(--unit) * 5);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1613,15 +1609,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 @media (max-width: 860px) {
   .hs-room {
-    max-height: 40vh;
     top: 36%;
-    width: 98vw;
   }
 
   .hs-card {
     margin-left: -47vw;
     max-height: 60vh;
-    padding: 1rem;
+    padding: calc(var(--unit) * 4);
     width: 94vw;
   }
 

@@ -11,6 +11,7 @@ import { movePlayerX } from "@/lib/game/movement";
 import { animateElement, motionPresets } from "@/lib/motion/animate-element";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { useGameLoop } from "@/lib/motion/use-game-loop";
+import { useFitPixelUnit, usePixelUnit } from "@/lib/motion/use-pixel-unit";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { drawEdward, EDWARD_ART_SIZE, getWalkFrame } from "@/lib/pixel/characters";
 import {
@@ -157,6 +158,9 @@ const LATCHING: ReadonlySet<HouseThingId> = new Set<HouseThingId>([
   "collection",
 ]);
 
+/** How much of the viewport the room strip may take, before whole-unit fitting. */
+const ROOM_SHARE = { width: 0.98, height: 0.66 } as const;
+
 /** A percentage of the room strip, for placing DOM over the art. */
 function across(value: number) {
   return `${(value / HOUSE_ART_SIZE.width) * 100}%`;
@@ -167,6 +171,10 @@ function down(value: number) {
 }
 
 export function HouseExperience({ onExit }: HouseExperienceProps) {
+  const unit = usePixelUnit();
+  // The strip is wider than the world is tall, so it steps down whole units
+  // to fit; the HUD around it keeps the live unit.
+  const roomUnit = useFitPixelUnit(HOUSE_ART_SIZE, ROOM_SHARE);
   const [edwardX, setEdwardX] = useState(24);
   const [facing, setFacing] = useState<"left" | "right">("right");
   const [walking, setWalking] = useState(false);
@@ -341,6 +349,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
       aria-label="Edward's House"
       className="loc-experience hs-house"
       ref={rootRef}
+      style={{ "--unit": `${unit}px` } as React.CSSProperties}
       tabIndex={-1}
     >
       <button
@@ -367,7 +376,8 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
         className="hs-room"
         inert={open || gateOpen ? true : undefined}
         style={{
-          aspectRatio: `${HOUSE_ART_SIZE.width} / ${HOUSE_ART_SIZE.height}`,
+          height: HOUSE_ART_SIZE.height * roomUnit,
+          width: HOUSE_ART_SIZE.width * roomUnit,
         }}
       >
         <PixelCanvas
@@ -377,7 +387,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
           draw={roomDraw}
           fill
           frame={ambientFrame}
-          unit={4}
+          unit={roomUnit}
         />
 
         {THINGS.map((thing) => {
@@ -427,7 +437,7 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
             fill
             flipX={facing === "left"}
             frame={walkFrame}
-            unit={4}
+            unit={roomUnit}
           />
         </div>
       </div>

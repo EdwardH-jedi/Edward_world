@@ -31,3 +31,21 @@ export function toCss(authored: number, unit: number) {
 export function snapToCss(authored: number, unit: number) {
   return Math.floor(authored / PIXEL_UNIT) * unit;
 }
+
+/**
+ * The live unit, stepped down to the largest whole unit at which `art` still
+ * fits `space` (both in CSS pixels). For scenes wider than the world is tall,
+ * such as a room strip, so they shrink a whole unit at a time instead of
+ * stretching by a fraction. Never below one CSS pixel per art pixel.
+ */
+export function fitPixelUnit(
+  unit: number,
+  space: { width: number; height: number },
+  art: { width: number; height: number },
+) {
+  const fit = Math.min(
+    Math.floor(space.width / art.width),
+    Math.floor(space.height / art.height),
+  );
+  return Math.max(1, Math.min(unit, fit));
+}

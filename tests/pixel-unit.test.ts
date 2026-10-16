@@ -7,6 +7,7 @@ import {
   getPixelUnit,
   snapToCss,
   toCss,
+  fitPixelUnit,
 } from "@/lib/game/pixel-unit";
 import { BACKDROP_ART_SIZE } from "@/lib/pixel/backdrop";
 import { EDWARD_ART_SIZE, getAvatarAnchor } from "@/lib/pixel/characters";
@@ -83,5 +84,19 @@ describe("layout at a live unit", () => {
       // Floors, so the sprite never jumps ahead of where the simulation has it.
       expect(snapToCss(x, unit) / unit).toBeLessThanOrEqual(x / PIXEL_UNIT);
     }
+  });
+});
+
+describe("fitPixelUnit", () => {
+  const room = { width: 344, height: 104 };
+
+  it.each([
+    // 1280×800 at 98%/66%: the room fits 3 wide even though the world is 5.
+    [5, { width: 1254.4, height: 528 }, 3],
+    [4, { width: 2000, height: 2000 }, 4], // never above the live unit
+    [6, { width: 2100, height: 528 }, 5], // height can be the tighter side
+    [4, { width: 200, height: 50 }, 1], // and never below one CSS pixel
+  ])("unit %i in %o is %i", (unit, space, expected) => {
+    expect(fitPixelUnit(unit, space, room)).toBe(expected);
   });
 });
