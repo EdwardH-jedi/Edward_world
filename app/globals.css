@@ -6357,3 +6357,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   position: fixed;
   z-index: 20;
 }
+.wd-hanging__art {
+  align-items: center;
+  display: grid;
+  justify-items: center;
+}
+
+  min-height: calc(var(--unit) * var(--k) * 2);
