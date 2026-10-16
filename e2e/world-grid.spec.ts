@@ -78,3 +78,30 @@ for (const viewport of VIEWPORTS) {
     });
   });
 }
+
+// G3: on a phone the House is wider than the screen, so its centred chip and
+// prompt used to land wholly off the right edge. They are clamped on screen.
+test.describe("390×844 nearby House", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test("chip and prompt are on screen and on the unit grid", async ({ page }) => {
+    await page.goto("/?view=world");
+    await page.locator(".world-track").waitFor();
+    const house = page.locator('[data-object-id="edwards-house"][data-nearby]');
+    if (!(await house.count())) {
+      await page.keyboard.down("d");
+      await house.waitFor({ timeout: 20_000 });
+      await page.keyboard.up("d");
+    }
+    const prompt = house.locator(".world-object__prompt");
+    await prompt.waitFor();
+    await page.waitForTimeout(400);
+
+    for (const chip of [house.locator(".world-object__label"), prompt]) {
+      const box = (await chip.boundingBox())!;
+      expect(box.x, "left edge").toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width, "right edge").toBeLessThanOrEqual(390);
+    }
+    expect(await offGridRects(page)).toEqual([]);
+  });
+});

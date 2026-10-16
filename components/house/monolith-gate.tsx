@@ -236,6 +236,8 @@ export function MonolithGate({ onSolved, onClose }: MonolithGateProps) {
             enterKeyHint="go"
             inputMode="text"
             onInput={handleInput}
+            // Shown only in the portrait layout, where the input is its own band.
+            placeholder="TAP HERE TO TYPE THE NAME"
             ref={inputRef}
             spellCheck={false}
             type="text"

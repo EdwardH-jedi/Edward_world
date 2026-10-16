@@ -23,6 +23,9 @@ import {
   type HouseThingId,
   houseThingDistance,
 } from "@/lib/pixel/house";
+// Interior styles ship with this lazily loaded chunk, not the first paint.
+import "@/components/locations/location.css";
+import "@/components/house/house.css";
 
 interface HouseExperienceProps {
   onExit: () => void;

@@ -35,6 +35,9 @@ import {
 import { useGameLoop } from "@/lib/motion/use-game-loop";
 import { useFitPixelUnit, usePixelUnit } from "@/lib/motion/use-pixel-unit";
 import { drawEdward, EDWARD_ART_SIZE, getWalkFrame } from "@/lib/pixel/characters";
+// Interior styles ship with this lazily loaded chunk, not the first paint.
+import "@/components/locations/location.css";
+import "@/components/arcade/arcade.css";
 
 interface ArcadeExperienceProps {
   onExit: () => void;

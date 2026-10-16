@@ -13,14 +13,19 @@ export const InteractionPrompt = memo(function InteractionPrompt({
   text,
   unit,
   anchorUnits,
+  screenLeft,
+  viewportWidth,
 }: {
   text: string;
   unit: number;
   /** The object's width in art pixels, which the prompt is centred on. */
   anchorUnits: number;
+  /** Keeps the prompt on screen; see `useUnitChipWidth`. */
+  screenLeft: number;
+  viewportWidth: number;
 }) {
   const promptRef = useRef<HTMLSpanElement>(null);
-  useUnitChipWidth(promptRef, unit, anchorUnits, text);
+  useUnitChipWidth(promptRef, unit, anchorUnits, text, screenLeft, viewportWidth);
 
   useEffect(() => {
     play("ui-blip");

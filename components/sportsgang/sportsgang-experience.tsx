@@ -51,6 +51,9 @@ import {
   type SportsgangSport,
   type SportsgangStage,
 } from "@/types/sportsgang";
+// Interior styles ship with this lazily loaded chunk, not the first paint.
+import "@/components/locations/location.css";
+import "@/components/sportsgang/sportsgang.css";
 
 interface SportsgangExperienceProps {
   onExit: () => void;

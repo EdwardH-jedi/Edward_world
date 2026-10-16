@@ -48,6 +48,9 @@ import {
   type OutfitSlot,
   type WardrobeStage,
 } from "@/types/wardrobe";
+// Interior styles ship with this lazily loaded chunk, not the first paint.
+import "@/components/locations/location.css";
+import "@/components/wardrobe/wardrobe.css";
 
 interface WardrobeExperienceProps {
   onExit: () => void;
