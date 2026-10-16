@@ -1,9 +1,9 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMinigameInput } from "@/components/sportsgang/minigames/use-minigame-input";
-import { MonolithGate } from "@/components/house/monolith-gate";
 import { useDialogFocus } from "@/components/ui/accessible-dialog";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { getProjectById } from "@/data/projects";
@@ -136,6 +136,12 @@ const THINGS: readonly Thing[] = [
 ];
 
 /** Not one of the seven things on the room's list, so it is not counted in it. */
+// The easter egg is opened by few; its shrine code stays out of the house chunk.
+const MonolithGate = dynamic(
+  () => import("@/components/house/monolith-gate").then((m) => m.MonolithGate),
+  { ssr: false },
+);
+
 const EASTER_EGG: HouseThingId = "monolith";
 const COUNTED_THINGS = THINGS.filter((thing) => thing.id !== EASTER_EGG);
 

@@ -157,9 +157,6 @@ export const GOLF_COURSE: GolfCourse = {
   restSpeedMps: 0.15,
 };
 
-/** Where the cup is. The one point every distance is measured against. */
-export const HOLE_POSITION: GolfPoint = { x: GOLF_COURSE.holeM, y: 0 };
-
 /**
  * What the ball is sitting on.
  *
@@ -246,6 +243,7 @@ export function xPercent(metres: number, camera: GolfCamera) {
   return ((metres - camera.focusM) / camera.spanM) * 100 + 50;
 }
 
+/** test contract */
 /** The inverse, so the projection is provably one definition and not two. */
 export function metresAtPercent(percent: number, camera: GolfCamera) {
   return ((percent - 50) / 100) * camera.spanM + camera.focusM;

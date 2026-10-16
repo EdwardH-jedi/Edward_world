@@ -70,6 +70,7 @@ const MAX_FALL = 900;
 
 export const STARTING_COFFEES = 3;
 
+/** test contract */
 /**
  * What a full-height jump is actually worth, from the constants above.
  *

@@ -351,6 +351,7 @@ export function getSfxContext(): AudioContext | null {
   return e.context;
 }
 
+/** test contract */
 /** Test seam. Not called by the app; the world never tears the music down. */
 export function __resetBgmForTests() {
   const e = engine();

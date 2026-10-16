@@ -58,6 +58,7 @@ export function getGroundYForFootprint(x: number, width: number) {
   return getGroundY(x + width / 2);
 }
 
+/** test contract */
 /** Every distinct ground height, left to right. Useful for drawing and tests. */
 export function getTerraceProfile() {
   return [...TERRACES.map(({ y }) => y), TOWN_GROUND_Y];

@@ -840,6 +840,14 @@ p {
 }
 
 /* Scene dissolve: unit-sized blocks, painted by canvas, above everything. */
+.scene-loading {
+  background: #14110d;
+  inset: 0;
+  pointer-events: none;
+  position: fixed;
+  z-index: 999;
+}
+
 .scene-dissolve {
   image-rendering: pixelated;
   left: 0;

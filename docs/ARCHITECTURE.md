@@ -275,9 +275,12 @@ every level position is floored to whole art pixels of that unit. Tennis swings
 move sprites by whole court units, never by a scale. The CSS-animated
 transitions (court expansion, arcade screen expansion, dissolve) still scale
 transiently and settle at identity. `PIXEL_UNIT` remains only in
-simulation and authored geometry. On landscape the title and
-intro stage is scaled to cover the viewport (non-integer, as before); a portrait
-phone keeps the contained frame so the intro's name slab is never cropped.
+simulation and authored geometry. On landscape the title and intro stage is one
+16:9 box scaled to cover the viewport (non-integer), with the overhang clipped
+and the controls pinned to the viewport. On portrait the stage is the viewport
+itself: the 16:9 art covers it, cropped sideways around its middle, and the
+title type is laid out as an in-flow column in the viewport rather than over the
+art. Nothing on a portrait title is contained or letterboxed.
 
 ## Project location experiences
 
@@ -459,9 +462,12 @@ entry and is described under [Runtime flow](#runtime-flow).)
 `MONOLITH_PHASE` in the intro machine is the single place the stage vocabulary
 and the art module's frame numbering meet.
 
-The whole scene is one fixed-aspect stage, so the backdrop, the carved sockets
-and the letters share a coordinate space and nothing needs re-aligning at
-another width.
+On landscape the whole scene is one 16:9 stage scaled to cover the viewport, so
+the backdrop, the carved sockets and the letters share a coordinate space and
+nothing needs re-aligning at another width. On portrait the aspect is not
+fixed: the stage is the viewport and the art is cropped to cover it, so
+anything positioned in percentages of the stage is positioned against the
+cropped view, not the full 16:9 art.
 
 Stages advance on timers, as everywhere else. The choreography differs from the
 locations in one way: its timelines are **paused, never reverted**, because
