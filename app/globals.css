@@ -2320,11 +2320,6 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   z-index: 2;
 }
 
-.afl-edward canvas {
-  height: 4.2rem;
-  width: auto;
-}
-
 /* ── The bench: six panels and the packet that crosses them ──────────────── */
 
 .afl-bay {
@@ -2341,7 +2336,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .afl-bay::after {
   background: linear-gradient(rgb(11 10 8 / 62%), rgb(11 10 8 / 0%));
   content: "";
-  height: 10px;
+  height: calc(var(--unit) * 2);
   left: -1%;
   position: absolute;
   right: -1%;
@@ -2350,15 +2345,15 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .afl-rack {
   display: grid;
-  gap: 0.45rem;
+  gap: calc(var(--unit) * 2);
   grid-template-columns: repeat(6, 1fr);
 }
 
 .afl-crt {
   background: var(--afl-shell);
-  border: 2px solid var(--afl-shell-edge);
-  box-shadow: inset 0 0 0 2px var(--afl-shell-lit);
-  padding: 0.4rem 0.35rem 0.45rem;
+  border: var(--unit) solid var(--afl-shell-edge);
+  box-shadow: inset 0 0 0 var(--unit) var(--afl-shell-lit);
+  padding: calc(var(--unit) * 2) var(--unit) calc(var(--unit) * 2);
   position: relative;
 }
 
@@ -2366,15 +2361,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
    packet, so the finished bench reads as a circuit that has been through. */
 .afl-crt::after {
   background: var(--afl-cable);
-  box-shadow:
-    -3px 0 0 0 var(--afl-cable),
-    3px 0 0 0 var(--afl-cable);
+  box-shadow: calc(var(--unit) * -1) 0 0 0 var(--afl-cable), var(--unit) 0 0 0 var(--afl-cable);
   content: "";
-  height: 4px;
+  height: var(--unit);
   left: 100%;
   position: absolute;
   top: 50%;
-  width: 0.45rem;
+  width: calc(var(--unit) * 2);
   z-index: 1;
 }
 
@@ -2385,19 +2378,17 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .afl-crt:has(+ .afl-crt[data-state="done"])::after,
 .afl-crt:has(+ .afl-crt[data-state="active"])::after {
   background: var(--loc-orange);
-  box-shadow:
-    -3px 0 0 0 var(--loc-orange),
-    3px 0 0 0 var(--loc-orange);
+  box-shadow: calc(var(--unit) * -1) 0 0 0 var(--loc-orange), var(--unit) 0 0 0 var(--loc-orange);
 }
 
 .afl-crt__label {
   align-items: baseline;
   color: var(--loc-muted);
   display: flex;
-  font-size: 0.46rem;
-  gap: 0.35rem;
-  letter-spacing: 0.14em;
-  margin: 0 0 0.3rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  gap: var(--unit);
+  letter-spacing: 0;
+  margin: 0 0 var(--unit);
 }
 
 .afl-crt__label span {
@@ -2406,10 +2397,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .afl-crt__screen {
   background: var(--afl-screen);
-  border: 1px solid #0f1411;
-  min-height: 6.6rem;
+  border: var(--unit) solid #0f1411;
+  min-height: calc(var(--unit) * 26);
   overflow: hidden;
-  padding: 0.35rem 0.4rem;
+  padding: var(--unit) calc(var(--unit) * 2);
   position: relative;
 }
 
@@ -2438,44 +2429,44 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .afl-crt__standby {
   color: var(--afl-glow-dim);
-  font-size: 0.5rem;
-  letter-spacing: 0.2em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
   opacity: 0.7;
 }
 
 .afl-crt__screen dl {
   display: grid;
-  gap: 0.22rem;
+  gap: var(--unit);
   margin: 0;
 }
 
 .afl-crt__screen div {
   align-items: baseline;
   display: flex;
-  gap: 0.35rem;
+  gap: var(--unit);
   justify-content: space-between;
 }
 
 .afl-crt__screen dt {
   color: #5c7a6b;
   flex: none;
-  font-size: 0.46rem;
-  letter-spacing: 0.1em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .afl-crt__screen dd {
   color: var(--afl-glow);
-  font-size: 0.54rem;
-  letter-spacing: 0.04em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
   text-align: right;
 }
 
 .afl-crt__screen dd[data-wide] {
   color: var(--loc-orange);
-  font-size: 0.5rem;
-  line-height: 1.5;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  line-height: calc(var(--unit) * var(--k));
   text-align: left;
   width: 100%;
 }
@@ -2496,17 +2487,15 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 /* One round of data, in flight between two panels. */
 .afl-packet {
   background: var(--loc-orange);
-  box-shadow:
-    0 0 0 2px rgb(201 138 82 / 30%),
-    0 0 12px 4px rgb(201 138 82 / 40%);
-  height: 12px;
+  box-shadow: 0 0 0 var(--unit) rgb(201 138 82 / 30%);
+  height: calc(var(--unit) * 2);
   left: 0;
-  margin: -6px 0 0 -6px;
+  margin: calc(var(--unit) * -1) 0 0 calc(var(--unit) * -1);
   opacity: 0;
   pointer-events: none;
   position: absolute;
   top: 0;
-  width: 12px;
+  width: calc(var(--unit) * 2);
   z-index: 6;
 }
 
@@ -2514,13 +2503,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .afl-console {
   background: rgb(24 22 18 / 95%);
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   border-bottom: none;
   bottom: 0;
   left: 50%;
   max-height: 40vh;
   overflow: auto;
-  padding: 0.85rem 1.1rem 1rem;
+  padding: calc(var(--unit) * 3) calc(var(--unit) * 4) calc(var(--unit) * 4);
   position: absolute;
   transform: translateX(-50%);
   width: var(--afl-rig);
@@ -2532,24 +2521,24 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   color: var(--loc-cream);
   display: flex;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.95rem;
-  gap: 0.6rem;
-  letter-spacing: 0.06em;
+  font-size: calc(var(--unit) * (var(--k) + 1));
+  gap: calc(var(--unit) * 2);
+  letter-spacing: 0;
   margin: 0;
 }
 
 .afl-console__step {
   color: var(--loc-orange);
-  font-size: 0.7rem;
+  font-size: calc(var(--unit) * var(--k));
 }
 
 .afl-console__body {
   color: var(--loc-cream);
-  font-family: var(--font-archivo), Arial, sans-serif;
-  font-size: 0.84rem;
-  line-height: 1.5;
-  margin: 0.4rem 0 0;
-  max-width: 46rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * var(--k));
+  line-height: calc(var(--unit) * (var(--k) + 1));
+  margin: calc(var(--unit) * 2) 0 0;
+  max-width: calc(var(--unit) * 184);
 }
 
 /* Pick A, pick B, and the run button — one row, because they are one
@@ -2557,21 +2546,21 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .afl-deck {
   align-items: stretch;
   display: grid;
-  gap: 0.6rem;
-  grid-template-columns: 1fr 1fr minmax(11rem, auto);
-  margin-top: 0.7rem;
+  gap: calc(var(--unit) * 2);
+  grid-template-columns: 1fr 1fr minmax(calc(var(--unit) * 44), auto);
+  margin-top: calc(var(--unit) * 3);
 }
 
 .afl-pick {
   background: rgb(43 40 35 / 92%);
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   color: var(--loc-cream);
   cursor: pointer;
   display: grid;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  gap: 0.25rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  gap: var(--unit);
   justify-items: start;
-  padding: 0.55rem 0.7rem;
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 3);
   text-align: left;
 }
 
@@ -2587,61 +2576,61 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 }
 
 .afl-pick__name {
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: 0;
 }
 
 .afl-pick__form {
-  font-size: 0.5rem;
-  letter-spacing: 0.06em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .afl-pick__meta {
-  font-size: 0.45rem;
-  letter-spacing: 0.11em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   opacity: 0.75;
 }
 
 .afl-deck__go {
   align-content: center;
   display: grid;
-  gap: 0.4rem;
+  gap: calc(var(--unit) * 2);
   justify-items: start;
 }
 
 .afl-console__hint {
   color: #857d6f;
-  font-size: 0.48rem;
-  letter-spacing: 0.14em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .afl-console--running .afl-console__hint {
   display: block;
-  margin-top: 0.6rem;
+  margin-top: calc(var(--unit) * 2);
 }
 
 /* ── The reveal ──────────────────────────────────────────────────────────── */
 
 .afl-verdict {
   display: grid;
-  gap: 0.55rem;
-  margin: 0.9rem 0 0;
-  max-width: 34rem;
+  gap: calc(var(--unit) * 2);
+  margin: calc(var(--unit) * 4) 0 0;
+  max-width: calc(var(--unit) * 136);
 }
 
 .afl-verdict__cards {
   display: grid;
-  gap: 0.6rem;
+  gap: calc(var(--unit) * 2);
   grid-template-columns: 1fr 1fr;
 }
 
 .afl-verdict__card {
   background: rgb(43 40 35 / 92%);
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   display: grid;
-  gap: 0.25rem;
+  gap: var(--unit);
   margin: 0;
-  padding: 0.5rem 0.65rem;
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 3);
 }
 
 .afl-verdict__card[data-model] {
@@ -2650,14 +2639,14 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .afl-verdict__label {
   color: var(--loc-muted);
-  font-size: 0.46rem;
-  letter-spacing: 0.16em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .afl-verdict__value {
   color: var(--loc-cream);
-  font-size: 0.85rem;
-  letter-spacing: 0.1em;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: 0;
 }
 
 .afl-verdict__card[data-model] .afl-verdict__value {
@@ -2669,8 +2658,8 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
    it is the honest place for the bar to start. */
 .afl-split {
   background: #3a362f;
-  border: 1px solid #57534a;
-  height: 12px;
+  border: var(--unit) solid #57534a;
+  height: calc(var(--unit) * 3);
   position: relative;
 }
 
@@ -2682,12 +2671,12 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .afl-split__mark {
   background: var(--loc-cream);
-  bottom: -2px;
+  bottom: calc(var(--unit) * -1);
   left: 50%;
   opacity: 0.55;
   position: absolute;
-  top: -2px;
-  width: 1px;
+  top: calc(var(--unit) * -1);
+  width: var(--unit);
 }
 
 .afl-verdict__reading {
@@ -2695,10 +2684,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   color: var(--loc-cream);
   display: flex;
   flex-wrap: wrap;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.62rem;
-  gap: 0.55rem;
-  letter-spacing: 0.1em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  gap: calc(var(--unit) * 2);
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -2708,18 +2697,18 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .afl-verdict__agreement {
   color: var(--loc-orange);
-  font-size: 0.55rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
 }
 
 .afl-console__disclaimer {
-  border-left: 2px solid var(--loc-orange);
+  border-left: var(--unit) solid var(--loc-orange);
   color: var(--loc-muted);
-  font-family: var(--font-archivo), Arial, sans-serif;
-  font-size: 0.78rem;
-  line-height: 1.55;
-  margin: 0.85rem 0 0;
-  max-width: 44rem;
-  padding-left: 0.7rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * var(--k));
+  line-height: calc(var(--unit) * (var(--k) + 2));
+  margin: calc(var(--unit) * 3) 0 0;
+  max-width: calc(var(--unit) * 176);
+  padding-left: calc(var(--unit) * 3);
 }
 
 /* ── Re-flow ─────────────────────────────────────────────────────────────────
@@ -2733,7 +2722,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 @media (max-width: 1180px) {
   .afl-edward { display: none; }
 
-  .afl-crt__screen { min-height: 5.6rem; }
+  .afl-crt__screen { min-height: calc(var(--unit) * 22); }
 }
 
 /* Banded, not open-ended: the two-column block below also matches at these
@@ -2755,20 +2744,20 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   .afl-bay::after { display: none; }
 
   .afl-rack {
-    gap: 0.35rem;
+    gap: var(--unit);
     grid-template-columns: repeat(2, 1fr);
   }
 
   .afl-crt:nth-child(2n)::after { display: none; }
 
-  .afl-crt__screen { min-height: 5rem; }
+  .afl-crt__screen { min-height: calc(var(--unit) * 20); }
 
   .afl-console {
     max-height: 52vh;
-    padding: 0.75rem 0.85rem 0.9rem;
+    padding: calc(var(--unit) * 3) calc(var(--unit) * 3) calc(var(--unit) * 4);
   }
 
-  .afl-console__question { font-size: 0.85rem; }
+  .afl-console__question { font-size: calc(var(--unit) * var(--k)); }
 
   .afl-deck { grid-template-columns: 1fr; }
 
