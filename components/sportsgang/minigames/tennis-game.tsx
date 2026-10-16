@@ -16,7 +16,7 @@ import {
   TENNIS_TARGET_POINTS,
   type TennisState,
 } from "@/lib/game/minigames/tennis";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
+import { useCourtUnit } from "@/components/sportsgang/use-court-unit";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import { PLAYER_ART_SIZE } from "@/lib/pixel/sportsgang";
 import { tennisRoutine } from "@/lib/pixel/sg-tennis";
@@ -51,6 +51,7 @@ export function TennisGame({
   onFinish,
   debug = false,
 }: MinigameProps & { debug?: boolean }) {
+  const courtUnit = useCourtUnit();
   const { consume, bind, clear } = useMinigameInput(active);
   const [state, setState] = useState<TennisState>(createTennisState);
   const stateRef = useRef(state);
@@ -152,8 +153,9 @@ export function TennisGame({
             artHeight={PLAYER_ART_SIZE.height}
             artWidth={PLAYER_ART_SIZE.width}
             draw={tennisRoutine("PLAYER", playerSwing?.kind ?? null, playerProgress)}
+            fill
             frame={0}
-            unit={PIXEL_UNIT}
+            unit={courtUnit}
           />
         </div>
 
@@ -167,8 +169,9 @@ export function TennisGame({
             artWidth={PLAYER_ART_SIZE.width}
             draw={tennisRoutine("ALEX", alexSwing?.kind ?? null, alexProgress)}
             flipX
+            fill
             frame={0}
-            unit={PIXEL_UNIT}
+            unit={courtUnit}
           />
         </div>
 

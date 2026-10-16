@@ -1042,8 +1042,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
      fraction of the viewport height (28.9%, where the art's horizon falls)
      whenever the viewport is taller than the art's 16:9. Positioning the box
      bottom would leave the players hovering above the surface, so the offset
-     backs out the surface band's own height instead. */
-  --loc-court-width: min(92vw, 900px);
+     backs out the surface band's own height instead.
+     The court is 225x85 art pixels at a whole court unit, set inline by
+     useCourtUnit; sprites on it are sized in the same unit. */
+  --loc-court-width: calc(var(--sg-court-unit, 4px) * 225);
   --loc-court-surface: 22%;
 
   aspect-ratio: 900 / 340;
@@ -1132,7 +1134,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-court__player {
   bottom: 22%;
-  height: 20%;
+  height: calc(var(--sg-court-unit, 4px) * 16);
   position: absolute;
 }
 
@@ -1163,15 +1165,15 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 /* ── The phone ────────────────────────────────────────────────────────────── */
 
 .sg-phone {
-  height: 380px;
+  height: calc(var(--unit) * 95);
   left: 50%;
-  margin-left: -110px;
-  margin-top: -196px;
+  margin-left: calc(var(--unit) * -28);
+  margin-top: calc(var(--unit) * -49);
   opacity: 0;
   position: absolute;
   top: 50%;
   visibility: hidden;
-  width: 220px;
+  width: calc(var(--unit) * 55);
   z-index: 2;
 }
 
@@ -1186,44 +1188,44 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-phone__chassis {
   background: #3a362f;
-  border: 4px solid var(--loc-char);
-  box-shadow: 8px 8px 0 rgb(24 22 18 / 45%);
+  border: var(--unit) solid var(--loc-char);
+  box-shadow: calc(var(--unit) * 2) calc(var(--unit) * 2) 0 rgb(24 22 18 / 45%);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: calc(var(--unit) * 2);
   height: 100%;
-  padding: 12px 10px;
+  padding: calc(var(--unit) * 3) calc(var(--unit) * 2);
 }
 
 .sg-phone__speaker {
   background: #57534a;
-  height: 4px;
-  margin: 2px auto 0;
-  width: 44px;
+  height: var(--unit);
+  margin: var(--unit) auto 0;
+  width: calc(var(--unit) * 11);
 }
 
 .sg-phone__screen {
   background: #1e1b17;
-  border: 2px solid #57534a;
+  border: var(--unit) solid #57534a;
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 10px;
-  padding: 12px 10px;
+  gap: calc(var(--unit) * 2);
+  padding: calc(var(--unit) * 3) calc(var(--unit) * 2);
 }
 
 .sg-phone__home {
   background: #57534a;
-  height: 6px;
+  height: calc(var(--unit) * 2);
   margin: 0 auto;
-  width: 54px;
+  width: calc(var(--unit) * 14);
 }
 
 .sg-phone__brand {
   color: var(--loc-orange);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.1em;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: 0;
   text-align: center;
 }
 
@@ -1231,8 +1233,8 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-phone__label,
 .sg-phone__status {
   color: var(--loc-muted);
-  font-size: 0.58rem;
-  letter-spacing: 0.18em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
   text-align: center;
 }
@@ -1244,13 +1246,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-phone__panel {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: calc(var(--unit) * 2);
 }
 
 .sg-phone__sports {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: calc(var(--unit) * 2);
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1259,13 +1261,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-phone__sport {
   align-items: center;
   background: transparent;
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   color: var(--loc-muted);
   display: flex;
-  font-size: 0.64rem;
+  font-size: calc(var(--unit) * var(--k));
   justify-content: space-between;
-  letter-spacing: 0.14em;
-  padding: 7px 8px;
+  letter-spacing: 0;
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 2);
   width: 100%;
 }
 
@@ -1281,13 +1283,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 }
 
 .sg-phone__soon {
-  font-size: 0.5rem;
-  letter-spacing: 0.12em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .sg-phone__sweep-track {
   background: #2b2823;
-  height: 6px;
+  height: calc(var(--unit) * 2);
   overflow: hidden;
   position: relative;
 }
@@ -1302,30 +1304,30 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-phone__versus {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--unit);
   text-align: center;
 }
 
 .sg-phone__player {
   color: var(--loc-cream);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.06em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .sg-phone__vs {
   color: var(--loc-muted);
-  font-size: 0.52rem;
-  letter-spacing: 0.2em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .sg-phone__accept {
   background: var(--loc-orange);
   border: 0;
   color: #241f18;
-  font-size: 0.62rem;
-  letter-spacing: 0.16em;
-  padding: 8px;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  padding: calc(var(--unit) * 2);
 }
 
 /* The court preview slot. Empty on purpose — the real court is transformed
@@ -1333,7 +1335,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-phone__slot {
   aspect-ratio: 900 / 340;
   background: #14110d;
-  border: 1px solid #3a362f;
+  border: var(--unit) solid #3a362f;
   margin-top: auto;
   opacity: 0;
   width: 100%;
@@ -3670,7 +3672,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
    here lands where it would inside the court itself. */
 
 .sg-play {
-  --loc-court-width: min(92vw, 900px);
+  --loc-court-width: calc(var(--sg-court-unit, 4px) * 225);
 
   aspect-ratio: 900 / 340;
   bottom: calc(28.9% - var(--loc-court-width) * 0.0831);
@@ -3708,19 +3710,19 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   content: "";
   inset: 0 auto 0 0;
   position: absolute;
-  width: 1px;
+  width: var(--unit);
 }
 
 /* The yardage reads on the grass below the post, where there is nothing to
    compete with, rather than up against the venue's fence. */
 .sg-play__marker span {
   color: rgb(60 58 50 / 80%);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.5rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
   left: 0;
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
   position: absolute;
-  top: calc(100% + 3px);
+  top: calc(100% + var(--unit));
   transform: translateX(-50%);
 }
 
@@ -3750,8 +3752,8 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-play__readout {
   color: var(--loc-char);
-  font-size: 0.6rem;
-  letter-spacing: 0.12em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
   position: absolute;
   top: 6%;
@@ -3762,12 +3764,12 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-play__verdict {
   color: var(--loc-cream);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 1.1rem;
+  font-size: calc(var(--unit) * (var(--k) + 1));
   left: 50%;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   margin: 0;
   position: absolute;
-  text-shadow: 0 3px 0 rgb(34 31 26 / 60%);
+  text-shadow: 0 var(--unit) 0 rgb(34 31 26 / 60%);
   top: 4%;
   transform: translateX(-50%);
 }
@@ -3783,16 +3785,16 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 }
 
 .sg-play__runner canvas {
-  height: 3.6rem;
+  height: calc(var(--sg-court-unit, 4px) * 16);
   width: auto;
 }
 
 .sg-play__runner span {
   color: var(--loc-cream);
   display: block;
-  font-size: 0.5rem;
-  letter-spacing: 0.14em;
-  text-shadow: 0 2px 0 rgb(34 31 26 / 60%);
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  text-shadow: 0 var(--unit) 0 rgb(34 31 26 / 60%);
 }
 
 .sg-play__runner--pacer { opacity: 0.75; }
@@ -3802,23 +3804,23 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-play__hud {
   background: rgb(34 31 26 / 92%);
-  border: 1px solid #57534a;
-  bottom: calc(100% + 1.1rem);
+  border: var(--unit) solid #57534a;
+  bottom: calc(100% + calc(var(--unit) * 4));
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: calc(var(--unit) * 2);
   left: 50%;
-  padding: 0.9rem 1.1rem;
+  padding: calc(var(--unit) * 4) calc(var(--unit) * 4);
   pointer-events: auto;
   position: absolute;
   transform: translateX(-50%);
-  width: min(92vw, 30rem);
+  width: min(92vw, calc(var(--unit) * 120));
 }
 
 .sg-play__prompt {
   color: var(--loc-cream);
-  font-size: 0.68rem;
-  letter-spacing: 0.2em;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: 0;
   margin: 0;
   text-align: center;
 }
@@ -3826,16 +3828,16 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-play__tally {
   color: var(--loc-muted);
   display: flex;
-  font-size: 0.52rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
   justify-content: space-between;
-  letter-spacing: 0.14em;
+  letter-spacing: 0;
   margin: 0;
 }
 
 .sg-play__hint {
   color: #7d766a;
-  font-size: 0.5rem;
-  letter-spacing: 0.12em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
   text-align: center;
 }
@@ -3844,10 +3846,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   background: var(--loc-orange);
   border: 0;
   color: #241f18;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.66rem;
-  letter-spacing: 0.16em;
-  padding: 0.6rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: 0;
+  padding: calc(var(--unit) * 2);
   touch-action: none;
   user-select: none;
   width: 100%;
@@ -3855,19 +3857,19 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-play__action--quiet {
   background: transparent;
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   color: var(--loc-cream);
 }
 
 .sg-play__pair {
   display: flex;
-  gap: 0.5rem;
+  gap: calc(var(--unit) * 2);
 }
 
 .sg-play__gauges {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: calc(var(--unit) * 2);
 }
 
 /* ── Meters ──────────────────────────────────────────────────────────────── */
@@ -3875,9 +3877,9 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-meter__label,
 .sg-gauge__label {
   color: var(--loc-muted);
-  font-size: 0.5rem;
-  letter-spacing: 0.18em;
-  margin: 0 0 0.3rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  margin: 0 0 var(--unit);
 }
 
 .sg-gauge__label {
@@ -3888,8 +3890,8 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-meter__track,
 .sg-gauge__track {
   background: #14110d;
-  border: 1px solid #3a362f;
-  height: 14px;
+  border: var(--unit) solid #3a362f;
+  height: calc(var(--unit) * 4);
   overflow: hidden;
   position: relative;
 }
@@ -3920,7 +3922,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   left: 50%;
   position: absolute;
   top: 0;
-  width: 2px;
+  width: var(--unit);
 }
 
 .sg-meter__marker {
@@ -3929,7 +3931,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   position: absolute;
   top: 0;
   transform: translateX(-50%);
-  width: 3px;
+  width: var(--unit);
 }
 
 .sg-gauge[data-tone="pace"] .sg-gauge__fill { background: #6f8892; }
@@ -4042,9 +4044,9 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-result {
   background: rgb(34 31 26 / 92%);
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   left: 50%;
-  padding: 1.1rem 1.6rem;
+  padding: calc(var(--unit) * 4) calc(var(--unit) * 6);
   position: absolute;
   text-align: center;
   top: 12%;
@@ -4054,9 +4056,9 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-result__heading {
   color: var(--loc-muted);
-  font-size: 0.6rem;
-  letter-spacing: 0.28em;
-  margin: 0 0 0.7rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  margin: 0 0 calc(var(--unit) * 3);
 }
 
 .sg-result__score {
@@ -4064,15 +4066,15 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   color: var(--loc-cream);
   display: flex;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.72rem;
-  gap: 1.1rem;
+  font-size: calc(var(--unit) * var(--k));
+  gap: calc(var(--unit) * 4);
   justify-content: center;
   margin: 0;
 }
 
 .sg-result__numbers {
   color: var(--loc-orange);
-  font-size: 1.25rem;
+  font-size: calc(var(--unit) * (var(--k) + 2));
 }
 
 .sg-result__divider {
@@ -4081,9 +4083,9 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-result__note {
   color: var(--loc-muted);
-  font-size: 0.55rem;
-  letter-spacing: 0.18em;
-  margin: 0.8rem 0 0;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  margin: calc(var(--unit) * 3) 0 0;
 }
 
 /* ── SportsGang: the RANK beat ───────────────────────────────────────────────
@@ -4092,10 +4094,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
    there is nobody else in this world to be ranked against. */
 .sg-rank {
   background: rgb(34 31 26 / 95%);
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   left: 50%;
-  max-width: min(92vw, 30rem);
-  padding: 1.2rem 1.6rem 1.3rem;
+  max-width: min(92vw, calc(var(--unit) * 120));
+  padding: calc(var(--unit) * 5) calc(var(--unit) * 6) calc(var(--unit) * 5);
   position: absolute;
   text-align: center;
   top: 10%;
@@ -4106,36 +4108,36 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-rank__heading {
   color: var(--loc-orange);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.9rem;
-  letter-spacing: 0.28em;
+  font-size: calc(var(--unit) * (var(--k) + 1));
+  letter-spacing: 0;
   margin: 0;
 }
 
 .sg-rank__scope {
   color: var(--loc-muted);
-  font-size: 0.55rem;
-  letter-spacing: 0.24em;
-  margin: 0.35rem 0 1rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  margin: var(--unit) 0 calc(var(--unit) * 4);
 }
 
 .sg-rank__table {
   display: grid;
-  gap: 0.3rem;
+  gap: var(--unit);
   list-style: none;
-  margin: 0 0 0.9rem;
+  margin: 0 0 calc(var(--unit) * 4);
   padding: 0;
 }
 
 .sg-rank__row {
   align-items: baseline;
-  border-left: 2px solid transparent;
+  border-left: var(--unit) solid transparent;
   color: var(--loc-cream);
   display: grid;
-  font-size: 0.62rem;
-  gap: 0.6rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  gap: calc(var(--unit) * 2);
   grid-template-columns: 1fr auto auto;
-  letter-spacing: 0.14em;
-  padding: 0.35rem 0.5rem;
+  letter-spacing: 0;
+  padding: var(--unit) calc(var(--unit) * 2);
   text-align: left;
 }
 
@@ -4148,34 +4150,34 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-rank__best {
   color: var(--loc-orange);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.8rem;
+  font-size: calc(var(--unit) * var(--k));
 }
 
 .sg-rank__attempts {
   color: var(--loc-muted);
-  font-size: 0.52rem;
-  min-width: 4.2rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  min-width: calc(var(--unit) * 17);
   text-align: right;
 }
 
 .sg-rank__verdict {
   color: var(--loc-cream);
-  font-size: 0.58rem;
-  letter-spacing: 0.18em;
-  margin: 0 0 0.7rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  margin: 0 0 calc(var(--unit) * 3);
 }
 
 .sg-rank__footnote {
   color: var(--loc-muted);
-  font-size: 0.52rem;
-  letter-spacing: 0.06em;
-  line-height: 1.7;
-  margin: 0 0 1rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  line-height: calc(var(--unit) * var(--k));
+  margin: 0 0 calc(var(--unit) * 4);
   text-transform: none;
 }
 
 @media (max-width: 640px) {
-  .sg-rank { padding: 1rem 1rem 1.1rem; top: 8%; }
+  .sg-rank { padding: calc(var(--unit) * 4) calc(var(--unit) * 4) calc(var(--unit) * 4); top: 8%; }
   .sg-rank__row { grid-template-columns: 1fr auto; }
   .sg-rank__attempts { display: none; }
 }
@@ -4261,10 +4263,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 @media (max-width: 640px) {
   .sg-phone {
-    height: 330px;
-    margin-left: -95px;
-    margin-top: -178px;
-    width: 190px;
+    height: calc(var(--unit) * 82);
+    margin-left: calc(var(--unit) * -24);
+    margin-top: calc(var(--unit) * -44);
+    width: calc(var(--unit) * 48);
   }
 
   .loc-caption--title {
@@ -4277,18 +4279,18 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   }
 
   .sg-result {
-    padding: 0.9rem 1.1rem;
+    padding: calc(var(--unit) * 4) calc(var(--unit) * 4);
   }
 
   .sg-result__score {
-    font-size: 0.6rem;
-    gap: 0.6rem;
+    font-size: calc(var(--unit) * (var(--k) - 1));
+    gap: calc(var(--unit) * 2);
   }
 
   .sg-play__hud {
     bottom: auto;
-    padding: 0.7rem 0.8rem;
-    top: calc(100% + 0.8rem);
+    padding: calc(var(--unit) * 3) calc(var(--unit) * 3);
+    top: calc(100% + calc(var(--unit) * 3));
     width: 94vw;
   }
 }
@@ -5155,7 +5157,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-tennis__figure {
   bottom: 22%;
-  height: 20%;
+  height: calc(var(--sg-court-unit, 4px) * 16);
   position: absolute;
   transition: none;
   will-change: left;
@@ -5227,16 +5229,16 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
      thing a match must never make you hunt for. */
   align-items: center;
   background: rgb(34 31 26 / 92%);
-  border: 1px solid #57534a;
-  bottom: calc(100% + 1.1rem);
+  border: var(--unit) solid #57534a;
+  bottom: calc(100% + calc(var(--unit) * 4));
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--unit);
   left: 50%;
-  padding: 0.6rem 1.1rem;
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 4);
   position: absolute;
   transform: translateX(-50%);
-  width: min(92vw, 22rem);
+  width: min(92vw, calc(var(--unit) * 88));
 }
 
 .sg-tennis__score {
@@ -5244,15 +5246,15 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   color: var(--loc-cream);
   display: flex;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.7rem;
-  gap: 0.5rem;
-  letter-spacing: 0.16em;
+  font-size: calc(var(--unit) * var(--k));
+  gap: calc(var(--unit) * 2);
+  letter-spacing: 0;
   margin: 0;
-  text-shadow: 0 2px 0 rgb(34 31 26 / 70%);
+  text-shadow: 0 var(--unit) 0 rgb(34 31 26 / 70%);
 }
 
 .sg-tennis__score strong {
-  font-size: 1.25rem;
+  font-size: calc(var(--unit) * (var(--k) + 2));
   font-weight: 400;
 }
 
@@ -5272,9 +5274,9 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-tennis__prompt {
   color: #b5ab97;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.2em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
   text-align: center;
 }
@@ -5293,13 +5295,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   animation: sg-tennis-verdict 700ms ease-out forwards;
   color: var(--loc-cream);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 1rem;
+  font-size: calc(var(--unit) * (var(--k) + 1));
   left: 50%;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   margin: 0;
   pointer-events: none;
   position: absolute;
-  text-shadow: 0 3px 0 rgb(34 31 26 / 60%);
+  text-shadow: 0 var(--unit) 0 rgb(34 31 26 / 60%);
   top: 6%;
   transform: translateX(-50%);
 }
@@ -5315,9 +5317,9 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 }
 
 .sg-tennis__controls {
-  bottom: calc(-3.2rem);
+  bottom: calc(calc(var(--unit) * -13));
   display: flex;
-  gap: 0.4rem;
+  gap: calc(var(--unit) * 2);
   justify-content: center;
   left: 50%;
   pointer-events: auto;
@@ -5327,14 +5329,14 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-tennis__button {
   background: rgb(34 31 26 / 92%);
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   color: var(--loc-cream);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.14em;
-  min-height: 2.75rem;
-  min-width: 2.75rem;
-  padding: 0 0.9rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  min-height: calc(var(--unit) * 11);
+  min-width: calc(var(--unit) * 11);
+  padding: 0 calc(var(--unit) * 4);
   touch-action: none;
   user-select: none;
 }
@@ -5346,12 +5348,12 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 }
 
 .sg-tennis__hint {
-  bottom: -5.4rem;
+  bottom: calc(var(--unit) * -22);
   color: #a29a8a;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.5rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
   left: 50%;
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
   margin: 0;
   position: absolute;
   text-align: center;
@@ -5365,41 +5367,40 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 @media (max-height: 500px) and (max-width: 950px) and (orientation: landscape) {
   .sg-court,
   .sg-play {
-    --loc-court-width: calc(100vw - 19rem);
-    left: 1rem;
+    left: calc(var(--unit) * 4);
   }
 
   .sg-play__hud,
   .sg-tennis__hud {
     bottom: auto;
-    left: calc(100% + 1rem);
-    top: -2.5rem;
+    left: calc(100% + calc(var(--unit) * 4));
+    top: calc(var(--unit) * -10);
     transform: none;
-    width: 16rem;
+    width: calc(var(--unit) * 64);
   }
 
-  .sg-play__hud { padding: 0.75rem; }
+  .sg-play__hud { padding: calc(var(--unit) * 3); }
   .sg-play__action { min-height: 44px; }
-  .sg-tennis__hud { padding: 0.6rem; }
+  .sg-tennis__hud { padding: calc(var(--unit) * 2); }
 
   .sg-tennis__controls {
     bottom: auto;
-    left: calc(100% + 1rem);
-    top: 3rem;
+    left: calc(100% + calc(var(--unit) * 4));
+    top: calc(var(--unit) * 12);
     transform: none;
-    width: 16rem;
+    width: calc(var(--unit) * 64);
   }
 
   .sg-tennis__hint {
     background: rgb(34 31 26 / 92%);
     bottom: auto;
     color: #b5ab97;
-    left: calc(100% + 1rem);
-    padding: 0.5rem;
-    top: 6.4rem;
+    left: calc(100% + calc(var(--unit) * 4));
+    padding: calc(var(--unit) * 2);
+    top: calc(var(--unit) * 26);
     transform: none;
     white-space: normal;
-    width: 16rem;
+    width: calc(var(--unit) * 64);
   }
 
   /* The existing measured stage scale fits the unchanged 640x360 level.
@@ -5415,7 +5416,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 /* The matched player's card, in the phone. */
 .sg-phone__profile {
   display: grid;
-  gap: 0.3rem;
+  gap: var(--unit);
   margin: 0;
 }
 
@@ -5426,14 +5427,14 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-phone__profile dt {
   color: #7d766a;
-  font-size: 0.46rem;
-  letter-spacing: 0.16em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .sg-phone__profile dd {
   color: var(--loc-cream);
-  font-size: 0.52rem;
-  letter-spacing: 0.14em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -5557,17 +5558,17 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   content: "";
   inset: 0 auto 0 0;
   position: absolute;
-  width: 1px;
+  width: var(--unit);
 }
 
 .sg-golf__marker span {
   color: rgb(52 50 42 / 85%);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.5rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
   left: 0;
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
   position: absolute;
-  top: calc(100% + 2px);
+  top: calc(100% + var(--unit));
   transform: translateX(-50%);
 }
 
@@ -5603,7 +5604,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   /* A definite box, not a shrink-to-fit one: the anchor below is a percentage
      of this element, so its height and width both have to be known. */
   aspect-ratio: 14 / 24;
-  height: 26%;
+  height: calc(var(--sg-court-unit, 4px) * 24);
   position: absolute;
 }
 
@@ -5652,7 +5653,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
    box — so the club meets the ball at any rendered size. */
 .sg-golf__figure {
   aspect-ratio: 1;
-  height: 32%;
+  height: calc(var(--sg-court-unit, 4px) * 26);
   position: absolute;
 }
 
@@ -5665,12 +5666,12 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-golf__readout {
   color: #2b2823;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.58rem;
-  letter-spacing: 0.12em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
   position: absolute;
-  text-shadow: 0 1px 0 rgb(239 231 211 / 70%);
+  text-shadow: 0 var(--unit) 0 rgb(239 231 211 / 70%);
   top: 6%;
   transform: translateX(-50%);
   white-space: nowrap;
@@ -5681,13 +5682,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
    the ball's sideways error is its position across this strip. */
 .sg-golf__map {
   background: rgb(34 31 26 / 88%);
-  border: 1px solid #57534a;
-  bottom: calc(100% + 0.35rem);
-  height: 1.15rem;
+  border: var(--unit) solid #57534a;
+  bottom: calc(100% + var(--unit));
+  height: calc(var(--unit) * 5);
   left: 50%;
   position: absolute;
   transform: translateX(-50%);
-  width: min(92vw, 30rem);
+  width: min(92vw, calc(var(--unit) * 120));
 }
 
 .sg-golf__map-fairway {
@@ -5730,41 +5731,41 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 /* ── HUD ───────────────────────────────────────────────────────────────── */
 .sg-golf__hud {
   background: rgb(34 31 26 / 92%);
-  border: 1px solid #57534a;
-  bottom: calc(100% + 1.75rem);
+  border: var(--unit) solid #57534a;
+  bottom: calc(100% + calc(var(--unit) * 7));
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
+  gap: calc(var(--unit) * 2);
   left: 50%;
-  padding: 0.6rem 0.9rem;
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 4);
   pointer-events: auto;
   position: absolute;
   transform: translateX(-50%);
-  width: min(92vw, 30rem);
+  width: min(92vw, calc(var(--unit) * 120));
 }
 
 .sg-golf__line {
   align-items: baseline;
   color: #8d8575;
   display: flex;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.45rem;
-  gap: 0.5rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  gap: calc(var(--unit) * 2);
   justify-content: space-between;
-  letter-spacing: 0.16em;
+  letter-spacing: 0;
   margin: 0;
 }
 
 .sg-golf__line strong {
   color: var(--loc-cream);
-  font-size: 0.6rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
   font-weight: 400;
-  letter-spacing: 0.14em;
+  letter-spacing: 0;
 }
 
 .sg-golf__stats {
   display: grid;
-  gap: 0.3rem 0.7rem;
+  gap: var(--unit) calc(var(--unit) * 3);
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
 }
@@ -5772,21 +5773,21 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-golf__stats > div {
   display: flex;
   flex-direction: column;
-  gap: 0.1rem;
+  gap: var(--unit);
 }
 
 .sg-golf__stats dt {
   color: #7d766a;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.4rem;
-  letter-spacing: 0.14em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .sg-golf__stats dd {
   color: var(--loc-cream);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -5799,26 +5800,26 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-golf__prompt {
   color: var(--loc-cream);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: 0;
   margin: 0;
   text-align: center;
 }
 
 .sg-golf__aim {
   color: var(--loc-orange);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.52rem;
-  letter-spacing: 0.16em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
   text-align: center;
 }
 
 /* ── Controls ──────────────────────────────────────────────────────────── */
 .sg-golf__controls {
-  bottom: -3.2rem;
+  bottom: calc(var(--unit) * -13);
   display: flex;
-  gap: 0.4rem;
+  gap: calc(var(--unit) * 2);
   justify-content: center;
   left: 50%;
   pointer-events: auto;
@@ -5828,14 +5829,14 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-golf__button {
   background: #3a352c;
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   color: var(--loc-cream);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.14em;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   min-height: 44px;
   min-width: 44px;
-  padding: 0.5rem 0.8rem;
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 3);
   touch-action: none;
   user-select: none;
 }
@@ -5849,22 +5850,22 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   background: var(--loc-orange);
   border-color: var(--loc-orange);
   color: #241f18;
-  min-width: 8rem;
+  min-width: calc(var(--unit) * 32);
 }
 
 .sg-golf__button--quiet {
   background: transparent;
   color: #a29a8a;
-  font-size: 0.5rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
 }
 
 .sg-golf__hint {
-  bottom: -5.2rem;
+  bottom: calc(var(--unit) * -21);
   color: #a29a8a;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.5rem;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * (var(--k) - 1));
   left: 50%;
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
   margin: 0;
   position: absolute;
   text-align: center;
@@ -5878,36 +5879,36 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   .sg-golf__hud,
   .sg-golf__map {
     bottom: auto;
-    left: calc(100% + 1rem);
+    left: calc(100% + calc(var(--unit) * 4));
     transform: none;
-    width: 16rem;
+    width: calc(var(--unit) * 64);
   }
 
-  .sg-golf__hud { top: -2.5rem; }
-  .sg-golf__map { top: 9.5rem; }
+  .sg-golf__hud { top: calc(var(--unit) * -10); }
+  .sg-golf__map { top: calc(var(--unit) * 38); }
 
   .sg-golf__controls {
     bottom: auto;
     flex-wrap: wrap;
-    left: calc(100% + 1rem);
-    top: 11.5rem;
+    left: calc(100% + calc(var(--unit) * 4));
+    top: calc(var(--unit) * 46);
     transform: none;
-    width: 16rem;
+    width: calc(var(--unit) * 64);
   }
 
   .sg-golf__hint {
     bottom: auto;
-    left: calc(100% + 1rem);
-    top: 15.5rem;
+    left: calc(100% + calc(var(--unit) * 4));
+    top: calc(var(--unit) * 62);
     transform: none;
     white-space: normal;
-    width: 16rem;
+    width: calc(var(--unit) * 64);
   }
 }
 
 @media (max-width: 620px) {
   .sg-golf__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sg-golf__button--action { min-width: 6rem; }
+  .sg-golf__button--action { min-width: calc(var(--unit) * 24); }
 }
 
 /* Reduced motion takes the shake and the cloth's ripple, and nothing that
@@ -5948,7 +5949,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-run-controls {
   align-items: stretch;
   display: flex;
-  gap: 0.5rem;
+  gap: calc(var(--unit) * 2);
 }
 
 /* Four keys on a cross, so a thumb finds a direction without looking. The two
@@ -5957,9 +5958,8 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-run-pad {
   display: grid;
   flex: 1 1 auto;
-  gap: 0.25rem;
-  grid-template-areas:
-    ". up ."
+  gap: var(--unit);
+  grid-template-areas: ". up ."
     "left . right"
     ". down .";
   grid-template-columns: 1fr 1fr 1fr;
@@ -5967,13 +5967,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-run-pad__key {
   background: transparent;
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   color: var(--loc-cream);
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.8rem;
-  line-height: 1;
-  min-height: 2rem;
-  padding: 0.35rem 0;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
+  font-size: calc(var(--unit) * var(--k));
+  line-height: calc(var(--unit) * var(--k));
+  min-height: calc(var(--unit) * 8);
+  padding: var(--unit) 0;
   /* Stops a drag off the key turning into a page scroll mid-race, and stops a
      double tap being read as a zoom. */
   touch-action: none;
@@ -5994,14 +5994,14 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   display: flex;
   flex: 0 0 7rem;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: var(--unit);
   justify-content: center;
   width: auto;
 }
 
 .sg-run-sprint span {
-  font-size: 0.42rem;
-  letter-spacing: 0.2em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   opacity: 0.7;
 }
 
@@ -6027,12 +6027,12 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   }
 
   .sg-run-pad__key {
-    font-size: 0.9rem;
-    min-height: 2.75rem;
+    font-size: calc(var(--unit) * (var(--k) + 1));
+    min-height: calc(var(--unit) * 11);
   }
 
   .sg-run-sprint {
-    flex-basis: 5.5rem;
+    flex-basis: calc(var(--unit) * 22);
   }
 }
 
@@ -6047,52 +6047,52 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
    deliberately different things and are never merged into one list. */
 .sg-board {
   background: rgb(34 31 26 / 95%);
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   left: 50%;
-  max-width: min(92vw, 34rem);
-  padding: 1rem 1.2rem;
+  max-width: min(92vw, calc(var(--unit) * 136));
+  padding: calc(var(--unit) * 4) calc(var(--unit) * 5);
   position: absolute;
   top: 4%;
   transform: translateX(-50%);
-  width: min(92vw, 34rem);
+  width: min(92vw, calc(var(--unit) * 136));
   z-index: 7;
 }
 
 .sg-board__head {
   align-items: baseline;
   display: flex;
-  gap: 0.6rem;
+  gap: calc(var(--unit) * 2);
   justify-content: space-between;
 }
 
 .sg-board__title {
   color: var(--loc-orange);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.8rem;
-  letter-spacing: 0.16em;
+  font-size: calc(var(--unit) * var(--k));
+  letter-spacing: 0;
   margin: 0;
 }
 
 .sg-board__scope,
 .sg-board__honesty {
   color: #8d8578;
-  font-size: 0.46rem;
-  letter-spacing: 0.14em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   margin: 0;
 }
 
 /* The claim the board makes about itself. Never quiet, never optional. */
 .sg-board__honesty {
-  border-bottom: 1px solid #3a362f;
+  border-bottom: var(--unit) solid #3a362f;
   color: #b2a894;
-  margin: 0.5rem 0 0.6rem;
-  padding-bottom: 0.5rem;
+  margin: calc(var(--unit) * 2) 0 calc(var(--unit) * 2);
+  padding-bottom: calc(var(--unit) * 2);
 }
 
 .sg-board__table {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: var(--unit);
   list-style: none;
   margin: 0;
   max-height: 34vh;
@@ -6102,11 +6102,11 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-board__row {
   align-items: baseline;
-  border-bottom: 1px solid rgb(87 83 74 / 35%);
+  border-bottom: var(--unit) solid rgb(87 83 74 / 35%);
   display: grid;
-  gap: 0.5rem;
-  grid-template-columns: 1.6rem 1fr auto;
-  padding-bottom: 0.3rem;
+  gap: calc(var(--unit) * 2);
+  grid-template-columns: calc(var(--unit) * 6) 1fr auto;
+  padding-bottom: var(--unit);
 }
 
 /* The asking visitor's own row, marked without naming anyone. */
@@ -6117,41 +6117,41 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-board__rank {
   color: var(--loc-orange);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 0.72rem;
+  font-size: calc(var(--unit) * var(--k));
 }
 
 .sg-board__name {
   color: var(--loc-cream);
-  font-size: 0.56rem;
-  letter-spacing: 0.1em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   overflow-wrap: anywhere;
 }
 
 .sg-board__strokes {
   color: var(--loc-cream);
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
   white-space: nowrap;
 }
 
 .sg-board__strokes small {
   color: #8d8578;
-  font-size: 0.4rem;
-  letter-spacing: 0.12em;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
 }
 
 .sg-board__aside {
   color: #8d8578;
-  font-size: 0.42rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
   grid-column: 2 / -1;
-  letter-spacing: 0.12em;
+  letter-spacing: 0;
 }
 
 .sg-board__state {
   color: #b2a894;
-  font-size: 0.5rem;
-  letter-spacing: 0.14em;
-  margin: 0.6rem 0 0;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  margin: calc(var(--unit) * 2) 0 0;
   text-align: center;
 }
 
@@ -6164,13 +6164,13 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 }
 
 .sg-board__state button {
-  margin-top: 0.5rem;
+  margin-top: calc(var(--unit) * 2);
 }
 
 .sg-board__yours {
-  border-top: 1px solid #3a362f;
-  margin-top: 0.7rem;
-  padding-top: 0.7rem;
+  border-top: var(--unit) solid #3a362f;
+  margin-top: calc(var(--unit) * 3);
+  padding-top: calc(var(--unit) * 3);
   text-align: center;
 }
 
@@ -6179,10 +6179,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-board__attempt {
   color: #8d8578;
   display: flex;
-  font-size: 0.46rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
   justify-content: space-between;
-  letter-spacing: 0.14em;
-  margin: 0 0 0.6rem;
+  letter-spacing: 0;
+  margin: 0 0 calc(var(--unit) * 2);
 }
 
 .sg-board__attempt span {
@@ -6208,33 +6208,33 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 /* ── The nickname box ───────────────────────────────────────────────────── */
 
 .sg-name {
-  max-width: min(92vw, 26rem);
+  max-width: min(92vw, calc(var(--unit) * 104));
 }
 
 .sg-name__label {
   color: #8d8578;
   display: block;
-  font-size: 0.46rem;
-  letter-spacing: 0.16em;
-  margin: 0.4rem 0 0.35rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  margin: calc(var(--unit) * 2) 0 var(--unit);
 }
 
 .sg-name__input {
   background: #14110d;
-  border: 1px solid #57534a;
+  border: var(--unit) solid #57534a;
   color: var(--loc-cream);
-  font-family: var(--font-mono), ui-monospace, monospace;
+  font-family: var(--font-bitmap), var(--font-mono), monospace;
   /* 16px keeps iOS Safari from zooming the page when the field takes focus. */
   font-size: 16px;
-  padding: 0.5rem 0.6rem;
+  padding: calc(var(--unit) * 2) calc(var(--unit) * 2);
   width: 100%;
 }
 
 .sg-name__preview {
   color: var(--loc-cream);
-  font-size: 0.52rem;
-  letter-spacing: 0.12em;
-  margin: 0.7rem 0 0.3rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  margin: calc(var(--unit) * 3) 0 var(--unit);
   overflow-wrap: anywhere;
 }
 
@@ -6244,29 +6244,29 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .sg-name__scope {
   color: #8d8578;
-  font-size: 0.46rem;
-  line-height: 1.7;
-  margin: 0 0 0.6rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  line-height: calc(var(--unit) * var(--k));
+  margin: 0 0 calc(var(--unit) * 2);
 }
 
 .sg-name__error {
   color: #d99a6c;
-  font-size: 0.5rem;
-  letter-spacing: 0.1em;
-  margin: 0 0 0.5rem;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  margin: 0 0 calc(var(--unit) * 2);
 }
 
 .sg-name__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
+  gap: calc(var(--unit) * 2);
 }
 
 /* A phone has the board and the RANK panel competing for one screen, so the
    board gives up its own height rather than overlapping. */
 @media (max-width: 640px) {
   .sg-board {
-    padding: 0.8rem 0.9rem;
+    padding: calc(var(--unit) * 3) calc(var(--unit) * 4);
     top: 2%;
   }
 
@@ -6276,7 +6276,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
   .sg-board__head {
     flex-direction: column;
-    gap: 0.15rem;
+    gap: var(--unit);
   }
 }
 
@@ -6301,7 +6301,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 }
 
 .sg-exit__sky {
-  height: min(60vh, 40rem);
+  height: min(60vh, calc(var(--unit) * 160));
   image-rendering: pixelated;
   left: 50%;
   opacity: 0.9;
@@ -6309,11 +6309,11 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: min(96vw, 70rem);
+  width: min(96vw, calc(var(--unit) * 280));
 }
 
 .sg-exit {
-  max-width: min(92vw, 26rem);
+  max-width: min(92vw, calc(var(--unit) * 104));
   position: relative;
   text-align: center;
   z-index: 1;
@@ -6322,29 +6322,29 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 .sg-exit__bye {
   color: var(--loc-orange, #c98a52);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 1.5rem;
-  letter-spacing: 0.06em;
-  margin: 0 0 0.5rem;
+  font-size: calc(var(--unit) * (var(--k) + 3));
+  letter-spacing: 0;
+  margin: 0 0 calc(var(--unit) * 2);
 }
 
 .sg-exit__line {
-  font-size: 0.8rem;
-  line-height: 1.7;
-  margin: 0 0 1.2rem;
+  font-size: calc(var(--unit) * var(--k));
+  line-height: calc(var(--unit) * (var(--k) + 2));
+  margin: 0 0 calc(var(--unit) * 5);
 }
 
 .sg-exit__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: calc(var(--unit) * 2);
   justify-content: center;
 }
 
 .sg-exit__hint {
   color: #8d8578;
-  font-size: 0.46rem;
-  letter-spacing: 0.16em;
-  margin: 1rem 0 0;
+  font-size: calc(var(--unit) * (var(--k) - 1));
+  letter-spacing: 0;
+  margin: calc(var(--unit) * 4) 0 0;
 }
 
 /* @end D */

@@ -31,7 +31,7 @@ import {
 } from "@/lib/game/minigames/golf-result";
 import type { FixedStepper } from "@/lib/game/minigames/fixed-step";
 import type { MinigameInput } from "@/lib/game/minigames/types";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
+import { useCourtUnit } from "@/components/sportsgang/use-court-unit";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import {
   drawFlag,
@@ -95,6 +95,7 @@ export function GolfGame({
   onGolfRun,
   playerDisplayName,
 }: MinigameProps) {
+  const courtUnit = useCourtUnit();
   const { consume, bind, clear } = useMinigameInput(active);
   const [state, setState] = useState<GolfHoleState>(createGolfHoleState);
   const stateRef = useRef(state);
@@ -265,7 +266,7 @@ export function GolfGame({
             draw={drawFlag}
             fill
             frame={Math.floor(state.simulationMs / 320)}
-            unit={PIXEL_UNIT}
+            unit={courtUnit}
           />
         </div>
 
@@ -310,7 +311,7 @@ export function GolfGame({
             fill
             flipX={!facingRight}
             frame={0}
-            unit={PIXEL_UNIT}
+            unit={courtUnit}
           />
         </div>
 
