@@ -415,6 +415,11 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
           {worldObjects.map((object) => {
             const art = getObjectArt(object);
             const isNearby = nearbyObject?.id === object.id;
+            // Only the nearby object's chips follow the camera, so the rest
+            // keep stable props and do not re-render while walking.
+            const screenLeft = isNearby
+              ? toCss(object.position.x, unit) - snapToCss(cameraX, unit)
+              : undefined;
             return (
               <div
                 className={`world-object world-object--${object.kind}`}
@@ -437,14 +442,18 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
                 />
                 <WorldLabel
                   anchorUnits={object.size.width / PIXEL_UNIT}
+                  screenLeft={screenLeft}
                   text={object.label}
                   unit={unit}
+                  viewportWidth={isNearby ? viewportWidth : undefined}
                 />
-                {isNearby && object.interaction ? (
+                {screenLeft !== undefined && object.interaction ? (
                   <InteractionPrompt
                     anchorUnits={object.size.width / PIXEL_UNIT}
+                    screenLeft={screenLeft}
                     text={getInteractionPrompt(object.interaction)}
                     unit={unit}
+                    viewportWidth={viewportWidth}
                   />
                 ) : null}
               </div>
