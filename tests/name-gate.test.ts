@@ -1,18 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
-  APEX_AT,
-  BRAZIER_AT,
-  CHANNEL_STEP,
   consumesKey,
   createNameGateState,
-  getMonumentResponse,
   NAME_LETTERS,
   NAME_TEXT,
   applyText,
   pressKey,
   readTypedText,
   SOCKET_COUNT,
-  wordIndexOf,
 } from "@/lib/game/name-gate";
 import { letterAt, LINES, SEL } from "@/lib/pixel/monolith";
 
@@ -30,15 +25,6 @@ describe("the carved name", () => {
     expect(NAME_LETTERS).toBe("SOONHYUNHWANG");
     expect(NAME_TEXT).toBe("SOON HYUN HWANG");
     expect(LINES).toEqual(["SOON", "HYUN", "HWANG"]);
-  });
-
-  it("maps every socket to its word", () => {
-    expect(wordIndexOf(0)).toBe(0);
-    expect(wordIndexOf(3)).toBe(0);
-    expect(wordIndexOf(4)).toBe(1);
-    expect(wordIndexOf(7)).toBe(1);
-    expect(wordIndexOf(8)).toBe(2);
-    expect(wordIndexOf(SOCKET_COUNT - 1)).toBe(2);
   });
 });
 
@@ -104,10 +90,8 @@ describe("typing the name", () => {
     // Four letters in is the end of SOON; backspacing must land on its N.
     let state = applyText(createNameGateState(), "SOONH");
     expect(state.typed).toBe(5);
-    expect(wordIndexOf(state.typed - 1)).toBe(1);
     state = pressKey(state, "Backspace");
     expect(state.typed).toBe(4);
-    expect(wordIndexOf(state.typed - 1)).toBe(0);
     state = pressKey(state, "Backspace");
     expect(state.typed).toBe(3);
   });
@@ -205,35 +189,5 @@ describe("which keys the ritual takes at all", () => {
       expect(consumesKey(key), key).toBe(false);
       expect(pressKey(start, key), key).toBe(start);
     }
-  });
-});
-
-describe("the monument's answer", () => {
-  it("derives its thresholds from the name, not from magic numbers", () => {
-    expect(CHANNEL_STEP).toBe(3);
-    expect(APEX_AT).toBe(7);
-    // The braziers catch as typing reaches the final word.
-    expect(BRAZIER_AT).toBe(SOCKET_COUNT - LINES[2].length);
-    expect(BRAZIER_AT).toBe(8);
-    expect(wordIndexOf(BRAZIER_AT)).toBe(2);
-  });
-
-  it("brightens a channel step every third letter", () => {
-    expect(getMonumentResponse(0).channelSteps).toBe(0);
-    expect(getMonumentResponse(2).channelSteps).toBe(0);
-    expect(getMonumentResponse(3).channelSteps).toBe(1);
-    expect(getMonumentResponse(9).channelSteps).toBe(3);
-  });
-
-  it("wakes the apex ring at halfway and the braziers on the last word", () => {
-    expect(getMonumentResponse(APEX_AT - 1).apexAwake).toBe(false);
-    expect(getMonumentResponse(APEX_AT).apexAwake).toBe(true);
-    expect(getMonumentResponse(BRAZIER_AT - 1).braziersLit).toBe(false);
-    expect(getMonumentResponse(BRAZIER_AT).braziersLit).toBe(true);
-  });
-
-  it("opens only on the full name", () => {
-    expect(getMonumentResponse(SOCKET_COUNT - 1).open).toBe(false);
-    expect(getMonumentResponse(SOCKET_COUNT).open).toBe(true);
   });
 });

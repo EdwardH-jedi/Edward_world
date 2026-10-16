@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   getIntroStageDuration,
-  getPanOffset,
   getShrineStageDuration,
   INTRO_SCRIPTED_MS,
   INTRO_STAGE_TIMINGS,
@@ -10,7 +9,6 @@ import {
   MONOLITH_PHASE,
   nextIntroStage,
   nextShrineStage,
-  PAN_OFFSET,
   SHRINE_SCRIPTED_MS,
   SHRINE_STAGE_TIMINGS,
 } from "@/lib/game/intro-machine";
@@ -92,30 +90,5 @@ describe("the house monolith path: the name gate, kept as an easter egg", () => 
     expect(SHRINE_STAGES.map((stage) => MONOLITH_PHASE[stage])).toEqual([
       3, 4, 5, 6, 7, 8,
     ]);
-  });
-});
-
-describe("the camera east", () => {
-  it("starts at the title composition and lands on the clearing", () => {
-    expect(getPanOffset(0)).toBe(0);
-    expect(getPanOffset(1)).toBe(PAN_OFFSET);
-  });
-
-  it("clamps outside the pan rather than overshooting", () => {
-    expect(getPanOffset(-3)).toBe(0);
-    expect(getPanOffset(4.5)).toBe(PAN_OFFSET);
-  });
-
-  it("eases, and never travels backwards", () => {
-    let previous = -1;
-    for (let step = 0; step <= 20; step += 1) {
-      const offset = getPanOffset(step / 20);
-      expect(offset).toBeGreaterThanOrEqual(previous);
-      previous = offset;
-    }
-    // Eased in and out, so the midpoint sits at half the distance.
-    expect(getPanOffset(0.5)).toBe(Math.round(PAN_OFFSET / 2));
-    // ...and the first quarter covers less ground than the middle one.
-    expect(getPanOffset(0.25)).toBeLessThan(getPanOffset(0.5) - getPanOffset(0.25));
   });
 });

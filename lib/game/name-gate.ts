@@ -50,42 +50,6 @@ export function createNameGateState(): NameGateState {
   return { text: "", typed: 0, missAt: null, misses: 0, solved: false };
 }
 
-/** Which word a socket belongs to, counting from zero. */
-export function wordIndexOf(socket: number) {
-  let remaining = socket;
-  for (let line = 0; line < LINES.length; line += 1) {
-    if (remaining < LINES[line].length) return line;
-    remaining -= LINES[line].length;
-  }
-  return LINES.length - 1;
-}
-
-/**
- * The monument's answer, derived from the name rather than hardcoded.
- *
- * Channels brighten a step every third letter, the apex ring wakes at halfway,
- * and the gate braziers catch as typing reaches the final word.
- */
-export const CHANNEL_STEP = 3;
-export const APEX_AT = Math.ceil(SOCKET_COUNT / 2);
-export const BRAZIER_AT = SOCKET_COUNT - (LINES.at(-1)?.length ?? 0);
-
-export interface MonumentResponse {
-  readonly channelSteps: number;
-  readonly apexAwake: boolean;
-  readonly braziersLit: boolean;
-  readonly open: boolean;
-}
-
-export function getMonumentResponse(typed: number): MonumentResponse {
-  return {
-    channelSteps: Math.floor(typed / CHANNEL_STEP),
-    apexAwake: typed >= APEX_AT,
-    braziersLit: typed >= BRAZIER_AT,
-    open: typed >= SOCKET_COUNT,
-  };
-}
-
 function isLetter(ch: string) {
   return /[a-z]/i.test(ch);
 }

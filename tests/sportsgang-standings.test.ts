@@ -10,7 +10,6 @@ import {
   createBasketballState,
   getBasketballResult,
 } from "@/lib/game/minigames/basketball";
-import { createGolfState, getGolfResult } from "@/lib/game/minigames/golf";
 import { createRunningState, getRunningResult } from "@/lib/game/minigames/running";
 import { createTennisState, getTennisResult } from "@/lib/game/minigames/tennis";
 
@@ -102,13 +101,6 @@ describe("every sport reports something rankable", () => {
     // Built from the real factories and overridden, so these are states the
     // simulations could actually produce rather than hand-shaped objects.
     const results = [
-      getGolfResult({
-        ...createGolfState(),
-        carry: 214,
-        landing: "FAIRWAY",
-        verdict: "FLUSHED",
-        done: true,
-      }),
       getTennisResult({
         ...createTennisState(),
         playerPoints: 5,
@@ -138,7 +130,7 @@ describe("every sport reports something rankable", () => {
       expect(["higher", "lower"]).toContain(result.rank.better);
     }
     // Time is the only one where smaller wins.
-    expect(results[3].rank.better).toBe("lower");
+    expect(results[2].rank.better).toBe("lower");
     expect(results[0].rank.better).toBe("higher");
   });
 

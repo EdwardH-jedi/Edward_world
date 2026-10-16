@@ -70,13 +70,6 @@ export const MONOLITH_PHASE: Readonly<Record<ShrineStage, MonolithPhase>> = {
  */
 export const PAN_OFFSET = 60;
 
-/** Eased camera position for a pan `progress` of 0…1, in art pixels. */
-export function getPanOffset(progress: number) {
-  const t = Math.min(1, Math.max(0, progress));
-  const eased = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-  return Math.round(PAN_OFFSET * eased);
-}
-
 export function nextIntroStage(stage: IntroStage): IntroStage {
   const index = INTRO_STAGES.indexOf(stage);
   return INTRO_STAGES[Math.min(index + 1, INTRO_STAGES.length - 1)];

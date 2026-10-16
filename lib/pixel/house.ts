@@ -278,8 +278,7 @@ function drawRug(draw: Raster) {
 /**
  * A city at night, seen through a window.
  *
- * Sydney at ground level already exists in `sydney.ts`, but that strip is a
- * daylight harbour, and the two things this room says about its windows are
+ * Not a daylight harbour: the two things this room says about its windows are
  * that they are high up and that the ideas happen late. So the view is towers
  * and lit windows: silhouettes stepping back into a navy sky, with a scatter
  * of warm squares that never lands in the same place twice across the room
