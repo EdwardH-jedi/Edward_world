@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect } from "react";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
-import { usePixelUnit } from "@/lib/game/use-pixel-unit";
+import { usePixelUnit } from "@/lib/motion/use-pixel-unit";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { APPROACH_ART_SIZE, drawApproach } from "@/lib/pixel/monolith";
 import type { ArtRoutine } from "@/lib/pixel/raster";

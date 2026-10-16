@@ -1,6 +1,3 @@
-"use client";
-
-import { useSyncExternalStore } from "react";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
 import { BACKDROP_ART_SIZE } from "@/lib/pixel/backdrop";
 
@@ -33,19 +30,4 @@ export function toCss(authored: number, unit: number) {
 
 export function snapToCss(authored: number, unit: number) {
   return Math.floor(authored / PIXEL_UNIT) * unit;
-}
-
-function subscribe(onChange: () => void) {
-  window.addEventListener("resize", onChange);
-  return () => window.removeEventListener("resize", onChange);
-}
-
-const getSnapshot = () => getPixelUnit(window.innerHeight);
-// Server and first hydration paint at the authored unit; the client then
-// settles on the real one.
-const getServerSnapshot = () => PIXEL_UNIT;
-
-/** The live art-pixel unit for this viewport, re-chosen on resize. */
-export function usePixelUnit() {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
