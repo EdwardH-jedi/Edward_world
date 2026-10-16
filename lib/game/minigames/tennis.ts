@@ -382,8 +382,6 @@ const PACE = {
 } as const;
 
 export const TENNIS_TARGET_POINTS = 5;
-/** Kept for the standings, which rank tennis by points won. */
-export const TENNIS_POINTS = TENNIS_TARGET_POINTS;
 
 /**
  * A rally this long is not a rally, it is a stalemate. Never reached in normal
@@ -653,6 +651,7 @@ export function predictLandingX(ball: TennisBall) {
  * has not arrived yet — swinging at it is EARLY. One with a smaller `x` has
  * already gone past, which is LATE.
  */
+/** test contract */
 /**
  * @deprecated Superseded by `judgeSwingTiming` + the `STRIKE` box, which judge
  * the same contact the racket geometry produces. Kept only because
@@ -1666,7 +1665,7 @@ export function getTennisResult(state: TennisState): SportResult {
   };
 }
 
-/** Exposed for the component's HUD and for tests. */
+/** test contract */
 export const TENNIS_COURT = COURT;
+/** test contract */
 export const TENNIS_SWING = SWING;
-export const TENNIS_PACE = PACE;

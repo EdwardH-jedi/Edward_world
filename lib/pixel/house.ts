@@ -53,6 +53,7 @@ const { width: W } = HOUSE_ART_SIZE;
 const SKIRTING_Y = 62;
 /** In room space. `HOUSE_FLOOR_Y` below is in art space, for the DOM to use. */
 const FLOOR_Y = 66;
+/** test contract */
 export const HOUSE_FLOOR_Y = CEILING_H + FLOOR_Y;
 /**
  * Where Edward's feet go — a little in front of the furniture line, so he

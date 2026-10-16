@@ -318,9 +318,4 @@ export function getBoardStore(): BoardStore {
   return sharedStore;
 }
 
-/** Test seam: forget the process-wide store so the next call rebinds it. */
-export function resetBoardStoreForTests(): void {
-  sharedStore = undefined;
-}
-
 export { boardKeyFor };

@@ -298,6 +298,7 @@ export const golferRoutines = {
   ) as Readonly<Record<GolfSwingArtStage, ArtRoutine>>,
 } as const;
 
+/** test contract */
 export const GOLF_SWING_ART_STAGES = STAGES;
 
 /* ── The flag ─────────────────────────────────────────────────────────────── */

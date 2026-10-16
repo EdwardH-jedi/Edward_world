@@ -65,6 +65,7 @@ const SCHEDULE: readonly { at: number; x: number; y: number }[] = [
 export const FIREWORKS_SECONDS =
   SCHEDULE[SCHEDULE.length - 1].at + BURST_LIFE + 0.2;
 
+/** test contract */
 export const FIREWORKS_BURSTS = SCHEDULE.length;
 
 /** The palette's warm end. Kept to the approved board, like everything else. */

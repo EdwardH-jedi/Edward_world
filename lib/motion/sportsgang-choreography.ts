@@ -1,4 +1,4 @@
-import { createTimeline, utils, type Timeline } from "animejs";
+import { createTimeline, utils } from "animejs";
 import { prefersReducedMotion } from "@/lib/motion/animate-element";
 
 /**
@@ -196,98 +196,6 @@ export function settleCourtExpansion({
   utils.set(courtside, { opacity: 1 });
 }
 
-interface RallyTargets {
-  ball: HTMLElement;
-  edward: HTMLElement;
-  opponent: HTMLElement;
-  exchanges: number;
-  duration: number;
-}
-
-/** Where each player stands, and how far the ball travels, as court percentages. */
-const NEAR_X = 16;
-const FAR_X = 84;
-const REST_Y = 23;
-const PEAK_Y = 64;
-
-/**
- * A scripted rally: the ball arcs over the net, bounces, and comes back, while
- * both players shuffle a little to meet it. Deliberately not a game — every
- * beat is authored.
- */
-export function playBallRally({
-  ball,
-  edward,
-  opponent,
-  exchanges,
-  duration,
-}: RallyTargets) {
-  if (prefersReducedMotion()) {
-    utils.set(ball, { left: `${NEAR_X}%`, bottom: `${REST_Y}%`, opacity: 1 });
-    utils.set(edward, { translateX: 0 });
-    utils.set(opponent, { translateX: 0 });
-    return null;
-  }
-
-  const perExchange = duration / exchanges;
-  const timeline = createTimeline();
-  utils.set(ball, { left: `${NEAR_X}%`, bottom: `${REST_Y}%`, opacity: 1 });
-
-  for (let index = 0; index < exchanges; index += 1) {
-    const outbound = index % 2 === 0;
-    const from = outbound ? NEAR_X : FAR_X;
-    const to = outbound ? FAR_X : NEAR_X;
-    const at = index * perExchange;
-    // The last shot is the winner: it goes past the far player.
-    const landing = index === exchanges - 1 ? (outbound ? 96 : 4) : to;
-
-    timeline.add(
-      ball,
-      { left: [`${from}%`, `${landing}%`], duration: perExchange, ease: "linear" },
-      at,
-    );
-    timeline.add(
-      ball,
-      { bottom: [`${REST_Y}%`, `${PEAK_Y}%`], duration: perExchange * 0.45, ease: "outQuad" },
-      at,
-    );
-    timeline.add(
-      ball,
-      { bottom: [`${PEAK_Y}%`, `${REST_Y}%`], duration: perExchange * 0.35, ease: "inQuad" },
-      at + perExchange * 0.45,
-    );
-    // A low bounce off the surface before the return.
-    timeline.add(
-      ball,
-      { bottom: [`${REST_Y}%`, `${REST_Y + 7}%`], duration: perExchange * 0.1, ease: "outQuad" },
-      at + perExchange * 0.8,
-    );
-    timeline.add(
-      ball,
-      { bottom: [`${REST_Y + 7}%`, `${REST_Y}%`], duration: perExchange * 0.1, ease: "inQuad" },
-      at + perExchange * 0.9,
-    );
-
-    // Both players lean into the exchange; the receiver commits further.
-    timeline.add(
-      outbound ? opponent : edward,
-      {
-        translateX: [0, outbound ? -14 : 14],
-        duration: perExchange * 0.5,
-        ease: "outQuad",
-      },
-      at + perExchange * 0.35,
-    );
-    timeline.add(
-      outbound ? opponent : edward,
-      { translateX: [outbound ? -14 : 14, 0], duration: perExchange * 0.3, ease: "inOutQuad" },
-      at + perExchange * 0.85,
-    );
-  }
-
-  return timeline;
-}
-
 /** The score arriving, then the line that puts it into the ranking. */
 export function playResultReveal(
   score: HTMLElement,
@@ -311,11 +219,6 @@ export function playResultReveal(
       { opacity: [0, 1], translateY: [10, 0], duration: duration * 0.3, ease: "outQuad" },
       duration * 0.45,
     );
-}
-
-/** Reverts a timeline, wiping the inline styles it wrote so replays are clean. */
-export function revertTimeline(timeline: Timeline | null | undefined) {
-  timeline?.revert();
 }
 
 /**

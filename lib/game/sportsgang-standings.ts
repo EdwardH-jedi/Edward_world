@@ -117,6 +117,7 @@ export function recordRun(sport: SportsgangSport, rank: RankValue): RecordedRun 
   };
 }
 
+/** test contract */
 /** Only for tests — a visit is otherwise cleared by reloading the page. */
 export function resetStandings() {
   entries.clear();

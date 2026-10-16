@@ -195,6 +195,7 @@ function outcomeFor(flight: Flight, priorCross: number | null): ShotOutcome {
   return "SHORT";
 }
 
+/** test contract */
 /**
  * What a release *strength* would be called, on its own.
  *

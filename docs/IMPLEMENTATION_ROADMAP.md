@@ -560,6 +560,8 @@ House without touching the keyboard.
 
 ## Phase 11 — V4 intro revision: the approach and the name gate
 
+> **Superseded by fast-entry (PR #6).** The mandatory intro and name gate described below are history: the title now enters the world directly, and the name gate survives only as an easter egg at THE MONOLITH in Edward's House. See `docs/ARCHITECTURE.md`.
+
 **Status:** DONE
 
 **Scope.** The design project's newest board, headed *"4A — INTRO REVISION —

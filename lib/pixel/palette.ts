@@ -66,5 +66,3 @@ export const palette = {
   signBackplate: "#14110D", // 1px dark plate behind signAccent on dark surfaces
   playerOutline: "#2A1F18", // Edward's 1px outline
 } as const;
-
-export type PaletteColor = (typeof palette)[keyof typeof palette];

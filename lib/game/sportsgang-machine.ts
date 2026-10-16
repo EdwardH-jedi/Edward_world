@@ -72,6 +72,7 @@ export function isTimedSportsgangStage(
   return TIMED_STAGES.has(stage);
 }
 
+/** test contract */
 export function isGatedSportsgangStage(
   stage: SportsgangStage,
 ): stage is GatedSportsgangStage {
@@ -88,8 +89,3 @@ export function getSportsgangStageDuration(
     : duration;
 }
 
-/**
- * How long the greeting animation runs before play may begin. The MEET stage
- * itself is gated on the visitor, so this is choreography timing only.
- */
-export const GREETING_MS = 900;
