@@ -1,15 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { IntroSequence } from "@/components/intro/intro-sequence";
-import { AflExperience } from "@/components/afl/afl-experience";
-import { ArcadeExperience } from "@/components/arcade/arcade-experience";
-import { HouseExperience } from "@/components/house/house-experience";
 import { PortfolioIndex } from "@/components/index/portfolio-index";
 import { FarewellScene } from "@/components/world/farewell-scene";
-import { SportsgangExperience } from "@/components/sportsgang/sportsgang-experience";
-import { WardrobeExperience } from "@/components/wardrobe/wardrobe-experience";
 import { InteractionDialog } from "@/components/world/interaction-dialog";
 import { MainWorld } from "@/components/world/main-world";
 import { SceneDissolve } from "@/components/world/scene-dissolve";
@@ -19,6 +15,35 @@ import { getPortfolioEntryView } from "@/lib/game/portfolio-entry";
 import { recordJoinOnce } from "@/lib/joins/client";
 import type { PortfolioProjectId } from "@/types/portfolio";
 import type { InteractionAction, WorldLocationId } from "@/types/world";
+
+/**
+ * Every interior loads when it is entered, not with the first paint: the
+ * visitor's first key should not wait on code for rooms they have not opened.
+ * While a chunk loads, a solid cover in the dissolve's colour sits under the
+ * dissolve overlay, so the cut stays covered instead of showing a bare world.
+ */
+const SceneLoading = () => <div aria-hidden="true" className="scene-loading" />;
+const lazyScene = <P extends object>(
+  load: () => Promise<React.ComponentType<P>>,
+) => dynamic(load, { ssr: false, loading: SceneLoading });
+
+const AflExperience = lazyScene(() =>
+  import("@/components/afl/afl-experience").then((m) => m.AflExperience),
+);
+const ArcadeExperience = lazyScene(() =>
+  import("@/components/arcade/arcade-experience").then((m) => m.ArcadeExperience),
+);
+const HouseExperience = lazyScene(() =>
+  import("@/components/house/house-experience").then((m) => m.HouseExperience),
+);
+const SportsgangExperience = lazyScene(() =>
+  import("@/components/sportsgang/sportsgang-experience").then(
+    (m) => m.SportsgangExperience,
+  ),
+);
+const WardrobeExperience = lazyScene(() =>
+  import("@/components/wardrobe/wardrobe-experience").then((m) => m.WardrobeExperience),
+);
 
 /**
  * Projects that open a full location experience instead of a summary dialog.
