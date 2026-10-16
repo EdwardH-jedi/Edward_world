@@ -89,11 +89,16 @@ killed the player, when the original game's own README says stomping works.
 
 **Then the opening was rebuilt from scratch.** The first title screen and
 six-second intro were finished, marked done — and then replaced. The V4 opening
-is a camera pan east to a shrine, the letters of a name pulling free of a carved
-face, and an inscription you have to type into thirteen carved sockets. Two
+was a camera pan east to a shrine, the letters of a name pulling free of a carved
+face, and an inscription you had to type into thirteen carved sockets. Two
 completed phases were superseded by it. Neither was wasted; they were how I
 found out that the opening needed to be a small interaction rather than a
 cutscene.
+
+**Then the opening got out of the way.** The default entry became a title
+screen and a sub-second camera pan: the camera still travels east, but nobody
+waits on it to start walking. The typing gate survived intact as an easter egg,
+THE MONOLITH at the far end of Edward's House.
 
 **Then feel, atmosphere and content.** A visitor counter that stores one integer
 and nothing else. Real resume and case-study routes built strictly from what the
@@ -136,8 +141,8 @@ AFL lab's calibration genuinely temperature-scales a genuinely overconfident
 number. If a portfolio fakes the one thing it is demonstrating, nothing else in
 it can be trusted either.
 
-**Progressive disclosure.** The title screen shows a town at dusk. The intro
-introduces one name. The world reveals six buildings. A building reveals a
+**Progressive disclosure.** The title screen shows a town at dusk. A short pan
+carries you in. The world reveals six buildings. A building reveals a
 product. Nothing is explained up front; walking is the tutorial. The only
 instruction is a sign at the start of the path, and a status bar that names what
 you're standing next to.
@@ -256,13 +261,13 @@ Five experiences, all complete and playable:
 
 | | |
 | --- | --- |
-| **Edward's House** | The personal room. Six objects, verified biography. |
+| **Edward's House** | The personal room. Seven objects, verified biography, and THE MONOLITH's name gate as an easter egg. |
 | **AFL Predict** | A research lab; a seeded round travelling a bench of six instruments. |
 | **SportsGang / Protin** | A pixel phone, matchmaking, and four playable sports. |
 | **Wardrobe** | A local-first garment archive that remembers your look. |
 | **Soonpermario** | One playable segment of a platformer, inside an arcade cabinet. |
 
-Wrapped in a title screen, a typing-gate opening ritual, a side-scrolling town,
+Wrapped in a title screen, a sub-second camera pan into a side-scrolling town,
 and an accessible `INDEX` reachable at any moment.
 
 The project is in polish rather than expansion. There is no roadmap of features
