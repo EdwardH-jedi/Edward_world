@@ -250,7 +250,6 @@ export function AflExperience({ onExit }: AflExperienceProps) {
           artWidth={LAB_ART_SIZE.width}
           className="loc-backdrop__canvas"
           draw={drawAflLab}
-          fill
           frame={ambientFrame}
           unit={unit}
         />

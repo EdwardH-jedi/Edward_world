@@ -4,6 +4,7 @@ import { HILL_GROUND_Y, PIXEL_UNIT, TOWN_GROUND_Y, getGroundY } from "@/lib/game
 import {
   MAX_PIXEL_UNIT,
   MIN_PIXEL_UNIT,
+  courtUnit,
   getPixelUnit,
   snapToCss,
   toCss,
@@ -98,5 +99,20 @@ describe("fitPixelUnit", () => {
     [4, { width: 200, height: 50 }, 1], // and never below one CSS pixel
   ])("unit %i in %o is %i", (unit, space, expected) => {
     expect(fitPixelUnit(unit, space, room)).toBe(expected);
+  });
+});
+
+describe("courtUnit", () => {
+  it.each([
+    [1280, 5, 5], // 1177px of court share / 225 = 5.2, capped by the live unit
+    [1280, 4, 4],
+    [1280, 8, 5], // the stage, not the live unit, is the limit
+    [1000, 6, 4], // 920 / 225 = 4.08
+    [390, 6, 2], // 1.59 floors to 1, lifted to the 2px minimum
+    [0, 5, 2],
+  ])("a %ipx stage at live unit %i uses court unit %i", (width, live, expected) => {
+    const unit = courtUnit(width, live);
+    expect(unit).toBe(expected);
+    expect(Number.isInteger(unit)).toBe(true);
   });
 });

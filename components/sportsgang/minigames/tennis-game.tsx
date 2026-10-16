@@ -153,7 +153,6 @@ export function TennisGame({
             artHeight={PLAYER_ART_SIZE.height}
             artWidth={PLAYER_ART_SIZE.width}
             draw={tennisRoutine("PLAYER", playerSwing?.kind ?? null, playerProgress)}
-            fill
             frame={0}
             unit={courtUnit}
           />
@@ -169,7 +168,6 @@ export function TennisGame({
             artWidth={PLAYER_ART_SIZE.width}
             draw={tennisRoutine("ALEX", alexSwing?.kind ?? null, alexProgress)}
             flipX
-            fill
             frame={0}
             unit={courtUnit}
           />

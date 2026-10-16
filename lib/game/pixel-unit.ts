@@ -49,3 +49,17 @@ export function fitPixelUnit(
   );
   return Math.max(1, Math.min(unit, fit));
 }
+
+/** Width of the court in art pixels, and the share of the stage it may take. */
+const COURT_ART_WIDTH = 225;
+const COURT_WIDTH_SHARE = 0.92;
+
+/**
+ * Whole CSS pixels per court art pixel: as wide as fits 92% of the stage, never
+ * above the live unit and never below 2. On a stage too narrow for that the
+ * court is wider than the stage and is cropped, rather than scaled by a fraction.
+ */
+export function courtUnit(stageWidth: number, liveUnit: number) {
+  const fit = Math.floor((stageWidth * COURT_WIDTH_SHARE) / COURT_ART_WIDTH);
+  return Math.max(MIN_PIXEL_UNIT, Math.floor(Math.min(fit, liveUnit)));
+}
