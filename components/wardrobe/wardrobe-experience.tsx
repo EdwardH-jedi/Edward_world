@@ -509,14 +509,22 @@ function HangingArt({ garment }: { garment: Garment }) {
     () => createHangingRoutine(garment.slot, garment.colour),
     [garment.colour, garment.slot],
   );
+  const art = artUnit("hanging", unit);
+  // The hanger is drawn at its own derived unit; its slot is a whole number of
+  // HUD units, so the button around it stays on the HUD grid.
   return (
-    <PixelCanvas
-      artHeight={HANGER_ART_SIZE.height}
-      artWidth={HANGER_ART_SIZE.width}
-      draw={routine}
-      frame={0}
-      unit={artUnit("hanging", unit)}
-    />
+    <span
+      className="wd-hanging__art"
+      style={{ height: Math.ceil((HANGER_ART_SIZE.height * art) / unit) * unit }}
+    >
+      <PixelCanvas
+        artHeight={HANGER_ART_SIZE.height}
+        artWidth={HANGER_ART_SIZE.width}
+        draw={routine}
+        frame={0}
+        unit={art}
+      />
+    </span>
   );
 }
 

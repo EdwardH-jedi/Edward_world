@@ -41,3 +41,17 @@ export function useFitPixelUnit(
     getServerSnapshot,
   );
 }
+
+/**
+ * A whole-pixel unit derived from the viewport and the live unit, re-chosen on
+ * resize. `derive` must return an integer and be stable between calls.
+ */
+export function useDerivedUnit(
+  derive: (viewport: { width: number; height: number }, liveUnit: number) => number,
+) {
+  return useSyncExternalStore(
+    subscribe,
+    () => derive({ width: window.innerWidth, height: window.innerHeight }, getSnapshot()),
+    getServerSnapshot,
+  );
+}

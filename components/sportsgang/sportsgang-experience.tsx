@@ -363,7 +363,6 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
           artWidth={VENUE_ART_SIZE.width}
           className="loc-backdrop__canvas"
           draw={drawVenue}
-          fill
           frame={0}
           unit={unit}
         />
@@ -374,7 +373,6 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
           artWidth={VENUE_ART_SIZE.width}
           className="loc-backdrop__canvas"
           draw={drawCourtside}
-          fill
           frame={0}
           unit={unit}
         />

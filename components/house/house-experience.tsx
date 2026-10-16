@@ -168,18 +168,11 @@ const LATCHING: ReadonlySet<HouseThingId> = new Set<HouseThingId>([
 const ROOM_SHARE = { width: 0.98, height: 0.66 } as const;
 
 /** A percentage of the room strip, for placing DOM over the art. */
-function across(value: number) {
-  return `${(value / HOUSE_ART_SIZE.width) * 100}%`;
-}
-
-function down(value: number) {
-  return `${(value / HOUSE_ART_SIZE.height) * 100}%`;
-}
-
 export function HouseExperience({ onExit }: HouseExperienceProps) {
   const unit = usePixelUnit();
   // The strip is wider than the world is tall, so it steps down whole units
-  // to fit; the HUD around it keeps the live unit.
+  // to fit; the HUD around it keeps the live unit. The room is its own integer
+  // grid (`--room-unit`, 3 at 1280 wide) and is never scaled off it.
   const roomUnit = useFitPixelUnit(HOUSE_ART_SIZE, ROOM_SHARE);
   const [edwardX, setEdwardX] = useState(24);
   const [facing, setFacing] = useState<"left" | "right">("right");
@@ -355,7 +348,9 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
       aria-label="Edward's House"
       className="loc-experience hs-house"
       ref={rootRef}
-      style={{ "--unit": `${unit}px` } as React.CSSProperties}
+      style={
+        { "--unit": `${unit}px`, "--room-unit": `${roomUnit}px` } as React.CSSProperties
+      }
       tabIndex={-1}
     >
       <button
@@ -410,10 +405,10 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
                 else thingRefs.current.delete(thing.id);
               }}
               style={{
-                height: down(bounds.height),
-                left: across(bounds.x),
-                top: down(bounds.y),
-                width: across(bounds.width),
+                height: bounds.height * roomUnit,
+                left: bounds.x * roomUnit,
+                top: bounds.y * roomUnit,
+                width: bounds.width * roomUnit,
               }}
               type="button"
             >
@@ -431,9 +426,9 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
           aria-hidden="true"
           className="hs-edward"
           style={{
-            bottom: down(HOUSE_ART_SIZE.height - HOUSE_STAND_Y),
-            left: across(edwardX),
-            width: across(EDWARD_ART_SIZE.width),
+            bottom: (HOUSE_ART_SIZE.height - HOUSE_STAND_Y) * roomUnit,
+            left: Math.floor(edwardX) * roomUnit,
+            width: EDWARD_ART_SIZE.width * roomUnit,
           }}
         >
           <PixelCanvas

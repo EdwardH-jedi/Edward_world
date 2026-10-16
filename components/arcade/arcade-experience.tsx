@@ -46,8 +46,8 @@ const PRODUCT_FLOW = ["MOVE", "JUMP", "CLOSE BUGS", "REACH THE OFFER"] as const;
 const VIEW = { width: 640, height: LEVEL_HEIGHT } as const;
 /**
  * The level is authored at two level units per art pixel, so the screen is
- * fitted in art pixels and scaled by half its unit: the in-game sprite then
- * lands on whole CSS pixels, like everything else.
+ * fitted in art pixels and drawn at that whole unit (2/3/3 at live units 4/5/6),
+ * sprite included.
  */
 const SCREEN_ART = { width: VIEW.width / 2, height: VIEW.height / 2 } as const;
 const SCREEN_SHARE = { width: 0.86, height: 0.7 } as const;
@@ -74,8 +74,12 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
   const expansionRef = useRef<Timeline | null>(null);
   /** Until Edward has been walked, a resize may reposition him freely. */
   const walkedRef = useRef(false);
-  /** Screen pixels per level unit; set inline, as `scale` needs a number. */
-  const stageScale = screenUnit / 2;
+  /**
+   * Level units are authored two to an art pixel. Every level position and
+   * size is brought to the screen on whole art pixels at `screenUnit`, so the
+   * stage needs no scale and nothing in it can land on a fraction.
+   */
+  const px = (levelUnits: number) => Math.floor(levelUnits / 2) * screenUnit;
 
   const { consume, bind } = useMinigameInput(phase !== "DONE", {
     captureActionKeys: phase === "PLAYING",
@@ -327,33 +331,30 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
 
       {/* The game. Always full size; parked inside the cabinet until it starts. */}
       <div className="ar-screen" data-live={phase === "PLAYING" || undefined} ref={screenRef}>
-        {/* The stage carries the scale so the camera can translate in level
-            units inside it; scaling and translating the same element would
-            leave the camera offset in the wrong coordinate space. */}
-        <div className="ar-stage" style={{ transform: `scale(${stageScale})` }}>
+        <div className="ar-stage">
         {/* Scenery, at a third of the camera's speed. Depth for free: the
             same camera, one multiplier, no second simulation. */}
         <div
           aria-hidden="true"
           className="ar-far"
-          style={{ transform: `translate3d(${-cameraX * 0.34}px, 0, 0)` }}
+          style={{ transform: `translate3d(${-px(cameraX * 0.34)}px, 0, 0)` }}
         >
           <span className="ar-far__horizon" />
           <span className="ar-far__racks" />
         </div>
         <div
           className="ar-level"
-          style={{ transform: `translate3d(${-cameraX}px, 0, 0)` }}
+          style={{ transform: `translate3d(${-px(cameraX)}px, 0, 0)` }}
         >
           {PLATFORMS.map((platform, index) => (
             <div
               className="ar-platform"
               key={`p-${index}`}
               style={{
-                height: platform.height,
-                left: platform.x,
-                top: platform.y,
-                width: platform.width,
+                height: px(platform.height),
+                left: px(platform.x),
+                top: px(platform.y),
+                width: px(platform.width),
               }}
             />
           ))}
@@ -365,10 +366,10 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
                 data-kind={pickup.kind}
                 key={pickup.id}
                 style={{
-                  height: pickup.height,
-                  left: pickup.x,
-                  top: pickup.y,
-                  width: pickup.width,
+                  height: px(pickup.height),
+                  left: px(pickup.x),
+                  top: px(pickup.y),
+                  width: px(pickup.width),
                 }}
               >
                 {pickup.kind === "SKILL" ? <span>{pickup.label}</span> : null}
@@ -384,10 +385,10 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
                   className="ar-bug"
                   key={hazard.id}
                   style={{
-                    height: hazard.height,
-                    left: at.x,
-                    top: hazard.y,
-                    width: hazard.width,
+                    height: px(hazard.height),
+                    left: px(at.x),
+                    top: px(hazard.y),
+                    width: px(hazard.width),
                   }}
                 >
                   <i className="ar-bug__eye" />
@@ -400,7 +401,12 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
 
           <div
             className="ar-flag"
-            style={{ height: FLAG.height, left: FLAG.x, top: FLAG.y, width: FLAG.width }}
+            style={{
+              height: px(FLAG.height),
+              left: px(FLAG.x),
+              top: px(FLAG.y),
+              width: px(FLAG.width),
+            }}
           >
             <span className="ar-flag__cloth" />
             <span className="ar-flag__label">OFFER</span>
@@ -410,10 +416,10 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
             className="ar-player"
             data-grounded={game.grounded || undefined}
             style={{
-              height: PLAYER_SIZE.height,
-              left: game.x,
-              top: game.y,
-              width: PLAYER_SIZE.width,
+              height: px(PLAYER_SIZE.height),
+              left: px(game.x),
+              top: px(game.y),
+              width: px(PLAYER_SIZE.width),
             }}
           >
             <PixelCanvas
@@ -422,7 +428,7 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
               draw={drawEdward}
               flipX={game.facing === "left"}
               frame={getWalkFrame(game.x, 2, game.grounded && Math.abs(game.vx) > 0)}
-              unit={2}
+              unit={screenUnit}
             />
           </div>
         </div>
