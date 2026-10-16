@@ -49,6 +49,16 @@ describe("accent tokens", () => {
     }
   });
 
+  it("keeps signAccent legible on the dark surfaces it is actually drawn against (>= 3:1)", () => {
+    // The review measured these two as 2.55:1 and 2.18:1 before the backplate.
+    expect(contrast(palette.signAccent, palette.char)).toBeLessThan(3);
+    expect(contrast(palette.signAccent, "#37332B")).toBeLessThan(3);
+    // So neither is ever adjacent to the accent: the plate sits between them.
+    for (const base of [palette.signBackplate, "#14110D"]) {
+      expect(contrast(palette.signAccent, base), base).toBeGreaterThanOrEqual(3);
+    }
+  });
+
   it("keeps the interaction chip text readable on signAccent (>= 3:1)", () => {
     expect(contrast(palette.cream, palette.signAccent)).toBeGreaterThanOrEqual(3);
   });
@@ -66,6 +76,28 @@ describe("accent tokens", () => {
 });
 
 describe("accent usage", () => {
+  it("draws the outline last: every perimeter pixel of every pose and frame is playerOutline", () => {
+    for (const [name, pose] of Object.entries(edwardPoses)) {
+      for (const frame of [0, 1, 2, 3]) {
+        const grid = new Map<string, string>();
+        pose((x, y, w, h, colour) => {
+          for (let dy = 0; dy < h; dy += 1)
+            for (let dx = 0; dx < w; dx += 1) grid.set(`${x + dx},${y + dy}`, colour);
+        }, frame);
+        // The contact shadow is translucent rgba, not part of the silhouette.
+        const solid = (x: number, y: number) => /^#/.test(grid.get(`${x},${y}`) ?? "");
+        let perimeter = 0;
+        for (const [key, colour] of grid) {
+          const [x, y] = key.split(",").map(Number);
+          if (!solid(x, y) || (solid(x - 1, y) && solid(x + 1, y) && solid(x, y - 1) && solid(x, y + 1))) continue;
+          perimeter += 1;
+          expect(colour, `${name}[${frame}] ${key}`).toBe(palette.playerOutline);
+        }
+        expect(perimeter).toBeGreaterThan(0);
+      }
+    }
+  });
+
   it("outlines every player pose", () => {
     for (const pose of Object.values(edwardPoses)) {
       for (const frame of [0, 1, 2, 3]) {
@@ -73,6 +105,28 @@ describe("accent usage", () => {
         pose((_x, _y, _w, _h, colour) => seen.add(colour), frame);
         expect(seen.has(palette.playerOutline)).toBe(true);
       }
+    }
+  });
+
+  it("never lets a signAccent pixel touch a surface below 3:1", () => {
+    for (const id of ["sportsgang", "arcade"] as const) {
+      const grid = new Map<string, string>();
+      buildingArt[id].draw((x, y, w, h, colour) => {
+        for (let dy = 0; dy < h; dy += 1)
+          for (let dx = 0; dx < w; dx += 1) grid.set(`${x + dx},${y + dy}`, colour);
+      }, 0);
+      let checked = 0;
+      for (const [key, colour] of grid) {
+        if (colour !== palette.signAccent) continue;
+        const [x, y] = key.split(",").map(Number);
+        for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+          const next = grid.get(`${nx},${ny}`);
+          if (!next || next === palette.signAccent || !/^#[0-9A-F]{6}$/i.test(next)) continue;
+          checked += 1;
+          expect(contrast(palette.signAccent, next), `${id} ${key}->${nx},${ny} ${next}`).toBeGreaterThanOrEqual(3);
+        }
+      }
+      expect(checked, id).toBeGreaterThan(0);
     }
   });
 

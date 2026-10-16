@@ -219,16 +219,23 @@ function drawStanding(source: SpriteRows, draw: Raster, frame: number) {
   sprite(draw, 0, 12, rows.slice(12), EDWARD_MAP);
 }
 
+/**
+ * Passing frames get the coat hem lifting off the leg and the bag catching up
+ * half a beat late. Two pixels is the whole of the secondary motion, and they
+ * are added to the rows *before* outlining so the outline is always the last
+ * word on the silhouette.
+ */
+function withPassingHem(rows: SpriteRows): SpriteRows {
+  return rows.map((row, y) =>
+    y === 12 ? `${row[0]}b${row.slice(2, 10)}c${row.slice(11)}` : row,
+  );
+}
+
 function drawSide(draw: Raster, frame: number) {
   const index = frame % EDWARD_WALK.length;
+  const rows = index % 2 === 1 ? withPassingHem(EDWARD_WALK[index]) : EDWARD_WALK[index];
   shadow(draw);
-  sprite(draw, 0, 0, outlined(EDWARD_WALK[index]), EDWARD_MAP);
-  // Passing frames get the coat hem lifting off the leg and the bag catching
-  // up half a beat late. Two pixels is the whole of the secondary motion.
-  if (index % 2 === 1) {
-    draw(10, 12, 1, 1, palette.blue3);
-    draw(1, 12, 1, 1, palette.brown3);
-  }
+  sprite(draw, 0, 0, outlined(rows), EDWARD_MAP);
 }
 
 /**
