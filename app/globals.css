@@ -523,8 +523,7 @@ p {
    in it, and the screen simply clips what overhangs. The stage stays one 16:9
    box, so everything positioned in percentages (the name slab's tap target
    above all) stays aligned with the art. Controls are pinned to the viewport,
-   not the stage, so a clipped edge can never hide them. A portrait phone keeps
-   the contained frame above: covering it would crop the name slab. */
+   not the stage, so a clipped edge can never hide them. */
 @media (min-aspect-ratio: 1/1) {
   .intro-stage,
   .title-stage {
@@ -547,6 +546,78 @@ p {
   .title-enter {
     bottom: calc(var(--unit) * 6);
     position: fixed;
+  }
+}
+
+/* Portrait screens: the stage is the viewport, and the 16:9 art covers it,
+   cropped sideways around its middle. The type is laid out in the viewport,
+   not over the art, as a column: the heading in the top fifth, below the HUD
+   strip, then the purpose panel, PRESS ENTER and VIEW PROJECTS stacked in the
+   bottom quarter. Every block is in flow, so none can overlap another. */
+@media (max-aspect-ratio: 1/1) {
+  .intro-stage,
+  .title-stage {
+    aspect-ratio: auto;
+    inset: 0;
+    max-height: none;
+    position: absolute;
+    width: auto;
+  }
+
+  .intro-scene,
+  .title-scene {
+    object-fit: cover;
+    object-position: 50% 50%;
+  }
+
+  .intro-actions {
+    bottom: calc(var(--unit) * 4);
+    right: calc(var(--unit) * 4);
+    top: auto;
+  }
+
+  .title-stage {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--unit) * 11) calc(var(--unit) * 3) calc(var(--unit) * 2);
+  }
+
+  .title-copy {
+    display: contents;
+  }
+
+  /* The copy wrapper no longer exists as a box, so each line lifts itself
+     above the canvas, which is positioned. */
+  .title-welcome,
+  .title-wordmark,
+  .title-purpose {
+    position: relative;
+    z-index: 2;
+  }
+
+  .title-wordmark {
+    margin-top: var(--unit);
+  }
+
+  .title-purpose {
+    margin: auto 0 calc(var(--unit) * 2);
+    text-align: center;
+  }
+
+  .title-enter,
+  .title-skip {
+    bottom: auto;
+    left: auto;
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+  }
+
+  .title-enter {
+    margin-bottom: var(--unit);
+    padding: var(--unit) calc(var(--unit) * 4);
   }
 }
 
