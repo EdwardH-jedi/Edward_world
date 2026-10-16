@@ -1003,6 +1003,14 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   --loc-court-dark: #8e6a44;
   /* Each interior sets its live unit inline; this is only the first paint. */
   --unit: 4px;
+  /* Distance from the stage's bottom edge up to the backdrop art's bottom row:
+     the 135-row art is centred, so half of what the stage has to spare. */
+  --loc-art-bottom: calc((100% - var(--unit) * 135) / 2);
+  /* Where the court's ground row falls: 39 art rows up from the art's bottom,
+     less the 19 court rows of surface band the court box stands on. */
+  --loc-ground: calc(
+    var(--loc-art-bottom) + var(--unit) * 39 - var(--sg-court-unit, 4px) * 19
+  );
 
   background: #221f1a;
   bottom: 0;
@@ -1019,15 +1027,18 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   outline: none;
 }
 
+/* The art is drawn at the live unit and centred at exactly its backing size,
+   so every art pixel is a whole CSS pixel. A stage narrower than the art crops
+   it evenly; a taller one shows the stage background above and below. */
 .loc-backdrop {
+  display: grid;
   inset: 0;
+  place-items: center;
   position: absolute;
 }
 
 .loc-backdrop__canvas {
-  height: 100%;
-  object-fit: cover;
-  width: 100%;
+  max-width: none;
 }
 
 .loc-backdrop--courtside {
@@ -1049,7 +1060,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   --loc-court-surface: 22%;
 
   aspect-ratio: 900 / 340;
-  bottom: calc(28.9% - var(--loc-court-width) * 0.0831);
+  bottom: var(--loc-ground);
   left: calc(50% - var(--loc-court-width) / 2);
   opacity: 0;
   pointer-events: none;
@@ -1934,98 +1945,99 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 .ar-screen[data-live] { opacity: 1; }
 
-/* The level is authored at 640x360; the stage scales it as one piece.
-   The factor is set inline from the measured screen — `scale` needs a
-   unitless number, and a viewport-relative one cannot be written in CSS. */
+/* The level is authored at 640x360 level units, two to an art pixel. Every
+   length in the stage is a count of art pixels of the fitted screen unit
+   (`--ar-screen-unit`, a whole number of CSS pixels): nothing is scaled. The
+   component positions everything on the same grid. */
 .ar-stage {
-  height: 360px;
+  height: calc(var(--ar-screen-unit) * 180);
   left: 0;
   position: absolute;
   top: 0;
   transform-origin: 0 0;
-  width: 640px;
+  width: calc(var(--ar-screen-unit) * 320);
 }
 
 .ar-far {
-  height: 360px;
+  height: calc(var(--ar-screen-unit) * 180);
   left: 0;
   position: absolute;
   top: 0;
-  width: 2040px;
+  width: calc(var(--ar-screen-unit) * 1020);
 }
 
 /* A horizon and a row of racks, drawn entirely with gradients. Original
    shapes: boxes and stripes, nothing borrowed. */
 .ar-far__horizon {
   background: linear-gradient(180deg, #16241e 0%, #142a21 55%, #0f1d18 100%);
-  height: 268px;
+  height: calc(var(--ar-screen-unit) * 134);
   left: 0;
   position: absolute;
   right: 0;
-  top: 32px;
+  top: calc(var(--ar-screen-unit) * 16);
 }
 
 .ar-far__racks {
   background: repeating-linear-gradient(
     90deg,
-    rgb(26 48 40 / 0%) 0 46px,
-    rgb(26 48 40 / 70%) 46px 78px,
-    rgb(26 48 40 / 0%) 78px 96px,
-    rgb(20 38 32 / 75%) 96px 140px
+    rgb(26 48 40 / 0%) 0 calc(var(--ar-screen-unit) * 23),
+    rgb(26 48 40 / 70%) calc(var(--ar-screen-unit) * 23) calc(var(--ar-screen-unit) * 39),
+    rgb(26 48 40 / 0%) calc(var(--ar-screen-unit) * 39) calc(var(--ar-screen-unit) * 48),
+    rgb(20 38 32 / 75%) calc(var(--ar-screen-unit) * 48) calc(var(--ar-screen-unit) * 70)
   );
-  bottom: 60px;
-  height: 154px;
+  bottom: calc(var(--ar-screen-unit) * 30);
+  height: calc(var(--ar-screen-unit) * 77);
   left: 0;
   position: absolute;
   right: 0;
 }
 
 .ar-level {
-  height: 360px;
+  height: calc(var(--ar-screen-unit) * 180);
   left: 0;
   position: absolute;
   top: 0;
-  width: 2040px;
+  width: calc(var(--ar-screen-unit) * 1020);
 }
 
 .ar-platform {
   background:
     repeating-linear-gradient(
       90deg,
-      rgb(0 0 0 / 0%) 0 14px,
-      rgb(24 40 33 / 55%) 14px 16px
+      rgb(0 0 0 / 0%) 0 calc(var(--ar-screen-unit) * 7),
+      rgb(24 40 33 / 55%) calc(var(--ar-screen-unit) * 7) calc(var(--ar-screen-unit) * 8)
     ),
     repeating-linear-gradient(
       180deg,
-      rgb(0 0 0 / 0%) 0 10px,
-      rgb(24 40 33 / 45%) 10px 12px
+      rgb(0 0 0 / 0%) 0 calc(var(--ar-screen-unit) * 5),
+      rgb(24 40 33 / 45%) calc(var(--ar-screen-unit) * 5) calc(var(--ar-screen-unit) * 6)
     ),
     #3f5a4a;
-  border-top: 4px solid #7ea78b;
-  box-shadow: inset 0 -3px 0 rgb(20 34 28 / 70%);
+  border-top: calc(var(--ar-screen-unit) * 2) solid #7ea78b;
+  box-shadow: inset 0 calc(var(--ar-screen-unit) * -2) 0 rgb(20 34 28 / 70%);
   position: absolute;
 }
 
 .ar-pickup {
   animation: ar-bob 1.4s ease-in-out infinite;
   background: var(--ar-neon);
-  box-shadow: 0 0 8px rgb(201 138 82 / 55%);
+  box-shadow: 0 0 calc(var(--ar-screen-unit) * 4) rgb(201 138 82 / 55%);
   position: absolute;
 }
 
 @keyframes ar-bob {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-3px); }
+  50% { transform: translateY(calc(var(--ar-screen-unit) * -2)); }
 }
 
 .ar-pickup[data-kind="SKILL"] {
   background: #f3e3b2;
-  border: 2px solid #a96e3d;
+  border: calc(var(--ar-screen-unit) * 1) solid #a96e3d;
 }
 
 .ar-bug {
   background: #a4564a;
-  border: 2px solid #6f342c;
+  border: calc(var(--ar-screen-unit) * 1) solid #6f342c;
   position: absolute;
 }
 
@@ -2033,40 +2045,40 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
    and therefore as something to land on. Original shape, drawn in CSS. */
 .ar-bug__eye {
   background: #f0ddd7;
-  height: 4px;
+  height: calc(var(--ar-screen-unit) * 2);
   position: absolute;
-  top: 5px;
-  width: 4px;
+  top: calc(var(--ar-screen-unit) * 3);
+  width: calc(var(--ar-screen-unit) * 2);
 }
 
-.ar-bug__eye:first-of-type { left: 4px; }
-.ar-bug__eye:last-of-type { right: 4px; }
+.ar-bug__eye:first-of-type { left: calc(var(--ar-screen-unit) * 2); }
+.ar-bug__eye:last-of-type { right: calc(var(--ar-screen-unit) * 2); }
 
 .ar-bug::after {
   background: #6f342c;
-  bottom: -3px;
+  bottom: calc(var(--ar-screen-unit) * -2);
   content: "";
-  height: 3px;
-  left: 2px;
+  height: calc(var(--ar-screen-unit) * 2);
+  left: calc(var(--ar-screen-unit) * 1);
   position: absolute;
-  right: 2px;
+  right: calc(var(--ar-screen-unit) * 1);
 }
 
 .ar-bug span {
   color: #d8b6ae;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 8px;
+  font-size: calc(var(--ar-screen-unit) * 4);
   left: 50%;
   letter-spacing: 0;
   position: absolute;
-  top: -11px;
+  top: calc(var(--ar-screen-unit) * -6);
   transform: translateX(-50%);
   white-space: nowrap;
 }
 
 .ar-flag {
   background: #c7d0cf;
-  box-shadow: 0 0 22px rgb(201 138 82 / 45%);
+  box-shadow: 0 0 calc(var(--ar-screen-unit) * 11) rgb(201 138 82 / 45%);
   position: absolute;
 }
 
@@ -2075,53 +2087,53 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   background: #c7d0cf;
   bottom: 0;
   content: "";
-  height: 4px;
-  left: -9px;
+  height: calc(var(--ar-screen-unit) * 2);
+  left: calc(var(--ar-screen-unit) * -5);
   position: absolute;
-  right: -9px;
+  right: calc(var(--ar-screen-unit) * -5);
 }
 
 .ar-flag__cloth {
   background: var(--ar-neon);
-  height: 18px;
-  left: 10px;
+  height: calc(var(--ar-screen-unit) * 9);
+  left: calc(var(--ar-screen-unit) * 5);
   position: absolute;
   top: 0;
-  width: 26px;
+  width: calc(var(--ar-screen-unit) * 13);
 }
 
 .ar-flag__label {
   color: var(--ar-neon);
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 8px;
+  font-size: calc(var(--ar-screen-unit) * 4);
   left: 0;
   letter-spacing: 0;
   position: absolute;
-  top: -12px;
+  top: calc(var(--ar-screen-unit) * -6);
 }
 
 .ar-pickup[data-kind="SKILL"] span {
   color: #f3e3b2;
   font-family: var(--font-bitmap), var(--font-mono), monospace;
-  font-size: 8px;
+  font-size: calc(var(--ar-screen-unit) * 4);
   left: 50%;
   letter-spacing: 0;
   position: absolute;
-  top: -11px;
+  top: calc(var(--ar-screen-unit) * -6);
   transform: translateX(-50%);
   white-space: nowrap;
 }
 
 .ar-player { position: absolute; }
-.ar-player canvas { height: 100%; width: auto; }
+
 
 /* A contact shadow, so a landing reads as a landing. Centred and narrow: the
    sprite's canvas is auto-width, so a box-width shadow peeks out beside it. */
 .ar-player::after {
   background: rgb(0 0 0 / 32%);
-  bottom: -2px;
+  bottom: calc(var(--ar-screen-unit) * -1);
   content: "";
-  height: 3px;
+  height: calc(var(--ar-screen-unit) * 2);
   left: 50%;
   opacity: 0;
   position: absolute;
@@ -2311,8 +2323,8 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   --afl-shell-lit: #3a362f;
   --afl-cable: #6c6559;
   --afl-rig: min(94vw, 70rem);
-  /* Distance from the bottom of the viewport up to the pixel bench. */
-  --afl-bench: 43.7%;
+  /* Distance from the bottom of the stage up to the pixel bench: its 59 rows. */
+  --afl-bench: calc(var(--loc-art-bottom) + var(--unit) * 59);
 }
 
 .afl-edward {
@@ -2979,7 +2991,14 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   border-color: var(--loc-orange);
 }
 
+.wd-hanging__art {
+  align-items: center;
+  display: grid;
+  justify-items: center;
+}
+
 .wd-hanging__name {
+  min-height: calc(var(--unit) * var(--k) * 2);
   font-size: calc(var(--unit) * (var(--k) - 1));
   letter-spacing: 0;
   line-height: calc(var(--unit) * var(--k));
@@ -3677,7 +3696,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   --loc-court-width: calc(var(--sg-court-unit, 4px) * 225);
 
   aspect-ratio: 900 / 340;
-  bottom: calc(28.9% - var(--loc-court-width) * 0.0831);
+  bottom: var(--loc-ground);
   left: calc(50% - var(--loc-court-width) / 2);
   pointer-events: none;
   position: absolute;
@@ -3953,6 +3972,16 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   position: absolute;
   top: calc(var(--unit) * 4);
   z-index: 6;
+}
+
+/* Text controls take their height from the line, so the line is a whole number
+   of units: border, padding and line then add up to a unit multiple. */
+.loc-exit,
+.loc-button,
+.ar-control,
+.sg-phone__sport,
+.afl-pick {
+  line-height: calc(var(--unit) * (var(--k) + 1));
 }
 
 .loc-exit:hover {
@@ -5130,7 +5159,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
     font-size: calc(var(--unit) * (var(--k) - 1));
     left: calc(calc(var(--unit) * 2) + env(safe-area-inset-left, 0px));
     letter-spacing: 0;
-    min-height: 44px;
+    min-height: round(up, 44px, var(--unit));
     padding: calc(var(--unit) * 2) calc(var(--unit) * 2);
     top: calc(calc(var(--unit) * 2) + env(safe-area-inset-top, 0px));
   }
@@ -5165,16 +5194,16 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   will-change: left;
 }
 
+/* The canvas is sized to its backing store by the component: a whole court
+   unit per art pixel, with no scale anywhere above or on it. */
 .sg-tennis__figure canvas {
-  height: 100%;
   transform: translateX(-50%);
-  width: auto;
 }
 
-/* The racket arm. A transform on the sprite only — the simulation's idea of
-   where this player is standing never moves. */
+/* The racket arm. A whole-unit move on the sprite only — the simulation's idea
+   of where this player is standing never moves. */
 .sg-tennis__figure[data-swinging] canvas {
-  transform: translateX(-50%) scale(1.08);
+  transform: translate(-50%, calc(var(--sg-court-unit, 4px) * -1));
 }
 
 .sg-tennis__ball {
@@ -5461,21 +5490,15 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 }
 
 /* Each swing gets its own weight shift. The racket itself is drawn by the
-   sprite — this is the body leaning into it, which is what the old single
-   `scale(1.08)` was standing in for. */
+   sprite — the serve and smash rise onto the toes by one court unit; the
+   groundstrokes and volley stay planted. A scale would put art pixels off the
+   grid, so nothing here is one. */
 .sg-tennis__figure[data-swing] canvas {
   transform: translateX(-50%);
 }
-.sg-tennis__figure[data-swing="FOREHAND"] canvas,
-.sg-tennis__figure[data-swing="BACKHAND"] canvas {
-  transform: translateX(-50%) scale(1.04);
-}
-.sg-tennis__figure[data-swing="VOLLEY"] canvas {
-  transform: translateX(-50%) scale(1.02);
-}
 .sg-tennis__figure[data-swing="SERVE"] canvas,
 .sg-tennis__figure[data-swing="SMASH"] canvas {
-  transform: translateX(-50%) scale(1.08);
+  transform: translate(-50%, calc(var(--sg-court-unit, 4px) * -1));
 }
 
 /* Diagnostic overlay. Rendered only when `debug` is passed, which nothing in
@@ -6357,10 +6380,3 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   position: fixed;
   z-index: 20;
 }
-.wd-hanging__art {
-  align-items: center;
-  display: grid;
-  justify-items: center;
-}
-
-  min-height: calc(var(--unit) * var(--k) * 2);

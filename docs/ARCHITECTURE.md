@@ -259,8 +259,22 @@ shadows are unit multiples. The interiors read the same live unit: each sets
 `--unit` for its Silkscreen HUD, and art that must fit a share of the screen
 steps down whole units with `useFitPixelUnit` (the house room strip, the arcade
 game screen, and the SportsGang court via `useCourtUnit`, whose sprites are
-sized in that court unit). Cover backdrops (AFL lab, SportsGang venue) draw at
-the live unit and stay `object-fit: cover`. `PIXEL_UNIT` remains only in
+sized in that court unit). The court unit is a whole number of CSS pixels,
+`courtUnit(stageWidth, liveUnit) = max(2, floor(min(stageWidth * 0.92 / 225,
+liveUnit)))`, never a fluid `vw` calc; on a stage too narrow for two whole
+pixels per court pixel the court is cropped rather than scaled. The house room
+is its own integer grid: its fitted unit (`--room-unit`, 3 at 1280 wide) is
+stepped down whole units from the live unit and the room is never scaled off it,
+while the HUD around it keeps the live unit. Backdrops (AFL lab, SportsGang
+venue and courtside) are not cover-scaled: each draws at the live unit, is sized
+to its backing store, centred, and cropped by the stage (`overflow: hidden`
+over the stage background colour), with ground and bench lines anchored to the
+art's own rows. The arcade game screen draws at its fitted unit (2/3/3 at live
+units 4/5/6) with no scaled ancestor: level units are two per art pixel and
+every level position is floored to whole art pixels of that unit. Tennis swings
+move sprites by whole court units, never by a scale. The CSS-animated
+transitions (court expansion, arcade screen expansion, dissolve) still scale
+transiently and settle at identity. `PIXEL_UNIT` remains only in
 simulation and authored geometry. On landscape the title and
 intro stage is scaled to cover the viewport (non-integer, as before); a portrait
 phone keeps the contained frame so the intro's name slab is never cropped.
