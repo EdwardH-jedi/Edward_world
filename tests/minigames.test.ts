@@ -11,15 +11,6 @@ import {
   type BasketballState,
 } from "@/lib/game/minigames/basketball";
 import {
-  advanceGolf,
-  describeLanding,
-  createGolfState,
-  getCarryMetres,
-  getGolfResult,
-  getLateralMetres,
-  type GolfState,
-} from "@/lib/game/minigames/golf";
-import {
   advanceRunning,
   createRunningState,
   CRUISE_PACE,
@@ -81,56 +72,6 @@ describe("sweep meter", () => {
     // It genuinely sweeps rather than sticking at an end.
     expect(Math.max(...seen)).toBeGreaterThan(0.9);
     expect(Math.min(...seen)).toBeLessThan(0.1);
-  });
-});
-
-describe("golf", () => {
-  it("derives carry from power and contact, never at random", () => {
-    expect(getCarryMetres(1, 0)).toBe(280);
-    expect(getCarryMetres(0.5, 0)).toBe(140);
-    expect(getCarryMetres(0, 0)).toBe(0);
-    // A mis-hit always costs distance.
-    expect(getCarryMetres(1, 0.5)).toBeLessThan(getCarryMetres(1, 0));
-    expect(getCarryMetres(1, -0.5)).toBe(getCarryMetres(1, 0.5));
-  });
-
-  it("is monotonic in power for a fixed contact", () => {
-    let previous = -1;
-    for (let power = 0; power <= 1.0001; power += 0.05) {
-      const carry = getCarryMetres(power, 0.2);
-      expect(carry).toBeGreaterThanOrEqual(previous);
-      previous = carry;
-    }
-  });
-
-  it("puts the ball left or right according to the sign of the contact", () => {
-    expect(getLateralMetres(0)).toBe(0);
-    expect(getLateralMetres(0.5)).toBeGreaterThan(0);
-    expect(getLateralMetres(-0.5)).toBeLessThan(0);
-  });
-
-  it("produces an identical drive from identical presses", () => {
-    const play = () =>
-      run<GolfState>(createGolfState(), advanceGolf, 400, (tick) =>
-        tick === 37 || tick === 96 ? press : IDLE_INPUT,
-      );
-    const first = play();
-    const second = play();
-    expect(first.carry).toBe(second.carry);
-    expect(first.lateral).toBe(second.lateral);
-    expect(first.verdict).toBe(second.verdict);
-    expect(first.done).toBe(true);
-  });
-
-  it("moves through every phase and finishes with a reportable result", () => {
-    const state = run<GolfState>(createGolfState(), advanceGolf, 400, (tick) =>
-      tick === 30 || tick === 80 ? press : IDLE_INPUT,
-    );
-    expect(state.phase).toBe("DONE");
-    expect(state.height).toBe(0);
-    const result = getGolfResult(state);
-    expect(result.playerScore).toMatch(/^\d+ M$/);
-    expect(["FAIRWAY", "ROUGH"]).toContain(result.opponentScore);
   });
 });
 
@@ -636,21 +577,5 @@ describe("running", () => {
     expect(formatRaceTime(0)).toBe("0:00.0");
     expect(formatRaceTime(65.44)).toBe("1:05.4");
     expect(formatRaceTime(125)).toBe("2:05.0");
-  });
-});
-
-describe("a golf drive is judged on how far it went, not just how straight", () => {
-  it("calls a shot that never left the tee a duff, however straight", () => {
-    expect(describeLanding(0, 0)).toBe("DUFFED OFF THE TEE");
-    expect(describeLanding(0, 8)).toBe("DUFFED OFF THE TEE");
-  });
-
-  it("will not put a barely-struck ball on the fairway", () => {
-    expect(describeLanding(2, 30)).toBe("SHORT OF THE FAIRWAY");
-  });
-
-  it("still judges a real drive on its line", () => {
-    expect(describeLanding(3, 200)).toBe("FAIRWAY");
-    expect(describeLanding(30, 200)).toBe("ROUGH");
   });
 });

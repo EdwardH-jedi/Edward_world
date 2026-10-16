@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <!-- palette.char, palette.signAccent, palette.cream (lib/pixel/palette.ts) -->
+  <rect width="16" height="16" fill="#2B2823"/>
+  <path fill="#A9482C" d="M5 4h8v2H5zM5 4h3v10H5zM5 8h6v2H5zM5 12h8v2H5z"/>
+  <path fill="#EFE7D3" d="M4 3h8v2H4zM4 3h3v10H4zM4 7h6v2H4zM4 11h8v2H4z"/>
+</svg>

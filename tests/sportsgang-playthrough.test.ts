@@ -4,7 +4,6 @@ import {
   createBasketballState,
   getBasketballResult,
 } from "@/lib/game/minigames/basketball";
-import { advanceGolf, createGolfState, getGolfResult } from "@/lib/game/minigames/golf";
 import {
   advanceRunning,
   createRunningState,
@@ -70,12 +69,6 @@ function play<S extends { done: boolean }>(game: Playthrough<S>) {
 }
 
 const GAMES = {
-  GOLF: {
-    create: createGolfState,
-    advance: advanceGolf,
-    result: getGolfResult,
-    input: (tick: number) => tapPattern(tick, 37, 1),
-  },
   TENNIS: {
     create: createTennisState,
     advance: advanceTennis,

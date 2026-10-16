@@ -7,8 +7,10 @@ see the [README](../README.md); for the product thinking behind it, see the
 The layering is deliberate and load-bearing: portfolio content, world rules,
 motion and rendering are separate, so any one of them can change without
 replacing the others. Two rules hold across every surface — **simulations are
-pure** (no React, no DOM, no `requestAnimationFrame`), and **timers drive state
-while animation never does.**
+pure** (no React, no DOM, no `requestAnimationFrame`), and **timers drive rule
+and stage state while animation never does** — animation may only write
+presentation values and live simulation (see
+[Timers and animation](#timers-and-animation)).
 
 ## Application structure
 
@@ -39,6 +41,7 @@ no CSS framework and no component library; the runtime dependency list is
 | `/resume` | Static |
 | `/case-studies/[slug]` | SSG, one page per project via `generateStaticParams` |
 | `/api/joins` | Dynamic (`force-dynamic`). `GET` reads, `POST` increments |
+| `/api/sportsgang/golf-board` | Dynamic (`force-dynamic`). `GET` reads the public golf board, `POST` submits a completed run |
 | `/manifest.webmanifest`, `/robots.txt`, `/_not-found` | Static |
 
 `/resume` and `/case-studies/*` are real routes, not overlays, so the component
@@ -56,11 +59,14 @@ without being imported by the Next.js application. The generated
 TITLE -> (Enter) -> PAN (800 ms) -> WORLD
                                      |
                       project locations · Edward's House
-                                     |                 INDEX  <---- available at every one of these            THE MONOLITH (easter egg)
-                                                         SHRINE -> SELECTION -> NAME
-                                                         -> ASK -> TYPING -> UNLOCK
-                                                              ^
-                                                     waits for the visitor
+                                                          |
+                                             THE MONOLITH (easter egg)
+                                             SHRINE -> SELECTION -> NAME
+                                             -> ASK -> TYPING -> UNLOCK
+                                                          ^
+                                                 waits for the visitor
+
+INDEX is available from every one of these, the title screen included.
 ```
 
 `components/portfolio-experience.tsx` owns only top-level view and overlay
@@ -119,6 +125,31 @@ experience is drawn in
 [Project location experiences](#project-location-experiences): every project
 gets the same building, proximity reach, typed action and return trip, and then
 its interior is entirely its own.
+
+## Timers and animation
+
+The invariant distinguishes three kinds of state:
+
+| Kind | Examples | Who may write it |
+| --- | --- | --- |
+| **Rule and stage state** | Which intro, shrine, SportsGang or AFL stage is showing; reducer state such as the wardrobe archive or the name gate | Timers (`setTimeout`) and input handlers only. Never an animation callback, so a throttled background tab cannot stall a stage |
+| **Presentation values** | A camera offset, how many letters have lifted, a revealed probability | anime.js may tween these into React state through `driveValue` (`lib/motion/intro-choreography.ts`). They change what is drawn, never which stage is current |
+| **Live simulation** | The walking player's position and pose | A `requestAnimationFrame` loop, because the player is driving in real time |
+
+The existing presentation and live-simulation writers are:
+
+- `components/intro/intro-sequence.tsx:51` — `driveValue(setPanOffset, …)`, the
+  title's camera pan. The `PAN` → `WORLD` step is a separate `setTimeout`.
+- `components/house/monolith-gate.tsx:86` — `driveValue(setLifted, …)`, letters
+  leaving the stone during `SELECTION`. The shrine stages advance on timers.
+- `components/afl/afl-experience.tsx:145` — `driveValue(setRevealed, …)`, the
+  calibrated probability counting up in `RESULT`.
+- `components/world/main-world.tsx:174` — the world's rAF loop sets
+  `moving`, `settled` and `player` as the visitor walks.
+
+The wardrobe's garment flight also finishes in an animation callback
+(`lib/motion/wardrobe-choreography.ts`), but it only removes the flying ghost and
+settles the figure; the archive reducer has already run before it takes off.
 
 ## Data and domain boundaries
 
@@ -194,7 +225,7 @@ its own native `Enter` and `Space`.
 `lib/pixel/` holds the world's art. It is pure and browser-free apart from the
 canvas binding, so it is unit-testable and safe to import anywhere:
 
-- `palette.ts` — the approved colour tokens. Nothing outside this file names a colour.
+- `palette.ts` — the approved colour tokens, and where world colours come from. It is not the only file that names one: the dusk opening (`opening.ts`) and the monolith carry their own scene palettes, and a few routines (`backdrop.ts`, `buildings.ts`, `sportsgang.ts`, `sg-ball.ts`, `fireworks.ts`, `ambient.ts`) still write individual tones as hex literals.
 - `raster.ts` — the `Raster` primitive (`draw(x, y, w, h, colour)` in **art pixels**) plus shared helpers: sprites, hills, roof pitches, windows, sign-band dashes, trees, lamps, smoke, and deterministic `scatter` noise.
 - `buildings.ts` — one routine per structure, drawn bottom-anchored on a transparent background in its own local space.
 - `characters.ts` — Edward's four-frame walk cycle, on the approved 12x16 grid.
@@ -256,8 +287,9 @@ SportsGang is the first one:
 A third timing regime lives inside `PLAY`: the player is driving, in real time.
 
 - `lib/game/minigames/<sport>.ts` — pure, tick-based simulations shaped as
-  `advance(state, input, dt) -> state`. No React, no DOM, no rAF. Golf, tennis,
-  basketball and running each have one, and each is unit-tested for
+  `advance(state, input, dt) -> state`. No React, no DOM, no rAF. Tennis,
+  basketball and running each have one, and golf's is `golf-hole.ts` (the
+  course itself is `golf-course.ts`). Each is unit-tested for
   determinism, bounds and the property that matters most: **every number a
   sport reports is computed from what the player actually did.** Carry distance
   comes from the meter, the tennis verdict from how close the player was to the
@@ -278,10 +310,12 @@ player takes, and the mini-game reports its own completion.
 
 Two rules make the sequence robust:
 
-1. **Timers drive state; animation never does.** anime.js runs on
-   `requestAnimationFrame`, which browsers throttle hard in background tabs, so
-   a stage that waited on a timeline's completion would stall. Stages advance on
-   `setTimeout`; choreography is fired and forgotten.
+1. **Timers drive rule and stage state; animation never does.** anime.js runs
+   on `requestAnimationFrame`, which browsers throttle hard in background tabs,
+   so a stage that waited on a timeline's completion would stall. Stages advance
+   on `setTimeout`; choreography is fired and forgotten. See
+   [Timers and animation](#timers-and-animation) for what animation *is*
+   allowed to write.
 2. **End states are pinned, not tweened into.** `settleCourtExpansion` sets the
    post-transition state explicitly when the stage leaves, so a timeline still
    mid-flight cannot strand the phone half-faded.
@@ -374,7 +408,7 @@ line in it was read from Edward's own public repositories — the roadmap's
 is not known is `null`, and the room says so: the League of Legends shelf is a
 typed hook waiting for a real value rather than an invented rank.
 
-The room is walked, not read. Six objects, the world's own `movePlayerX`, a
+The room is walked, not read. Seven objects plus THE MONOLITH, the world's own `movePlayerX`, a
 proximity reach, and `E` to look — the same verbs as outside. Opening a
 non-project location goes through a typed `OPEN_LOCATION` action rather than
 being special-cased on a building id.
@@ -396,7 +430,7 @@ entry and is described under [Runtime flow](#runtime-flow).)
 | Module | Responsibility |
 | --- | --- |
 | `types/intro.ts` | `INTRO_STAGES` (the default entry) and `SHRINE_STAGES` (the name gate), and which of each are timed |
-| `lib/game/intro-machine.ts` | Pure stage model, durations, and the camera pan easing |
+| `lib/game/intro-machine.ts` | Pure stage model, durations, and `PAN_OFFSET`, where the camera pan lands. The pan's easing belongs to anime.js (`driveValue` in `lib/motion/intro-choreography.ts`), not to the machine |
 | `lib/game/name-gate.ts` | The gate as a pure text reducer (see [Input](#input)) |
 | `lib/pixel/opening.ts` | The dusk scenery — harbour, bridge, terraces, park — on its own palette, because the opening is a different time of day and place than the world |
 | `lib/pixel/monolith.ts` | The monolith and the two scenes it stands in, drawn as six numbered phases matching the storyboard frames |
@@ -414,6 +448,17 @@ each beat hands its end state to the next — reverting would wipe the creatures
 back to invisible the moment they finished arriving. Each beat also pins the
 state it depends on before animating, so it can start from a known place rather
 than trusting the previous tween to have landed.
+
+### History
+
+*Superseded; kept as a record, not a description of the current product.*
+
+Until "enter the world in under a second" (#6), the name gate **was** the
+opening. The default entry ran TITLE, a camera pan east to the shrine, then
+SHRINE, SELECTION, NAME, ASK, TYPING and UNLOCK, and only UNLOCK let the visitor
+into the world. The join counter's three doors were named for that flow: the
+intro's timed unlock, SKIP INTRO, and SKIP TO INDEX. #6 cut the default entry to
+TITLE, PAN and WORLD, and moved the ritual, unchanged, onto THE MONOLITH.
 
 ## Audio
 
@@ -457,10 +502,12 @@ visitor's mute outranks playback, and nothing is `PLAYING` before a gesture has
 unlocked it.
 
 - **Autoplay restriction.** Browsers will not let a page make sound before a
-  real user gesture. `MusicControl` registers a capture-phase, `once` listener
-  on `pointerdown` and `keydown` that creates and resumes the `AudioContext`
-  while that gesture is still on the stack. It does not start the music — that
-  waits for the world.
+  real user gesture. `MusicControl` registers persistent capture-phase
+  listeners on `pointerdown` and `keydown` that create and resume the
+  `AudioContext` while that gesture is still on the stack. They stay attached
+  after the first unlock, because an interrupted context may need a fresh
+  gesture to resume; on a running context they are a no-op. They do not start
+  the music — that waits for the world.
 - **Entry.** The world reveal gets 500 ms of its own before a 2 s fade in.
 - **Interruption.** A `visibilitychange` listener resumes a context the OS or
   browser suspended while the tab was hidden.
@@ -577,8 +624,9 @@ unconfigured. The counter lives under one key, `edwards-world:joins`.
 
 `recordJoinOnce()` is called from `components/portfolio-experience.tsx` the
 first time the visitor actually holds the world, whichever of the three doors
-they came through (the intro's timed unlock, SKIP INTRO, SKIP TO INDEX). Two
-latches keep it to one:
+they came through: the title's camera pan landing, SKIP INTRO (or `Escape`)
+during that pan, or VIEW PROJECTS, since the index view is the world view too.
+Two latches keep it to one:
 
 - A **module-scope flag** covers a single page load — React re-mounts freely
   and StrictMode mounts everything twice in development, and module state
@@ -672,17 +720,20 @@ could not have been found any other way.
 
 A standard Next.js 16 application. `npm run build` produces a production build
 and `npm start` serves it; any Node-compatible host that can run a Next.js
-application will run this one. Node 20.9 or newer, per Next's own floor.
+application will run this one. Node 24.x, per `engines` in `package.json`.
 
-The application is **static apart from one route**. `/`, `/resume`, the four
+The application is **static apart from two routes**. `/`, `/resume`, the four
 `/case-studies/*` pages, the manifest and `robots.txt` are all prerendered; only
-`/api/joins` is dynamic, and it is marked `force-dynamic` so the total is never
-baked into a static response.
+`/api/joins` and `/api/sportsgang/golf-board` are dynamic, and both are marked
+`force-dynamic` so a total or a board is never baked into a static response.
 
 Nothing in this repository provisions infrastructure, and nothing is configured
 for a specific host. There are no build-time environment variables: the only
 environment the application reads is the optional Redis-compatible REST pair
-described above, read inside the route handler at request time. Without it the
-counter degrades to silence and every other part of the product is unaffected.
+described above, read inside the route handlers at request time. Without it the
+counter degrades to silence, the golf board is unavailable, and every other part
+of the product is unaffected.
 
-There is no live deployment yet.
+The production deployment is on Vercel at
+[edwards-world.vercel.app](https://edwards-world.vercel.app), as linked from the
+[README](../README.md).
