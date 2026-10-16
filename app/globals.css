@@ -523,8 +523,7 @@ p {
    in it, and the screen simply clips what overhangs. The stage stays one 16:9
    box, so everything positioned in percentages (the name slab's tap target
    above all) stays aligned with the art. Controls are pinned to the viewport,
-   not the stage, so a clipped edge can never hide them. A portrait phone keeps
-   the contained frame above: covering it would crop the name slab. */
+   not the stage, so a clipped edge can never hide them. */
 @media (min-aspect-ratio: 1/1) {
   .intro-stage,
   .title-stage {
@@ -550,6 +549,78 @@ p {
   }
 }
 
+/* Portrait screens: the stage is the viewport, and the 16:9 art covers it,
+   cropped sideways around its middle. The type is laid out in the viewport,
+   not over the art, as a column: the heading in the top fifth, below the HUD
+   strip, then the purpose panel, PRESS ENTER and VIEW PROJECTS stacked in the
+   bottom quarter. Every block is in flow, so none can overlap another. */
+@media (max-aspect-ratio: 1/1) {
+  .intro-stage,
+  .title-stage {
+    aspect-ratio: auto;
+    inset: 0;
+    max-height: none;
+    position: absolute;
+    width: auto;
+  }
+
+  .intro-scene,
+  .title-scene {
+    object-fit: cover;
+    object-position: 50% 50%;
+  }
+
+  .intro-actions {
+    bottom: calc(var(--unit) * 4);
+    right: calc(var(--unit) * 4);
+    top: auto;
+  }
+
+  .title-stage {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    padding: calc(var(--unit) * 11) calc(var(--unit) * 3) calc(var(--unit) * 2);
+  }
+
+  .title-copy {
+    display: contents;
+  }
+
+  /* The copy wrapper no longer exists as a box, so each line lifts itself
+     above the canvas, which is positioned. */
+  .title-welcome,
+  .title-wordmark,
+  .title-purpose {
+    position: relative;
+    z-index: 2;
+  }
+
+  .title-wordmark {
+    margin-top: var(--unit);
+  }
+
+  .title-purpose {
+    margin: auto 0 calc(var(--unit) * 2);
+    text-align: center;
+  }
+
+  .title-enter,
+  .title-skip {
+    bottom: auto;
+    left: auto;
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+  }
+
+  .title-enter {
+    margin-bottom: var(--unit);
+    padding: var(--unit) calc(var(--unit) * 4);
+  }
+}
+
 .primary-button {
   background: var(--foreground);
   color: var(--surface);
@@ -568,8 +639,8 @@ p {
    no exit counterpart, because leaving is driven by React state and an exit
    animation would mean delaying an unmount — a timing change, not polish. */
 @keyframes world-arrive {
-  from { opacity: 0; transform: scale(1.012); }
-  to { opacity: 1; transform: none; }
+  0% { transform: translateY(var(--unit)); }
+  50%, 100% { transform: none; }
 }
 
 /* The world is the whole screen. Every in-world measurement below is a whole
@@ -578,7 +649,7 @@ p {
    rounded: a 1-unit border and a 1-unit hard offset shadow are the only
    depth. */
 .world-screen {
-  animation: world-arrive 520ms ease-out both;
+  animation: world-arrive 160ms steps(1, end) both;
   --world-sky: #e9e0c8;
   --world-char: #2b2823;
   --world-cream: #efe7d3;
@@ -664,8 +735,13 @@ p {
   }
 }
 
+/* The bottom strip under the track (see .world-track) is the backdrop's own
+   deepest soil, so it reads as more ground. */
 .world-viewport {
-  background: var(--world-sky);
+  background: linear-gradient(
+    var(--world-sky) calc(100% - var(--unit)),
+    #4e3f33 calc(100% - var(--unit))
+  );
   inset: 0;
   overflow: hidden;
   position: absolute;
@@ -676,6 +752,17 @@ p {
   left: 0;
   position: absolute;
   will-change: transform;
+}
+
+/* Bottom-aligning the track leaves its origin off the unit grid
+   whenever the viewport height is not a multiple of the unit. The origin is
+   snapped down to the grid instead and the leftover strip is filled by the
+   viewport background. */
+@supports (top: round(down, 100%, 1px)) {
+  .world-track {
+    bottom: auto;
+    top: calc(round(down, 100%, var(--unit)) - var(--track-height));
+  }
 }
 
 /* Every canvas in the project is nearest-neighbour scaled art. */
@@ -736,15 +823,16 @@ p {
   z-index: 2;
 }
 
-/* Pops in over two hard steps (0 -> half -> full), never an eased grow. */
+/* Pops in over two hard one-unit steps up from below, never an eased grow, and
+   never a scale: that would halve the 1-unit border off the pixel grid. */
 .world-object__prompt {
   animation: prompt-pop 150ms steps(1, end) both;
 }
 
 @keyframes prompt-pop {
-  0% { scale: 0; }
-  40% { scale: 0.5; }
-  80%, 100% { scale: 1; }
+  0% { translate: 0 calc(var(--unit) * 2); }
+  40% { translate: 0 var(--unit); }
+  80%, 100% { translate: 0 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
