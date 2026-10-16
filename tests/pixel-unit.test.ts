@@ -7,7 +7,7 @@ import {
   getPixelUnit,
   snapToCss,
   toCss,
-} from "@/lib/game/use-pixel-unit";
+} from "@/lib/game/pixel-unit";
 import { BACKDROP_ART_SIZE } from "@/lib/pixel/backdrop";
 import { EDWARD_ART_SIZE, getAvatarAnchor } from "@/lib/pixel/characters";
 

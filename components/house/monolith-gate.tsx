@@ -18,7 +18,7 @@ import {
   SOCKET_COUNT,
   type NameGateState,
 } from "@/lib/game/name-gate";
-import { usePixelUnit } from "@/lib/game/use-pixel-unit";
+import { usePixelUnit } from "@/lib/motion/use-pixel-unit";
 import { driveValue } from "@/lib/motion/intro-choreography";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";

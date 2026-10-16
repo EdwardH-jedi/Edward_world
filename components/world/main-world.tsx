@@ -22,7 +22,8 @@ import {
   type HorizontalDirection,
 } from "@/lib/game/movement";
 import { getGroundYForFootprint, PIXEL_UNIT } from "@/lib/game/terrain";
-import { snapToCss, toCss, usePixelUnit } from "@/lib/game/use-pixel-unit";
+import { snapToCss, toCss } from "@/lib/game/pixel-unit";
+import { usePixelUnit } from "@/lib/motion/use-pixel-unit";
 import { formatJoinLine } from "@/lib/joins/ordinal";
 import { useJoinTotal } from "@/lib/joins/use-join-total";
 import { play } from "@/lib/audio/sfx";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { usePixelUnit } from "@/lib/game/use-pixel-unit";
+import { usePixelUnit } from "@/lib/motion/use-pixel-unit";
 import { play } from "@/lib/audio/sfx";
 import {
   DISSOLVE_STEPS,
