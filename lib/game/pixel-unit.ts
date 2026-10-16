@@ -1,6 +1,3 @@
-"use client";
-
-import { useSyncExternalStore } from "react";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
 import { BACKDROP_ART_SIZE } from "@/lib/pixel/backdrop";
 
@@ -35,17 +32,20 @@ export function snapToCss(authored: number, unit: number) {
   return Math.floor(authored / PIXEL_UNIT) * unit;
 }
 
-function subscribe(onChange: () => void) {
-  window.addEventListener("resize", onChange);
-  return () => window.removeEventListener("resize", onChange);
-}
-
-const getSnapshot = () => getPixelUnit(window.innerHeight);
-// Server and first hydration paint at the authored unit; the client then
-// settles on the real one.
-const getServerSnapshot = () => PIXEL_UNIT;
-
-/** The live art-pixel unit for this viewport, re-chosen on resize. */
-export function usePixelUnit() {
-  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+/**
+ * The live unit, stepped down to the largest whole unit at which `art` still
+ * fits `space` (both in CSS pixels). For scenes wider than the world is tall,
+ * such as a room strip, so they shrink a whole unit at a time instead of
+ * stretching by a fraction. Never below one CSS pixel per art pixel.
+ */
+export function fitPixelUnit(
+  unit: number,
+  space: { width: number; height: number },
+  art: { width: number; height: number },
+) {
+  const fit = Math.min(
+    Math.floor(space.width / art.width),
+    Math.floor(space.height / art.height),
+  );
+  return Math.max(1, Math.min(unit, fit));
 }

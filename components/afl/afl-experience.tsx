@@ -11,7 +11,6 @@ import {
   formatSigned,
   runPipeline,
 } from "@/lib/game/afl-pipeline";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
 import {
   hidePacket,
   measurePacketHop,
@@ -22,6 +21,7 @@ import {
 import { driveValue } from "@/lib/motion/intro-choreography";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
+import { usePixelUnit } from "@/lib/motion/use-pixel-unit";
 import { drawAflLab, LAB_ART_SIZE } from "@/lib/pixel/afl-lab";
 import { edwardRoutines, PLAYER_ART_SIZE } from "@/lib/pixel/sportsgang";
 import {
@@ -55,6 +55,7 @@ const FIRST_SEED = 11;
 const TEAMS: readonly TeamPick[] = [TEAM_A, TEAM_B];
 
 export function AflExperience({ onExit }: AflExperienceProps) {
+  const unit = usePixelUnit();
   const [seed, setSeed] = useState(FIRST_SEED);
   const [phase, setPhase] = useState<LabPhase>("PICK");
   const [pick, setPick] = useState<TeamPick | null>(null);
@@ -240,6 +241,7 @@ export function AflExperience({ onExit }: AflExperienceProps) {
       className="loc-experience afl-lab"
       data-phase={phase}
       ref={rootRef}
+      style={{ "--unit": `${unit}px` } as React.CSSProperties}
       tabIndex={-1}
     >
       <div className="loc-backdrop">
@@ -250,7 +252,7 @@ export function AflExperience({ onExit }: AflExperienceProps) {
           draw={drawAflLab}
           fill
           frame={ambientFrame}
-          unit={PIXEL_UNIT}
+          unit={unit}
         />
       </div>
 
@@ -260,7 +262,7 @@ export function AflExperience({ onExit }: AflExperienceProps) {
           artWidth={PLAYER_ART_SIZE.width}
           draw={edwardRoutines.idle}
           frame={0}
-          unit={PIXEL_UNIT}
+          unit={unit}
         />
       </div>
 

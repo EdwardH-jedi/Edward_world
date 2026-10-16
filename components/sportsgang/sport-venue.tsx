@@ -2,7 +2,7 @@
 
 import type { RefObject } from "react";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
+import { useCourtUnit } from "@/components/sportsgang/use-court-unit";
 import {
   edwardRoutines,
   opponentRoutines,
@@ -54,6 +54,7 @@ export function SportVenue({
   showPlayers,
   surfaceOwnedByGame = false,
 }: SportVenueProps) {
+  const courtUnit = useCourtUnit();
   // Running and tennis both draw their own moving figures, so the static pair
   // steps aside for them; `showPlayers` is what decides *when* for tennis,
   // because it only owns the court while a match is actually being played.
@@ -127,8 +128,9 @@ export function SportVenue({
                 artHeight={PLAYER_ART_SIZE.height}
                 artWidth={PLAYER_ART_SIZE.width}
                 draw={edwardRoutines[edwardFrame]}
+                fill
                 frame={0}
-                unit={PIXEL_UNIT}
+                unit={courtUnit}
               />
             </div>
           </div>
@@ -143,8 +145,9 @@ export function SportVenue({
                 artWidth={PLAYER_ART_SIZE.width}
                 draw={opponentRoutines[opponentFrame]}
                 flipX
+                fill
                 frame={0}
-                unit={PIXEL_UNIT}
+                unit={courtUnit}
               />
             </div>
           </div>

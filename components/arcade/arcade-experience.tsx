@@ -27,13 +27,13 @@ import {
   type PlatformerState,
 } from "@/lib/game/arcade/platformer";
 import { getCameraX, movePlayerX } from "@/lib/game/movement";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
 import { prefersReducedMotion } from "@/lib/motion/animate-element";
 import {
   applyScreenProjection,
   measureScreenProjection,
 } from "@/lib/motion/sportsgang-choreography";
 import { useGameLoop } from "@/lib/motion/use-game-loop";
+import { useFitPixelUnit, usePixelUnit } from "@/lib/motion/use-pixel-unit";
 import { drawEdward, EDWARD_ART_SIZE, getWalkFrame } from "@/lib/pixel/characters";
 
 interface ArcadeExperienceProps {
@@ -42,14 +42,22 @@ interface ArcadeExperienceProps {
 
 const PRODUCT_FLOW = ["MOVE", "JUMP", "CLOSE BUGS", "REACH THE OFFER"] as const;
 
-const EDWARD_WIDTH = 48;
-
 /** The playable viewport, in level units. */
 const VIEW = { width: 640, height: LEVEL_HEIGHT } as const;
+/**
+ * The level is authored at two level units per art pixel, so the screen is
+ * fitted in art pixels and scaled by half its unit: the in-game sprite then
+ * lands on whole CSS pixels, like everything else.
+ */
+const SCREEN_ART = { width: VIEW.width / 2, height: VIEW.height / 2 } as const;
+const SCREEN_SHARE = { width: 0.86, height: 0.7 } as const;
 
 type ArcadePhase = "FLOOR" | "PLAYING" | "DONE";
 
 export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
+  const unit = usePixelUnit();
+  const screenUnit = useFitPixelUnit(SCREEN_ART, SCREEN_SHARE);
+  const edwardWidth = EDWARD_ART_SIZE.width * unit;
   const [phase, setPhase] = useState<ArcadePhase>("FLOOR");
   const [layout, setLayout] = useState<FloorLayout>(() => getFloorLayout(1_120));
   const [edwardX, setEdwardX] = useState(() => getFloorLayout(1_120).startX);
@@ -66,14 +74,8 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
   const expansionRef = useRef<Timeline | null>(null);
   /** Until Edward has been walked, a resize may reposition him freely. */
   const walkedRef = useRef(false);
-  /**
-   * How much of a level pixel one screen pixel is.
-   *
-   * Measured rather than expressed in CSS: `scale` takes a unitless number and
-   * `calc(94vw / 640)` is a length, so the stylesheet's version of this was
-   * silently invalid and the level rendered at 1:1, cropped to whatever fit.
-   */
-  const [stageScale, setStageScale] = useState(1);
+  /** Screen pixels per level unit; set inline, as `scale` needs a number. */
+  const stageScale = screenUnit / 2;
 
   const { consume, bind } = useMinigameInput(phase !== "DONE", {
     captureActionKeys: phase === "PLAYING",
@@ -93,7 +95,7 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
       setLayout(next);
       setEdwardX((current) =>
         walkedRef.current
-          ? Math.min(current, next.floorWidth - EDWARD_WIDTH / 2)
+          ? Math.min(current, next.floorWidth - edwardWidth / 2)
           : next.startX,
       );
     }
@@ -106,25 +108,7 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
     const observer = new ResizeObserver(apply);
     observer.observe(root);
     return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const screen = screenRef.current;
-    if (!screen) return;
-
-    function apply() {
-      if (screen) setStageScale(screen.clientWidth / VIEW.width);
-    }
-
-    apply();
-    if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", apply);
-      return () => window.removeEventListener("resize", apply);
-    }
-    const observer = new ResizeObserver(apply);
-    observer.observe(screen);
-    return () => observer.disconnect();
-  }, []);
+  }, [edwardWidth]);
 
   useEffect(() => {
     const previousFocus = document.activeElement as HTMLElement | null;
@@ -164,7 +148,7 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
         deltaSeconds: delta,
         speed: layout.walkSpeed,
         worldWidth: layout.floorWidth,
-        playerWidth: EDWARD_WIDTH,
+        playerWidth: edwardWidth,
       }),
     );
   });
@@ -256,7 +240,7 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
     viewportWidth: VIEW.width,
     worldWidth: LEVEL_WIDTH,
   });
-  const walkFrame = getWalkFrame(edwardX, PIXEL_UNIT, walking);
+  const walkFrame = getWalkFrame(edwardX, unit, walking);
 
   return (
     <section
@@ -264,6 +248,9 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
       className="loc-experience ar-arcade"
       data-phase={phase}
       ref={rootRef}
+      style={
+        { "--unit": `${unit}px`, "--ar-screen-unit": `${screenUnit}px` } as React.CSSProperties
+      }
       tabIndex={-1}
     >
       <div aria-hidden="true" className="ar-interior">
@@ -325,7 +312,7 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
           aria-hidden="true"
           className="ar-edward"
           data-facing={facing}
-          style={{ left: edwardX }}
+          style={{ left: Math.floor(edwardX / unit) * unit }}
         >
           <PixelCanvas
             artHeight={EDWARD_ART_SIZE.height}
@@ -333,7 +320,7 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
             draw={drawEdward}
             flipX={facing === "left"}
             frame={walkFrame}
-            unit={PIXEL_UNIT}
+            unit={unit}
           />
         </div>
       ) : null}

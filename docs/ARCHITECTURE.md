@@ -248,14 +248,20 @@ position and size in `data/world.ts` is a whole multiple of it.
 world footprint.
 
 What is *drawn* uses a live unit instead. `usePixelUnit()`
-(`lib/game/use-pixel-unit.ts`) picks the largest whole `u` in 2..8 whose scaled
+(`lib/motion/use-pixel-unit.ts`, over the pure `getPixelUnit` in
+`lib/game/pixel-unit.ts`) picks the largest whole `u` in 2..8 whose scaled
 world height (`BACKDROP_ART_SIZE.height * u`) fits the viewport, so the world
 fills the screen with no fractional pixel. Movement, collision and the camera
 stay in authored pixels; `MainWorld` converts at the DOM boundary (`toCss` for
 grid-aligned values, `snapToCss` for the continuous player and camera x) and
 exposes `--unit` to the stylesheet, where all in-world type, chips, borders and
-shadows are unit multiples. Only the world, title and intro read the live unit;
-the project locations still draw at `PIXEL_UNIT`. On landscape the title and
+shadows are unit multiples. The interiors read the same live unit: each sets
+`--unit` for its Silkscreen HUD, and art that must fit a share of the screen
+steps down whole units with `useFitPixelUnit` (the house room strip, the arcade
+game screen, and the SportsGang court via `useCourtUnit`, whose sprites are
+sized in that court unit). Cover backdrops (AFL lab, SportsGang venue) draw at
+the live unit and stay `object-fit: cover`. `PIXEL_UNIT` remains only in
+simulation and authored geometry. On landscape the title and
 intro stage is scaled to cover the viewport (non-integer, as before); a portrait
 phone keeps the contained frame so the intro's name slab is never cropped.
 

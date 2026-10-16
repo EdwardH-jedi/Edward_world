@@ -3,7 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Gauge } from "@/components/sportsgang/minigames/meter";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
+import { useCourtUnit } from "@/components/sportsgang/use-court-unit";
 import { edwardRoutines, opponentRoutines, PLAYER_ART_SIZE } from "@/lib/pixel/sportsgang";
 import type { MinigameProps } from "@/components/sportsgang/minigames/types";
 import { useFixedStepGameLoop } from "@/components/sportsgang/minigames/use-fixed-step-loop";
@@ -43,6 +43,7 @@ function bottomForLane(lane: number) {
 }
 
 export function RunningGame({ active, onFinish }: MinigameProps) {
+  const courtUnit = useCourtUnit();
   // Running is the one sport that needs to steer and spurt at the same time, so
   // it takes the map that puts `S` on its own channel instead of on `down`.
   const { consume, bind, clear } = useMinigameInput(active, { keyMap: RUNNING_KEY_MAP });
@@ -102,8 +103,9 @@ export function RunningGame({ active, onFinish }: MinigameProps) {
           artHeight={PLAYER_ART_SIZE.height}
           artWidth={PLAYER_ART_SIZE.width}
           draw={opponentRoutines.ready}
+          fill
           frame={0}
-          unit={PIXEL_UNIT}
+          unit={courtUnit}
         />
         <span>PACER</span>
       </div>
@@ -118,8 +120,9 @@ export function RunningGame({ active, onFinish }: MinigameProps) {
           draw={edwardRoutines.ready}
           // Faces the way he is actually going, so turning round reads.
           flipX={state.heading === -1}
+          fill
           frame={0}
-          unit={PIXEL_UNIT}
+          unit={courtUnit}
         />
         <span>EDWARD</span>
       </div>

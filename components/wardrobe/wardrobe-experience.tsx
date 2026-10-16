@@ -18,6 +18,7 @@ import {
   MINIMUM_LOOK_SLOTS,
 } from "@/lib/game/wardrobe-archive";
 import type { WardrobePersistenceOutcome } from "@/lib/game/wardrobe-persistence";
+import { PIXEL_UNIT } from "@/lib/game/terrain";
 import {
   confirmSave,
   flyBetween,
@@ -25,6 +26,7 @@ import {
   settleOutfit,
   type WardrobeFlight,
 } from "@/lib/motion/wardrobe-choreography";
+import { usePixelUnit } from "@/lib/motion/use-pixel-unit";
 import {
   createGarmentRoutine,
   createHangingRoutine,
@@ -69,9 +71,16 @@ const STAGE_PROMPT: Readonly<Record<WardrobeStage, string>> = {
   SAVE: "Two layers make a look. Save it.",
 };
 
+/** Each piece's size, in CSS pixels per art pixel at the authored unit of 4. */
 const ART_UNIT = { hanging: 3, table: 6, shelf: 3, mannequin: 7, frame: 4 } as const;
 
+/** The same proportions at the live unit, rounded to a whole pixel. */
+function artUnit(piece: keyof typeof ART_UNIT, unit: number) {
+  return Math.max(1, Math.round((ART_UNIT[piece] * unit) / PIXEL_UNIT));
+}
+
 export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
+  const unit = usePixelUnit();
   const [state, dispatch] = useReducer(archiveReducer, undefined, createArchiveState);
   const [persistenceOutcome, setPersistenceOutcome] = useState<WardrobePersistenceOutcome>("idle");
   const [message, setMessage] = useState<string | null>("Wardrobe. Take a garment off the rail.");
@@ -219,6 +228,7 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
       data-complete={complete || undefined}
       data-stage={stage}
       ref={rootRef}
+      style={{ "--unit": `${unit}px` } as React.CSSProperties}
       tabIndex={-1}
     >
       <div className="wd-interior" aria-hidden="true">
@@ -297,7 +307,7 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
                 {selected ? (
                   <>
                     <div className="wd-table__art">
-                      <GarmentArt garment={selected} unit={ART_UNIT.table} />
+                      <GarmentArt garment={selected} unit={artUnit("table", unit)} />
                     </div>
                     <div className="wd-table__read">
                       <p className="wd-table__name">{selected.name}</p>
@@ -374,7 +384,7 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
                                 }}
                                 type="button"
                               >
-                                <GarmentArt garment={garment} unit={ART_UNIT.shelf} />
+                                <GarmentArt garment={garment} unit={artUnit("shelf", unit)} />
                                 <span>{garment.name}</span>
                               </button>
                             </li>
@@ -401,7 +411,7 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
                     artWidth={MANNEQUIN_ART_SIZE.width}
                     draw={mannequin}
                     frame={0}
-                    unit={ART_UNIT.mannequin}
+                    unit={artUnit("mannequin", unit)}
                   />
                 </div>
               </div>
@@ -463,7 +473,7 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
                 artWidth={MANNEQUIN_ART_SIZE.width}
                 draw={mannequin}
                 frame={0}
-                unit={ART_UNIT.mannequin}
+                unit={artUnit("mannequin", unit)}
               />
             </div>
           </div>
@@ -494,6 +504,7 @@ export function WardrobeExperience({ onExit }: WardrobeExperienceProps) {
 
 /** The rail shows a garment the way a rail does: on a hanger. */
 function HangingArt({ garment }: { garment: Garment }) {
+  const unit = usePixelUnit();
   const routine = useMemo(
     () => createHangingRoutine(garment.slot, garment.colour),
     [garment.colour, garment.slot],
@@ -504,7 +515,7 @@ function HangingArt({ garment }: { garment: Garment }) {
       artWidth={HANGER_ART_SIZE.width}
       draw={routine}
       frame={0}
-      unit={ART_UNIT.hanging}
+      unit={artUnit("hanging", unit)}
     />
   );
 }
@@ -587,6 +598,7 @@ interface SavedLookFrameProps {
  * to exist before the visitor saves, or saving has nowhere to mean anything.
  */
 function SavedLookFrame({ emptyLabel, look, note, routine, frameRef, forget }: SavedLookFrameProps) {
+  const unit = usePixelUnit();
   return (
     <div className="wd-saved">
       <p className="wd-saved__name">SAVED LOOK</p>
@@ -597,7 +609,7 @@ function SavedLookFrame({ emptyLabel, look, note, routine, frameRef, forget }: S
             artWidth={MANNEQUIN_ART_SIZE.width}
             draw={routine}
             frame={0}
-            unit={ART_UNIT.frame}
+            unit={artUnit("frame", unit)}
           />
         ) : (
           <p className="wd-saved__empty">{emptyLabel}</p>

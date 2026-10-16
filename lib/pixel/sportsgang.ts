@@ -13,6 +13,8 @@ import { dashes, hills, scatter, sprite, tree } from "@/lib/pixel/raster";
 
 export const PLAYER_ART_SIZE = { width: 18, height: 16 } as const;
 export const VENUE_ART_SIZE = { width: 240, height: 135 } as const;
+/** The court and play box: 900x340 CSS px at the authored unit of 4. */
+export const COURT_ART_SIZE = { width: 225, height: 85 } as const;
 
 /** Court surface, the one place SportsGang is allowed its own accent. */
 export const COURT_SURFACE = "#A97F52";

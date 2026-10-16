@@ -25,7 +25,8 @@ import {
   SPORTSGANG_STAGE_TIMINGS,
 } from "@/lib/game/sportsgang-machine";
 import { recordRun, type RecordedRun } from "@/lib/game/sportsgang-standings";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
+import { usePixelUnit } from "@/lib/motion/use-pixel-unit";
+import { courtUnitCss, useCourtUnit } from "@/components/sportsgang/use-court-unit";
 import {
   applyScreenProjection,
   measureScreenProjection,
@@ -74,6 +75,8 @@ const STAGE_CAPTIONS: Readonly<Record<SportsgangStage, string>> = {
 const PRODUCT_FLOW = ["DISCOVER", "MATCH", "PLAY", "RESULT", "RANK"] as const;
 
 export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
+  const unit = usePixelUnit();
+  const courtUnit = useCourtUnit();
   const [stage, setStage] = useState<SportsgangStage>("ENTER");
   const [sport, setSport] = useState<SportsgangSport | null>(null);
   const [result, setResult] = useState<SportResult | null>(null);
@@ -346,6 +349,12 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
       className="loc-experience"
       data-stage={stage}
       ref={rootRef}
+      style={
+        {
+          "--unit": `${unit}px`,
+          "--sg-court-unit": courtUnitCss(courtUnit),
+        } as React.CSSProperties
+      }
       tabIndex={-1}
     >
       <div className="loc-backdrop loc-backdrop--venue" ref={venueRef}>
@@ -356,7 +365,7 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
           draw={drawVenue}
           fill
           frame={0}
-          unit={PIXEL_UNIT}
+          unit={unit}
         />
       </div>
       <div className="loc-backdrop loc-backdrop--courtside" ref={courtsideRef}>
@@ -367,7 +376,7 @@ export function SportsgangExperience({ onExit }: SportsgangExperienceProps) {
           draw={drawCourtside}
           fill
           frame={0}
-          unit={PIXEL_UNIT}
+          unit={unit}
         />
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { BGM_TITLE } from "@/lib/audio/bgm";
-import { usePixelUnit } from "@/lib/game/use-pixel-unit";
+import { usePixelUnit } from "@/lib/motion/use-pixel-unit";
 import {
   getBgmServerSnapshot,
   getBgmSnapshot,
