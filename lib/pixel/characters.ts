@@ -252,6 +252,28 @@ export const edwardPoses: Readonly<Record<EdwardPose, ArtRoutine>> = {
   inspect: (draw, frame) => drawStanding(EDWARD_INSPECT, draw, frame),
 };
 
+/**
+ * Which pose and frame to draw. Standing animation (inspect, breathing) waits
+ * for him to settle: an Edward who has only just stopped holds the walk's idle
+ * frame, even beside something he could look over.
+ */
+export function selectEdwardLook(state: {
+  moving: boolean;
+  settled: boolean;
+  nearBuildingLocked: boolean;
+  nearObject: boolean;
+  walkFrame: number;
+  ambientFrame: number;
+}): { pose: EdwardPose; frame: number } {
+  if (state.moving) return { pose: "walk", frame: state.walkFrame };
+  if (state.nearBuildingLocked) return { pose: "back", frame: state.ambientFrame };
+  if (!state.settled) return { pose: "walk", frame: 0 };
+  return {
+    pose: state.nearObject ? "inspect" : "front",
+    frame: state.ambientFrame,
+  };
+}
+
 /** The side walk cycle, for the surfaces that only ever walk him left and right. */
 export const drawEdward: ArtRoutine = edwardPoses.walk;
 
