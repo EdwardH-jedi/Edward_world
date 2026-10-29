@@ -130,6 +130,12 @@ npm run build
 
 The tests cover pure simulations and state transitions, input handling, art geometry, storage behaviour, API contracts, and audio policy. They run in a Node environment and do not replace browser interaction, mobile, or accessibility testing.
 
+After building, run `npm run test:e2e` for the Chromium layout checks used in CI.
+Install the matching browser first with `npx playwright install chromium` if it
+is not already available. These checks start a local production server on port
+3100. Manual recruiter smoke checks should also cover `/?view=index`, `/resume`,
+the case-study links, and the title screen's **VIEW PROJECTS** button.
+
 The [10 September 2026 deployment report](docs/predeploy/FINAL_PRODUCTION_DEPLOY.md#verification) records lint, typecheck, build, and **714 tests across 46 files** passing for commit [`2b34ba9`](https://github.com/EdwardH-jedi/Edward_world/commit/2b34ba9f84ecbe0fb16b196a367b2b6a74ae446b), using Node 24.19.0 and npm 11.17.0. It also documents manual browser checks and their scope. These are historical results, not a fresh run of the current branch.
 
 ## Development approach
