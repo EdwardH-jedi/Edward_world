@@ -1,10 +1,11 @@
 /**
  * Who Edward is.
  *
- * Every entry here was read from Edward's own public repositories — the
+ * Entries were read from Edward's own public repositories — the
  * biography table in `docs/IMPLEMENTATION_ROADMAP.md` records the sources.
  * Nothing in this file is inferred, rounded up, or written to sound better
- * than it is. If something is not known, it is `null` and the room says so.
+ * than it is. Education status was confirmed by Edward on 29 October 2026;
+ * an official graduation date has not been verified and is not shown.
  */
 
 export interface Chapter {
@@ -38,10 +39,10 @@ export const chapters: readonly Chapter[] = [
   {
     id: "sydney",
     place: "Sydney, Australia",
-    years: "2022 – 2026",
+    years: "2026 · Final-year undergraduate",
     detail: [
       "University of Sydney.",
-      "Bachelor of Advanced Computing, Computer Science.",
+      "Bachelor of Advanced Computing (Computer Science).",
     ],
   },
   {

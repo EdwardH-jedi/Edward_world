@@ -7,7 +7,7 @@ export const projects = [
     displayName: "SportsGang / Protin",
     shortDescriptor: "A mobile sports matchmaking and community product.",
     category: "Full-stack product",
-    githubUrl: "https://github.com/EdwardH-jedi/SportsGang",
+    githubUrl: "https://github.com/EdwardH-jedi/Sportsgang",
     caseStudyUrl: "/case-studies/sportsgang",
     worldBuildingId: "sportsgang",
     // Verified against the repository itself, not inferred.
@@ -18,11 +18,10 @@ export const projects = [
       "Redis",
       "Docker",
     ],
-    // The repository's own description, quoted rather than paraphrased.
+    // Current implemented scope, checked against the repository README.
     repositorySummary:
-      "Peer sports matchmaking on mobile — find opponents by sport, issue " +
-      "challenges, book nearby courts, and track results through a ranking and " +
-      "honour system.",
+      "Find sports partners, chat, arrange participant-confirmed sessions, " +
+      "and record challenge results. Session bookings do not reserve courts.",
     // Evidence: Protin docs/PORTFOLIO_FACTS.md; apps/api/app/services/bookings.py,
     // matches.py and challenges.py. World boundary: components/sportsgang/.
     details: {
@@ -93,9 +92,11 @@ export const projects = [
         "period. Preserving that ordering limits the data available to each fold " +
         "but makes the test closer to forecasting an unseen season.",
       currentState:
-        "In the canonical saved evaluation, the bookmaker benchmark has lower " +
-        "Brier score and log loss than the models. This is historical research; " +
-        "it does not establish a live forecasting advantage or profitability.",
+        "No valid market-outperformance result is established. Historical price " +
+        "coverage was insufficient for a defensible bookmaker comparison, and " +
+        "the final calibrated ensemble has not been evaluated through the same " +
+        "walk-forward path. Historical weather and undated lineup data also " +
+        "have pre-match availability limitations. See the source README.",
       worldRepresentation:
         "The lab in Edward’s World demonstrates the workflow with seeded fictional " +
         "fixtures and a small deterministic scoring pipeline. Its generated " +
@@ -109,7 +110,7 @@ export const projects = [
     displayName: "Wardrobe",
     shortDescriptor: "A local-first digital wardrobe and outfit experience.",
     category: "Full-stack product",
-    githubUrl: "https://github.com/EdwardH-jedi/wadrobe",
+    githubUrl: "https://github.com/EdwardH-jedi/wardrobe",
     caseStudyUrl: "/case-studies/wardrobe",
     worldBuildingId: "wardrobe",
     techStack: [
@@ -164,7 +165,7 @@ export const projects = [
     displayName: "Soonpermario",
     shortDescriptor: "An interactive browser experiment in playful movement.",
     category: "Interactive experience",
-    githubUrl: "https://github.com/EdwardH-jedi/soonpermario",
+    githubUrl: "https://github.com/EdwardH-jedi/career-quest",
     caseStudyUrl: "/case-studies/soonpermario",
     worldBuildingId: "arcade",
     // The repository's own README: "pure HTML5 Canvas + vanilla JavaScript".
