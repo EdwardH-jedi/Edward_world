@@ -12,7 +12,6 @@ import {
 import { InteractionPrompt } from "@/components/world/interaction-prompt";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { WorldLabel } from "@/components/world/world-label";
-import { chapterIdOfStation } from "@/data/timeline";
 import { initialPlayer, WORLD_CONFIG, worldObjects } from "@/data/world";
 import { findNearestInteractable, getInteractionPrompt } from "@/lib/game/interactions";
 import {
@@ -51,9 +50,8 @@ import {
   drawBackdropFar,
   drawBackdropMid,
 } from "@/lib/pixel/backdrop";
-import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
-import { stationArt } from "@/lib/pixel/timeline";
-import { worldExitArt } from "@/lib/pixel/world-exit";
+import { buildingArt } from "@/lib/pixel/buildings";
+import { objectArt, signProfiles } from "@/lib/pixel/object-art";
 import {
   EDWARD_ART_SIZE,
   edwardPoses,
@@ -61,7 +59,7 @@ import {
   getWalkFrame,
   selectEdwardLook,
 } from "@/lib/pixel/characters";
-import type { Player, WorldObject } from "@/types/world";
+import type { Player } from "@/types/world";
 import type { InteractionAction } from "@/types/world";
 
 interface MainWorldProps {
@@ -88,17 +86,8 @@ function getDirection(keys: ReadonlySet<string>): HorizontalDirection {
   return left ? -1 : 1;
 }
 
-/** Resolves the art routine and grid size for any world object. */
-function getObjectArt(object: WorldObject): BuildingArt {
-  if (object.kind === "building") return buildingArt[object.id];
-  // The exit is a sign by kind, because it is not a building and not a
-  // project, but it is a gateway and has to read as one.
-  if (object.id === "world-exit") return worldExitArt;
-  // Each chapter's station on the timeline street has its own plaque.
-  const chapterId = chapterIdOfStation(object.id);
-  if (chapterId !== undefined) return stationArt(chapterId);
-  return signpostArt;
-}
+/** Where each object's art starts, column by column, for its name sign to hang from. */
+const SIGN_PROFILES = signProfiles(worldObjects);
 
 /**
  * A canvas that redraws on the ambient tick by itself, so the tick never
@@ -387,6 +376,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
    * the seam that lets a taller avatar arrive without moving the player.
    */
   const avatar = getAvatarAnchor(EDWARD_ART_SIZE, player.size, PIXEL_UNIT);
+  const playerLeft = snapToCss(player.position.x + avatar.left, unit);
 
   /**
    * Which Edward to draw. Purely presentational — every branch reads state the
@@ -473,10 +463,10 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
             unit={unit}
           />
           {worldObjects.map((object) => {
-            const art = getObjectArt(object);
+            const art = objectArt(object);
             const isNearby = nearbyObject?.id === object.id;
-            // Only the nearby object's chips follow the camera, so the rest
-            // keep stable props and do not re-render while walking.
+            // Only the nearby object's sign follows the camera (to stay on
+            // screen), so the rest keep stable props while walking.
             const screenLeft = isNearby
               ? toCss(object.position.x, unit) - snapToCss(cameraX, unit)
               : undefined;
@@ -503,20 +493,12 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
                 />
                 <WorldLabel
                   anchorUnits={object.size.width / PIXEL_UNIT}
+                  profile={SIGN_PROFILES.get(object.id) ?? []}
                   screenLeft={screenLeft}
                   text={object.label}
                   unit={unit}
                   viewportWidth={isNearby ? viewportWidth : undefined}
                 />
-                {screenLeft !== undefined && object.interaction ? (
-                  <InteractionPrompt
-                    anchorUnits={object.size.width / PIXEL_UNIT}
-                    screenLeft={screenLeft}
-                    text={getInteractionPrompt(object.interaction)}
-                    unit={unit}
-                    viewportWidth={viewportWidth}
-                  />
-                ) : null}
               </div>
             );
           })}
@@ -529,7 +511,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
             data-pose={pose}
             style={{
               height: toCss(avatar.height, unit),
-              left: snapToCss(player.position.x + avatar.left, unit),
+              left: playerLeft,
               top: toCss(player.position.y + avatar.top, unit),
               width: toCss(avatar.width, unit),
             }}
@@ -543,6 +525,19 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
               frameFor={(ambientFrame) => selectEdwardLook({ ...look, ambientFrame }).frame}
               unit={unit}
             />
+            {/* The prompt speaks from Edward, not from the object: keyed on the
+                target so it pops in afresh at each one. */}
+            {nearbyObject ? (
+              <InteractionPrompt
+                anchorUnits={EDWARD_ART_SIZE.width}
+                facing={player.facing}
+                key={nearbyObject.id}
+                screenLeft={playerLeft - snapToCss(cameraX, unit)}
+                text={getInteractionPrompt(nearbyObject.interaction)}
+                unit={unit}
+                viewportWidth={viewportWidth}
+              />
+            ) : null}
           </div>
         </div>
       </div>

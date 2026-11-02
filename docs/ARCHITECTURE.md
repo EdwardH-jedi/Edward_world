@@ -233,6 +233,9 @@ canvas binding, so it is unit-testable and safe to import anywhere:
 - `characters.ts` — Edward's poses and four-frame walk cycle, on the 16x24 grid from the character asset spec; drawn from photo reference (black two-block cut, earbud, black zip shirt, slate jeans, white sneakers).
 - `backdrop.ts` — sky, hills, terrain, path, stream, oval, town props and the timeline street's low wall as one full-width layer.
 - `timeline.ts` — the timeline stations: one shared plaque on a post, Edward's height, with a motif per chapter and a `signAccent` top rail as its only accent.
+- `object-art.ts` and `signage.ts` — which routine draws each world object, and where its name sign hangs: `topProfile` records each column's first solid row over every ambient frame, because an object's box is often sky (the Arcade's starts six rows above its roof). The sign hangs a clear unit above the highest art under it, and a one-unit stem drops from its middle to the art.
+
+The world's DOM chips are placed in whole units by `lib/game/chip-layout.ts` (pure, like `pixel-unit.ts`): `placeChip` snaps and centres a chip and clamps it onto the screen, `placeTail` keeps the prompt bubble's tail over Edward's head, and `clearOf` lifts the bubble clear of any sign it would cover. The name sign (`components/world/world-label.tsx`) stays on its object; the prompt (`interaction-prompt.tsx`) is Edward's speech bubble, rendered inside `.world-player`, so it draws over every sign and moves with him.
 
 `lib/game/terrain.ts` is the pure ground profile. It is a stepped function on
 purpose: constant-height terraces keep everything standing on it aligned to the

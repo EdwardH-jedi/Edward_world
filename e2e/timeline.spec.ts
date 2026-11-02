@@ -7,8 +7,42 @@ import { timelineStations } from "@/data/timeline";
  * closing it with Escape, and finishing at the exit gate.
  */
 
-const WORLD_RECTS =
-  ".world-track, .world-player, .world-object, .world-object__label, .world-object__prompt";
+const WORLD_RECTS = [
+  ".world-track",
+  ".world-player",
+  ".world-object",
+  ".world-object__label",
+  ".world-object__stem",
+  ".world-prompt",
+  ".world-prompt__tail",
+].join(", ");
+
+/** The prompt is Edward's speech bubble, not a chip on the object. */
+const bubble = (page: Page) => page.locator(".world-player .world-prompt");
+
+/**
+ * Whether the bubble (and its one-unit shadow) touches the sign of `id`,
+ * measured once its pop has landed. The bubble may lift over a sign; it never
+ * covers one, and the sign never moves for it.
+ */
+async function bubbleCoversSign(page: Page, id: string) {
+  await page.waitForTimeout(250);
+  return page.evaluate((objectId) => {
+    const unit = parseFloat(
+      getComputedStyle(document.querySelector(".world-screen")!).getPropertyValue("--unit"),
+    );
+    const a = document.querySelector(".world-prompt")!.getBoundingClientRect();
+    const b = document
+      .querySelector(`.world-object[data-object-id="${objectId}"] .world-object__label`)!
+      .getBoundingClientRect();
+    return (
+      a.left < b.right + unit &&
+      b.left < a.right + unit &&
+      a.top < b.bottom + unit &&
+      b.top < a.bottom + unit
+    );
+  }, id);
+}
 
 const nearby = (page: Page, id: string) =>
   page.locator(`.world-object[data-object-id="${id}"][data-nearby]`);
@@ -73,9 +107,12 @@ test.describe("1280×800 timeline street", () => {
       await walkTo(page, station.id);
       const object = page.locator(`.world-object[data-object-id="${station.id}"]`);
       await expect(object.locator(".world-object__label")).toHaveText(station.label);
-      await expect(object.locator(".world-object__prompt")).toHaveText("E TO READ");
+      await expect(bubble(page)).toHaveText("E TO READ");
       await expect(page.locator(".interaction-status")).toContainText(station.label);
       expect(await offGridRects(page), `${station.id} off the unit grid`).toEqual([]);
+      // The stations stand as tall as Edward, so their signs are at his head
+      // height: the bubble lifts over the sign rather than covering it.
+      expect(await bubbleCoversSign(page, station.id), `bubble covers ${station.id}`).toBe(false);
 
       await page.keyboard.press("e");
       const dialog = page.getByRole("dialog");
@@ -90,9 +127,11 @@ test.describe("1280×800 timeline street", () => {
     }
 
     await walkTo(page, "world-exit");
-    await expect(
-      page.locator('.world-object[data-object-id="world-exit"] .world-object__prompt'),
-    ).toHaveText("E TO LEAVE");
+    await expect(bubble(page)).toHaveText("E TO LEAVE");
+    expect(await bubbleCoversSign(page, "world-exit"), "bubble covers the exit").toBe(false);
+    // The gate stands at the camera's right-hand clamp; the bubble stays on screen.
+    const box = (await bubble(page).boundingBox())!;
+    expect(box.x + box.width).toBeLessThanOrEqual(1280);
     await page.keyboard.press("e");
     await expect(page.locator(".sg-exit")).toBeVisible();
   });

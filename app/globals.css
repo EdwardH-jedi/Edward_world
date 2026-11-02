@@ -677,7 +677,7 @@ p {
 .world-instructions,
 .world-join,
 .world-object__label,
-.world-object__prompt {
+.world-prompt {
   border: var(--unit) solid var(--world-ink);
   border-radius: 0;
   box-shadow: var(--unit) var(--unit) 0 var(--world-ink);
@@ -810,21 +810,26 @@ p {
   z-index: 3;
 }
 
-/* The signage posts carry the real labels, so the label chips are both the
-   approved world callout and the object's accessible name. A chip is six units
-   tall: four of line, two of border. */
-/* The chips stack above their object: the prompt on top, the label under it.
-   The world runs up to `--crop` px of sky off the top of the viewport, so an
-   object high on the hill would carry its chips off screen with it; both are
-   held at least two units below the crop line instead, and the label keeps
-   its place under the prompt either way, so it never jumps when the prompt
-   appears. All on the unit grid: `--crop` and `--object-top` are unit multiples. */
+/* The name sign on each object. It is both the world's signage and the
+   object's accessible name. A chip is `k + 3` units tall: `k + 1` of line and
+   two of border.
+
+   It hangs on the object rather than in the sky over it: from the highest art
+   under the chip (`--sign-drop`, set by `WorldLabel` from the object's own art,
+   because a box top is often sky), up one unit of clear air, its one-unit
+   offset shadow, then the chip. `--chip-floor` still holds it a unit below the
+   crop line, where the world runs `--crop` px of sky off the top of the screen
+   — at 1280x800 the hill house's sign would otherwise touch the edge. Every
+   term is a unit multiple, so the sign stays on the grid either way. */
 .world-object {
-  --chip-floor: calc(var(--crop, 0px) + var(--unit) * 2 - var(--object-top, 0px));
-  --prompt-top: max(calc(var(--unit) * (2 * var(--k) + 11) * -1), var(--chip-floor));
+  --chip-floor: calc(var(--crop, 0px) + var(--unit) - var(--object-top, 0px));
 }
 
 .world-object__label {
+  --label-top: max(
+    calc(var(--sign-drop, 0px) - var(--unit) * (var(--k) + 5)),
+    var(--chip-floor)
+  );
   background: var(--world-char);
   border-color: var(--world-cream);
   color: var(--world-cream);
@@ -834,28 +839,71 @@ p {
   padding: 0 calc(var(--unit) * 2);
   position: absolute;
   text-align: center;
-  top: calc(var(--prompt-top) + var(--unit) * (var(--k) + 5));
+  top: var(--label-top);
   white-space: nowrap;
   z-index: 2;
 }
 
-.world-object__prompt {
+/* The post the sign stands on: one unit wide, char like the chip, from the
+   chip's bottom edge down to the art under its middle column (`--stem-foot`,
+   in the object's own rows). Its top unit runs behind the offset shadow, so
+   what shows is the post crossing the clear unit to the roof. Nothing to stand
+   on (a clamped chip past the art's edge) and there is no post. */
+.world-object__stem {
+  background: var(--world-char);
+  height: max(
+    0px,
+    calc(var(--stem-foot, 0px) - var(--label-top) - var(--unit) * (var(--k) + 3))
+  );
+  left: var(--stem-left, 0px);
+  pointer-events: none;
+  position: absolute;
+  top: calc(100% + var(--unit));
+  width: var(--unit);
+}
+
+.world-object__label[data-stem="off"] .world-object__stem {
+  display: none;
+}
+
+/* The prompt is Edward's speech bubble, a child of `.world-player`, so it
+   draws over every object and its sign. It sits over his head: his sprite's
+   top row, a clear unit, the two units its tail hangs below it, then the
+   bubble. `InteractionPrompt` sets that rise (`--rise`, from the constants in
+   `lib/game/chip-layout.ts`), lifted whole units more where the bubble would
+   otherwise cover a sign. */
+.world-prompt {
   background: var(--world-sign);
+  bottom: calc(100% + var(--rise, var(--unit) * 3));
   color: var(--world-cream);
   font-size: calc(var(--unit) * var(--k));
-  left: var(--chip-left, 50%);
+  left: var(--chip-left, 0px);
   line-height: calc(var(--unit) * (var(--k) + 1));
   padding: 0 calc(var(--unit) * 2);
+  pointer-events: none;
   position: absolute;
   text-align: center;
-  top: var(--prompt-top);
   white-space: nowrap;
-  z-index: 2;
+  z-index: 1;
+}
+
+/* The tail: one unit of the bubble's fill breaking through its bottom border
+   and down a unit more, outlined in ink either side and under it. It points at
+   the middle of his head (`--tail-left`, from `InteractionPrompt`). */
+.world-prompt__tail {
+  background: var(--world-sign);
+  border: solid var(--world-ink);
+  border-width: 0 var(--unit) var(--unit);
+  height: calc(var(--unit) * 3);
+  left: var(--tail-left, 0px);
+  position: absolute;
+  top: 100%;
+  width: calc(var(--unit) * 3);
 }
 
 /* Pops in over two hard one-unit steps up from below, never an eased grow, and
    never a scale: that would halve the 1-unit border off the pixel grid. */
-.world-object__prompt {
+.world-prompt {
   animation: prompt-pop 150ms steps(1, end) both;
 }
 
@@ -864,7 +912,7 @@ p {
   40% { translate: 0 var(--unit); }
   80%, 100% { translate: 0 0; }
 }@media (prefers-reduced-motion: reduce) {
-  .world-object__prompt { animation: none; }
+  .world-prompt { animation: none; }
 
 }
 
@@ -886,10 +934,14 @@ p {
   z-index: 1000;
 }
 
-/* Proximity reads as the label waking up, not as a border slapped on the art. */
+/* Proximity reads as the label waking up, not as a border slapped on the art:
+   cream on char, with its bottom border turned signAccent as a one-unit
+   underline under the one sign E would open. The chip is one of the accent's
+   allowed surfaces (`tests/palette-accents.test.ts`). */
 .world-object[data-nearby="true"] .world-object__label {
   background: var(--world-cream);
   border-color: var(--world-ink);
+  border-bottom-color: var(--world-sign);
   color: var(--world-char);
 }
 
@@ -2108,17 +2160,10 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
 
 /* ── The world's right-hand exit ────────────────────────────────────────── */
 
-/* The gate is the only interactable that stands at the camera's right-hand
-   clamp, so it is the only one whose centred prompt has nothing to its right
-   to overflow into — measured at 1440x900, the chip ran 6px past the viewport.
-   Anchoring this one prompt to the gate's right post instead of its centre
-   keeps it on screen without moving the gate off the end of the world or
-   touching the shared rule every other object uses. */
-.world-object[data-object-id="world-exit"] .world-object__prompt {
-  left: auto;
-  right: 0;
-  transform: none;
-}
+/* The gate's prompt used to need its own right-hand anchor here, because it
+   was centred over the gate at the camera's clamp and ran off the screen. The
+   prompt is Edward's bubble now, clamped onto the screen like every chip, so
+   the gate needs nothing of its own. */
 
 /* The fireworks sit behind the words and are decorative: `aria-hidden`, no
    pointer events, and never the thing that has to be read. */
