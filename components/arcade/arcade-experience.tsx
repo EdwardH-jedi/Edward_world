@@ -425,14 +425,30 @@ export function ArcadeExperience({ onExit }: ArcadeExperienceProps) {
               width: px(PLAYER_SIZE.width),
             }}
           >
-            <PixelCanvas
-              artHeight={EDWARD_ART_SIZE.height}
-              artWidth={EDWARD_ART_SIZE.width}
-              draw={drawEdward}
-              flipX={game.facing === "left"}
-              frame={getWalkFrame(game.x, 2, game.grounded && Math.abs(game.vx) > 0)}
-              unit={screenUnit}
-            />
+            {/* The art is taller and wider than the 26x34 collision box, so
+                it is anchored feet-down and centred on it in whole screen
+                units — the same seam the world uses for its avatar. */}
+            <div
+              className="ar-player__art"
+              style={{
+                left:
+                  Math.floor(
+                    (px(PLAYER_SIZE.width) - EDWARD_ART_SIZE.width * screenUnit) /
+                      2 /
+                      screenUnit,
+                  ) * screenUnit,
+                top: px(PLAYER_SIZE.height) - EDWARD_ART_SIZE.height * screenUnit,
+              }}
+            >
+              <PixelCanvas
+                artHeight={EDWARD_ART_SIZE.height}
+                artWidth={EDWARD_ART_SIZE.width}
+                draw={drawEdward}
+                flipX={game.facing === "left"}
+                frame={getWalkFrame(game.x, 2, game.grounded && Math.abs(game.vx) > 0)}
+                unit={screenUnit}
+              />
+            </div>
           </div>
         </div>
         </div>

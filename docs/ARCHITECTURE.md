@@ -229,7 +229,7 @@ canvas binding, so it is unit-testable and safe to import anywhere:
 - `palette.ts` — the approved colour tokens, and where world colours come from. It is not the only file that names one: the dusk opening (`opening.ts`) and the monolith carry their own scene palettes, and a few routines (`backdrop.ts`, `buildings.ts`, `sportsgang.ts`, `sg-ball.ts`, `fireworks.ts`, `ambient.ts`) still write individual tones as hex literals.
 - `raster.ts` — the `Raster` primitive (`draw(x, y, w, h, colour)` in **art pixels**) plus shared helpers: sprites, hills, roof pitches, windows, sign-band dashes, trees, lamps, smoke, and deterministic `scatter` noise.
 - `buildings.ts` — one routine per structure, drawn bottom-anchored on a transparent background in its own local space.
-- `characters.ts` — Edward's four-frame walk cycle, on the approved 12x16 grid.
+- `characters.ts` — Edward's poses and four-frame walk cycle, on the 16x24 grid from the character asset spec; drawn from photo reference (black two-block cut, earbud, black zip shirt, slate jeans, white sneakers).
 - `backdrop.ts` — sky, hills, terrain, path, stream, oval and town props as one full-width layer.
 
 `lib/game/terrain.ts` is the pure ground profile. It is a stepped function on

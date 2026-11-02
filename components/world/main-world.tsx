@@ -22,8 +22,8 @@ import {
   type HorizontalDirection,
 } from "@/lib/game/movement";
 import { getGroundYForFootprint, PIXEL_UNIT } from "@/lib/game/terrain";
-import { snapToCss, toCss } from "@/lib/game/pixel-unit";
-import { usePixelUnit } from "@/lib/motion/use-pixel-unit";
+import { getWorldCrop, snapToCss, toCss } from "@/lib/game/pixel-unit";
+import { useWorldUnit } from "@/lib/motion/use-pixel-unit";
 import { formatJoinLine } from "@/lib/joins/ordinal";
 import { useJoinTotal } from "@/lib/joins/use-join-total";
 import { play } from "@/lib/audio/sfx";
@@ -41,7 +41,15 @@ import {
   getExploreHintServerSnapshot,
   subscribeExploreHint,
 } from "@/lib/storage/explore-hint";
-import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
+import {
+  BACKDROP_ART_SIZE,
+  BACKDROP_LAYER_HEIGHT,
+  BACKDROP_LAYERS,
+  backdropLayerWidth,
+  drawBackdrop,
+  drawBackdropFar,
+  drawBackdropMid,
+} from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
 import { worldExitArt } from "@/lib/pixel/world-exit";
 import {
@@ -114,6 +122,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
   // The building whose door is swinging open, and which of its two open frames.
   const [opening, setOpening] = useState<{ id: string; step: 0 | 1 } | null>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(0);
   const viewportRef = useRef<HTMLDivElement>(null);
   const pressedKeys = useRef(new Set<string>());
   // Mirrors `moving` for the frame loop, so idle frames call no setters.
@@ -132,7 +141,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
     getExploreHintServerSnapshot,
   );
   const [hintExpired, setHintExpired] = useState(false);
-  const unit = usePixelUnit();
+  const unit = useWorldUnit();
   // Null until a real total arrives, and null forever if the counter is
   // unreachable — the line is simply absent rather than guessed at.
   const joinTotal = useJoinTotal();
@@ -143,6 +152,7 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
 
     const observer = new ResizeObserver(([entry]) => {
       setViewportWidth(entry.contentRect.width);
+      setViewportHeight(entry.contentRect.height);
     });
     observer.observe(viewport);
     return () => observer.disconnect();
@@ -328,6 +338,26 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
 
   const walkFrame = getWalkFrame(player.position.x, PIXEL_UNIT, moving);
 
+  /**
+   * The world is framed with the ground high: at most `WORLD_SKY_CROP` rows
+   * of sky run off the top of the viewport. The chips over objects read this
+   * so the ones near the top stay on screen rather than scrolling off with
+   * the sky.
+   */
+  const crop = getWorldCrop(viewportHeight, unit);
+
+  /**
+   * Parallax. The far and mid layers sit inside the camera-driven track and
+   * are translated back by part of the camera's travel, so each follows only
+   * its share of it. Their canvases are as wide as that travel needs and no
+   * wider — see `backdropLayerWidth` — and are redrawn only on resize.
+   */
+  const viewportArtWidth = Math.ceil(viewportWidth / unit);
+  const farWidth = backdropLayerWidth(BACKDROP_LAYERS.far, viewportArtWidth);
+  const midWidth = backdropLayerWidth(BACKDROP_LAYERS.mid, viewportArtWidth);
+  const drawFar = useMemo(() => drawBackdropFar(farWidth), [farWidth]);
+  const layerShift = (factor: number) => snapToCss(cameraX * (1 - factor), unit);
+
   // A footstep on every other walk frame; the sound alternates its own pitch.
   useEffect(() => {
     if (moving && walkFrame % 2 === 0) play("footstep");
@@ -398,12 +428,37 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
         <div
           className="world-track"
           style={{
+            "--crop": `${crop}px`,
             "--track-height": `${toCss(WORLD_CONFIG.height, unit)}px`,
             height: toCss(WORLD_CONFIG.height, unit),
             transform: `translate3d(${-snapToCss(cameraX, unit)}px, 0, 0)`,
             width: toCss(WORLD_CONFIG.width, unit),
           } as React.CSSProperties}
         >
+          <div
+            className="world-layer world-layer--far"
+            style={{ transform: `translate3d(${layerShift(BACKDROP_LAYERS.far)}px, 0, 0)` }}
+          >
+            <AmbientCanvas
+              artHeight={BACKDROP_LAYER_HEIGHT}
+              artWidth={farWidth}
+              clock={ambient}
+              draw={drawFar}
+              unit={unit}
+            />
+          </div>
+          <div
+            className="world-layer world-layer--mid"
+            style={{ transform: `translate3d(${layerShift(BACKDROP_LAYERS.mid)}px, 0, 0)` }}
+          >
+            <AmbientCanvas
+              artHeight={BACKDROP_LAYER_HEIGHT}
+              artWidth={midWidth}
+              clock={ambient}
+              draw={drawBackdropMid}
+              unit={unit}
+            />
+          </div>
           <AmbientCanvas
             artHeight={BACKDROP_ART_SIZE.height}
             artWidth={BACKDROP_ART_SIZE.width}
@@ -427,11 +482,12 @@ export function MainWorld({ disabled = false, onInteraction }: MainWorldProps) {
                 data-object-id={object.id}
                 key={object.id}
                 style={{
+                  "--object-top": `${toCss(object.position.y, unit)}px`,
                   height: toCss(object.size.height, unit),
                   left: toCss(object.position.x, unit),
                   top: toCss(object.position.y, unit),
                   width: toCss(object.size.width, unit),
-                }}
+                } as React.CSSProperties}
               >
                 <AmbientCanvas
                   artHeight={art.size.height}

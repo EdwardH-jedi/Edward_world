@@ -60,8 +60,8 @@ describe("player footprint", () => {
     expect(anchor.top + anchor.height).toBe(initialPlayer.size.height);
   });
 
-  it("is a no-op for today's 12x16 art, which fills the footprint exactly", () => {
-    expect(getAvatarAnchor(EDWARD_ART_SIZE, initialPlayer.size, PIXEL_UNIT)).toEqual({
+  it("is a no-op for art that fills the footprint exactly", () => {
+    expect(getAvatarAnchor({ width: 12, height: 16 }, initialPlayer.size, PIXEL_UNIT)).toEqual({
       width: initialPlayer.size.width,
       height: initialPlayer.size.height,
       left: 0,
@@ -69,11 +69,12 @@ describe("player footprint", () => {
     });
   });
 
-  it("grows a larger avatar upward and outward from the same standing point", () => {
-    // The 16x24 grid the character asset spec recommends, checked before any
-    // art exists for it: feet stay on the footprint's bottom edge and the
-    // extra width splits evenly, so the player does not move when art lands.
-    const anchor = getAvatarAnchor({ width: 16, height: 24 }, initialPlayer.size, PIXEL_UNIT);
+  it("grows the 16x24 avatar upward and outward from the same standing point", () => {
+    // The grid the character asset spec recommends and the art now uses: feet
+    // stay on the footprint's bottom edge and the extra width splits evenly,
+    // so the player did not move when the art landed.
+    expect(EDWARD_ART_SIZE).toEqual({ width: 16, height: 24 });
+    const anchor = getAvatarAnchor(EDWARD_ART_SIZE, initialPlayer.size, PIXEL_UNIT);
     expect(anchor).toEqual({ width: 64, height: 96, left: -8, top: -32 });
     expect(anchor.top + anchor.height).toBe(initialPlayer.size.height);
     expect(anchor.left * 2 + anchor.width).toBe(initialPlayer.size.width);
@@ -88,7 +89,7 @@ describe("player footprint", () => {
 });
 
 describe("Edward sprite", () => {
-  it("keeps every pose inside the 12x16 grid, on whole pixels", () => {
+  it("keeps every pose inside the 16x24 grid, on whole pixels", () => {
     for (const pose of EDWARD_POSES) {
       for (let frame = 0; frame < 4; frame += 1) {
         for (const rect of record(edwardPoses[pose], frame)) {
@@ -125,16 +126,24 @@ describe("Edward sprite", () => {
     }
   });
 
-  it("keeps the recognisable traits: dark hair, skin, blue coat, brown bag", () => {
+  it("keeps the recognisable traits: dark hair, skin, black zip shirt, slate jeans, white sneakers", () => {
     for (const pose of EDWARD_POSES) {
       const colors = new Set(record(edwardPoses[pose], 0).map((rect) => rect.color));
       expect(colors.has(palette.hair), `${pose} hair`).toBe(true);
-      expect(colors.has(palette.blue3), `${pose} coat`).toBe(true);
-      expect(colors.has(palette.brown2), `${pose} bag`).toBe(true);
-      expect(colors.has(palette.denim), `${pose} trousers`).toBe(true);
+      expect(colors.has(palette.skin), `${pose} skin`).toBe(true);
+      expect(colors.has(palette.jacketLift), `${pose} shirt`).toBe(true);
+      expect(colors.has(palette.char), `${pose} shirt fold`).toBe(true);
+      expect(colors.has(palette.navy), `${pose} jeans`).toBe(true);
+      expect(colors.has(palette.cream), `${pose} sneakers`).toBe(true);
     }
-    // Only the poses that show his face carry skin above the collar.
-    expect(new Set(record(edwardPoses.front, 0).map((r) => r.color)).has(palette.ink)).toBe(true);
+    // Only the poses that show his face carry eyes, the zip seam and an earbud.
+    for (const pose of ["front", "walk", "inspect"] as const) {
+      const colors = new Set(record(edwardPoses[pose], 0).map((rect) => rect.color));
+      expect(colors.has(palette.ink), `${pose} eyes`).toBe(true);
+      expect(colors.has(palette.stone3), `${pose} zip`).toBe(true);
+      expect(colors.has(palette.glow), `${pose} earbud`).toBe(true);
+    }
+    expect(new Set(record(edwardPoses.back, 0).map((r) => r.color)).has(palette.ink)).toBe(false);
   });
 
   it("gives the standing poses a one pixel breath and the walk four distinct frames", () => {
@@ -145,7 +154,32 @@ describe("Edward sprite", () => {
     expect(key("front", 0)).toBe(key("front", 2));
 
     const walk = new Set([0, 1, 2, 3].map((frame) => key("walk", frame)));
-    expect(walk.size).toBe(3); // frames 0 and 2 share the contact pose
+    expect(walk.size).toBe(4);
+  });
+
+  it("blinks on the sixth of every eight ambient frames, with the face otherwise unchanged", () => {
+    const eyes = (frame: number) =>
+      record(edwardPoses.front, frame).filter((r) => r.color === palette.ink).length;
+    expect(eyes(0)).toBeGreaterThan(0);
+    expect(eyes(6)).toBe(0);
+    expect(eyes(14)).toBe(0);
+    for (const frame of [1, 2, 3, 4, 5, 7, 8]) expect(eyes(frame)).toBe(eyes(0));
+    // The back of his head has no eyes to close.
+    expect(record(edwardPoses.back, 6)).toEqual(record(edwardPoses.back, 14));
+  });
+
+  it("bobs the walk with the feet: contact frames sit one pixel lower than passing frames", () => {
+    const top = (frame: number) =>
+      Math.min(...record(edwardPoses.walk, frame).filter((r) => r.color.startsWith("#")).map((r) => r.y));
+    expect(top(0)).toBe(top(1) + 1);
+    expect(top(2)).toBe(top(3) + 1);
+    // Feet stay on the last row on every frame.
+    for (const frame of [0, 1, 2, 3]) {
+      const bottom = Math.max(
+        ...record(edwardPoses.walk, frame).filter((r) => r.color.startsWith("#")).map((r) => r.y + r.height),
+      );
+      expect(bottom).toBe(EDWARD_ART_SIZE.height);
+    }
   });
 
   it("gives every pose its own silhouette", () => {

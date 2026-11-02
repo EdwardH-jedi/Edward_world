@@ -200,10 +200,13 @@ export function terraces(
  * somebody else walking into the house.
  */
 export function tinyAvatar(draw: Raster, x: number, y: number, dark = false) {
+  // The same read as the world sprite at six pixels wide: black hair over a
+  // black zip shirt, slate jeans, white shoes.
   const hair = dark ? P.char : "#26221D";
   const face = dark ? P.char : P.skin;
-  const coat = dark ? P.char : "#3B4756";
-  const legs = dark ? P.char : "#3A362F";
+  const coat = dark ? P.char : "#3F3A33";
+  const legs = dark ? P.char : "#3B4756";
+  const shoes = dark ? P.char : P.opera;
   const rows = [
     ".hhhh.", ".hffh.", "cccccc", "cccccc",
     ".cccc.", ".pppp.", ".p..p.", ".s..s.",
@@ -213,7 +216,7 @@ export function tinyAvatar(draw: Raster, x: number, y: number, dark = false) {
       const key = row[i];
       if (key === ".") continue;
       const colour =
-        key === "h" ? hair : key === "f" ? face : key === "c" ? coat : key === "p" ? legs : hair;
+        key === "h" ? hair : key === "f" ? face : key === "c" ? coat : key === "p" ? legs : shoes;
       draw(x + i, y + j, 1, 1, colour);
     }
   });

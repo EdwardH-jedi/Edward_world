@@ -16,6 +16,28 @@ import { dashes, hills, lamp, scatter, smoke, tree } from "@/lib/pixel/raster";
 /** World size in art pixels. Mirrors `WORLD_CONFIG` divided by the pixel unit. */
 export const BACKDROP_ART_SIZE = { width: 960, height: 138 } as const;
 
+/**
+ * The two scenery layers behind the near backdrop, and the share of the
+ * camera's travel each one follows. The far layer carries the sky, the city
+ * across the water and the far hills; the mid layer the nearer hills and the
+ * treeline. Both end at the town ground line, below which the near terrain is
+ * opaque, so they are never drawn taller than that.
+ */
+export const BACKDROP_LAYERS = { far: 0.25, mid: 0.5 } as const;
+export const BACKDROP_LAYER_HEIGHT = 100;
+
+/**
+ * Art columns a parallax layer needs for a viewport that many columns wide.
+ * The layer scrolls `factor` of the camera, and the camera travels at most
+ * the world's width minus the viewport's, so a narrower viewport needs less
+ * of the layer — which keeps the far canvas a fraction of the world's size.
+ */
+export function backdropLayerWidth(factor: number, viewportArtWidth: number) {
+  const { width } = BACKDROP_ART_SIZE;
+  const visible = Math.min(width, Math.max(1, viewportArtWidth));
+  return Math.min(width, Math.ceil(visible + (width - visible) * factor));
+}
+
 const DIRT_START_ART_X = DIRT_START_X / PIXEL_UNIT;
 
 /** Ground line in art pixels at an art-pixel x. */
@@ -25,16 +47,66 @@ function groundArtY(artX: number) {
 
 const { width: W, height: H } = BACKDROP_ART_SIZE;
 
-function sky(draw: Raster, frame: number) {
-  draw(0, 0, W, 54, palette.sky);
-  draw(0, 54, W, 18, "#E4D9BF");
-  draw(0, 72, W, H - 72, palette.sky2);
+function sky(draw: Raster, frame: number, width: number) {
+  draw(0, 0, width, 54, palette.sky);
+  draw(0, 54, width, 18, "#E4D9BF");
+  draw(0, 72, width, BACKDROP_LAYER_HEIGHT - 72, palette.sky2);
 
-  drawClouds(draw, frame, W);
-  drawBird(draw, frame, W);
+  drawClouds(draw, frame, width);
+  drawBird(draw, frame, width);
 }
 
-function distantLand(draw: Raster) {
+/**
+ * The city across the water, low on the horizon and a shade off the sky, so
+ * it reads as Sydney a long way off rather than as more town. `[x, width,
+ * height]` blocks on a shared base line; the far hills are drawn over their
+ * feet, which is what puts them behind the hills.
+ *
+ * The far layer follows a quarter of the camera, so only its first ~380
+ * columns are ever on screen (`backdropLayerWidth`): everything here sits in
+ * that span, with the main cluster coming into view as the town does.
+ */
+const CITY_BASE = 84;
+const CITY_BLOCKS: readonly (readonly [number, number, number])[] = [
+  [142, 6, 9],
+  [149, 5, 14],
+  [155, 7, 11],
+  [163, 4, 17],
+  [168, 6, 10],
+  [175, 8, 13],
+  [184, 5, 8],
+  [190, 6, 12],
+  [197, 4, 19],
+  [202, 7, 9],
+  [210, 5, 11],
+  [216, 6, 7],
+  // A second, smaller cluster further round the harbour.
+  [330, 5, 8],
+  [336, 4, 11],
+  [341, 6, 7],
+  [348, 5, 10],
+  [354, 4, 6],
+];
+
+function distantCity(draw: Raster) {
+  for (const [x, width, height] of CITY_BLOCKS) {
+    draw(x, CITY_BASE - height, width, height, palette.stone);
+  }
+  // Sydney Tower: a needle with its turret, the one silhouette that names the city.
+  draw(232, CITY_BASE - 24, 1, 24, palette.stone2);
+  draw(230, CITY_BASE - 18, 5, 3, palette.stone2);
+  // The bridge arch, out over the water between the two clusters.
+  const arch = { left: 258, right: 314, deck: CITY_BASE - 1, rise: 8 } as const;
+  draw(arch.left, arch.deck, arch.right - arch.left, 1, palette.stone2);
+  for (let x = arch.left; x <= arch.right; x += 1) {
+    const t = (x - arch.left) / (arch.right - arch.left);
+    draw(x, Math.round(arch.deck - 1 - arch.rise * 4 * t * (1 - t)), 1, 1, palette.stone2);
+  }
+  draw(arch.left - 1, arch.deck - 4, 2, 5, palette.stone2);
+  draw(arch.right, arch.deck - 4, 2, 5, palette.stone2);
+}
+
+function farHills(draw: Raster) {
   hills(
     draw,
     [
@@ -48,8 +120,11 @@ function distantLand(draw: Raster) {
       [960, 80],
     ],
     palette.farHill,
-    100,
+    BACKDROP_LAYER_HEIGHT,
   );
+}
+
+function midHills(draw: Raster) {
   hills(
     draw,
     [
@@ -61,7 +136,7 @@ function distantLand(draw: Raster) {
       [960, 88],
     ],
     palette.midHill,
-    100,
+    BACKDROP_LAYER_HEIGHT,
   );
 
   // Treeline sitting behind the town, broken so it never reads as a wall.
@@ -71,6 +146,23 @@ function distantLand(draw: Raster) {
     draw(x, 99 - height, 7, height, palette.treeline);
   }
 }
+
+/**
+ * The far layer, for a canvas `width` columns wide: sky, clouds, the bird, the
+ * city across the water and the far hills. Follows a quarter of the camera.
+ */
+export function drawBackdropFar(width: number): ArtRoutine {
+  return (draw, frame) => {
+    sky(draw, frame, width);
+    distantCity(draw);
+    farHills(draw);
+  };
+}
+
+/** The mid layer: the nearer hills and the treeline. Follows half the camera. */
+export const drawBackdropMid: ArtRoutine = (draw) => {
+  midHills(draw);
+};
 
 function terrain(draw: Raster) {
   for (let x = 0; x < W; x += 1) {
@@ -269,9 +361,12 @@ function houseSmoke(draw: Raster, frame: number) {
   smoke(draw, 133, 31, frame);
 }
 
+/**
+ * The near layer, in world space: everything from the ground line down, plus
+ * the props that stand on it. Transparent above the ground, where the mid and
+ * far layers show through.
+ */
 export const drawBackdrop: ArtRoutine = (draw, frame) => {
-  sky(draw, frame);
-  distantLand(draw);
   terrain(draw);
   stonePath(draw);
   stream(draw, frame);
