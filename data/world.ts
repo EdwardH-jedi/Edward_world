@@ -1,3 +1,4 @@
+import { timelineStations } from "@/data/timeline";
 import { HILL_GROUND_Y, TOWN_GROUND_Y } from "@/lib/game/terrain";
 import type { Building, Player, Sign, WorldObject } from "@/types/world";
 
@@ -85,14 +86,6 @@ export const buildings: readonly Building[] = [
     interactionRange: 72,
     interaction: { type: "OPEN_PROJECT", projectId: "soonpermario" },
   },
-  {
-    kind: "building",
-    id: "construction-area",
-    label: "Scaffolding",
-    position: { x: 3_360, y: TOWN_GROUND_Y - 152 },
-    size: { width: 336, height: 152 },
-    interactionRange: 0,
-  },
 ] as const;
 
 export const signs: readonly Sign[] = [
@@ -109,6 +102,8 @@ export const signs: readonly Sign[] = [
       text: "Move with A / D or the left / right arrow keys. Press E near an object.",
     },
   },
+  // Edward's chapters, walked in order past the Arcade (`data/timeline.ts`).
+  ...timelineStations,
   {
     /**
      * The way out, at the right-hand end of the world.
@@ -118,10 +113,11 @@ export const signs: readonly Sign[] = [
      * neither. It is also emphatically **not** a project — the index must keep
      * listing exactly four — so it carries its own `LEAVE_WORLD` action.
      *
-     * Placed past the scaffolding, which ends at 3696, and inside the world's
-     * 3840. The player clamps at 3792, so the gateway is walkable-to rather
-     * than something to be seen and not reached. Nothing gates it: every sport
-     * and every project can be skipped and the exit is still here.
+     * Placed past the timeline street, whose last station ends at 3668, and
+     * inside the world's 3840. The player clamps at 3792, so the gateway is
+     * walkable-to rather than something to be seen and not reached. Nothing
+     * gates it: every sport, project and chapter can be skipped and the exit
+     * is still here.
      */
     kind: "sign",
     id: "world-exit",

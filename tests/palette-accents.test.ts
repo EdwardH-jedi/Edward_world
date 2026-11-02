@@ -1,8 +1,12 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { chapters } from "@/data/personal";
+import { PIXEL_UNIT, TIMELINE_STREET } from "@/lib/game/terrain";
+import { drawBackdrop } from "@/lib/pixel/backdrop";
 import { buildingArt } from "@/lib/pixel/buildings";
 import { edwardPoses } from "@/lib/pixel/characters";
 import { palette } from "@/lib/pixel/palette";
+import { stationArt } from "@/lib/pixel/timeline";
 
 /** WCAG 2.x relative luminance of a #rrggbb colour. */
 function luminance(hex: string) {
@@ -109,9 +113,13 @@ describe("accent usage", () => {
   });
 
   it("never lets a signAccent pixel touch a surface below 3:1", () => {
-    for (const id of ["sportsgang", "arcade"] as const) {
+    const routines = [
+      ...(["sportsgang", "arcade"] as const).map((id) => [id, buildingArt[id].draw] as const),
+      ...chapters.map((chapter) => [chapter.id, stationArt(chapter.id).draw] as const),
+    ];
+    for (const [id, draw] of routines) {
       const grid = new Map<string, string>();
-      buildingArt[id].draw((x, y, w, h, colour) => {
+      draw((x, y, w, h, colour) => {
         for (let dy = 0; dy < h; dy += 1)
           for (let dx = 0; dx < w; dx += 1) grid.set(`${x + dx},${y + dy}`, colour);
       }, 0);
@@ -130,7 +138,7 @@ describe("accent usage", () => {
     }
   });
 
-  it("marks every enterable building and leaves the scaffolding plain", () => {
+  it("marks every enterable building", () => {
     const enterable = ["edwards-house", "wardrobe", "sportsgang", "afl-lab", "arcade"] as const;
     for (const id of enterable) {
       const seen = colours(buildingArt[id].draw);
@@ -139,8 +147,40 @@ describe("accent usage", () => {
     for (const id of ["edwards-house", "wardrobe", "afl-lab", "arcade"] as const) {
       expect(colours(buildingArt[id].draw).has(palette.warmGlow), `${id} window`).toBe(true);
     }
-    const scaffold = colours(buildingArt["construction-area"].draw);
-    expect(scaffold.has(palette.signAccent)).toBe(false);
-    expect(scaffold.has(palette.warmGlow)).toBe(false);
+  });
+
+  /*
+   * The stations are readable, not enterable: each spends signAccent on its
+   * plaque's top rail and nowhere else, and none is lit. The rail is the whole
+   * top row of the art, so "only on the readable marker" is checkable as
+   * "every accent rect is on row 0".
+   */
+  it("marks each timeline station readable with its top rail alone, and lights none", () => {
+    for (const chapter of [...chapters, { id: "a-chapter-with-no-motif" }]) {
+      for (const frame of [0, 1, 2, 3]) {
+        const rects: { y: number; h: number; colour: string }[] = [];
+        stationArt(chapter.id).draw((_x, y, _w, h, colour) => rects.push({ y, h, colour }), frame);
+        const accent = rects.filter(({ colour }) => colour === palette.signAccent);
+        expect(accent.length, `${chapter.id} rail`).toBeGreaterThan(0);
+        for (const rect of accent) {
+          expect([rect.y, rect.h], `${chapter.id} accent row`).toEqual([0, 1]);
+        }
+        expect(rects.some(({ colour }) => colour === palette.warmGlow), chapter.id).toBe(false);
+      }
+    }
+  });
+
+  it("leaves the timeline street's wall plain: scenery spends no accent", () => {
+    const left = TIMELINE_STREET.startX / PIXEL_UNIT - 8;
+    const right = TIMELINE_STREET.endX / PIXEL_UNIT + 8;
+    const street: string[] = [];
+    for (const frame of [0, 1, 2, 3]) {
+      drawBackdrop((x, _y, w, _h, colour) => {
+        if (x + w > left && x < right) street.push(colour);
+      }, frame);
+    }
+    expect(street.length).toBeGreaterThan(0);
+    expect(street).not.toContain(palette.signAccent);
+    expect(street).not.toContain(palette.warmGlow);
   });
 });

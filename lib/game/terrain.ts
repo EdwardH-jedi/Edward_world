@@ -16,7 +16,7 @@ export const PIXEL_UNIT = 4;
 /** Ground line under Edward's House, in CSS pixels from the top of the world. */
 export const HILL_GROUND_Y = 328;
 
-/** Ground line under the town, the projects and the construction area. */
+/** Ground line under the town, the projects and the timeline street. */
 export const TOWN_GROUND_Y = 400;
 
 /** Height of one terrace, in CSS pixels. */
@@ -35,8 +35,17 @@ const TERRACES: readonly { readonly untilX: number; readonly y: number }[] = [
   { untilX: 920, y: HILL_GROUND_Y + TERRACE_HEIGHT * 5 },
 ];
 
-/** World x at which grass gives way to bare dirt at the construction fence. */
-export const DIRT_START_X = 3_240;
+/**
+ * The timeline street, between the Arcade and the exit gate: the world x of
+ * the first station's left edge and of the last station's right edge.
+ *
+ * Shared so the station layout (`data/timeline.ts`) and the wall drawn behind
+ * it (`lib/pixel/backdrop.ts`) cannot drift apart. Both ends sit 52px clear of
+ * their neighbours — the Arcade ends at 3204 and the gate starts at 3720 —
+ * which is more than the player's 48px width, so Edward can never stand over
+ * a station and a neighbour at once.
+ */
+export const TIMELINE_STREET = { startX: 3_256, endX: 3_668 } as const;
 
 /**
  * Ground line at a given world x, in CSS pixels from the top of the world.

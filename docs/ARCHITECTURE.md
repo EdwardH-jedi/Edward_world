@@ -156,6 +156,7 @@ settles the figure; the archive reducer has already run before it takes off.
 
 - `types/world.ts` defines the player, buildings, signs, positions, interactables, and the discriminated interaction action union.
 - `data/world.ts` supplies the world's real geometry and its typed object instances. Every coordinate is a whole number of art pixels, and every object's `y` is its ground line minus its height, so nothing floats or sinks.
+- `data/timeline.ts` derives the timeline street from `chapters` in `data/personal.ts`: one `READ` sign per chapter, spread evenly across `TIMELINE_STREET` (`lib/game/terrain.ts`) between the Arcade and the exit, worded only from the chapter (heading = place · years, body = the detail lines, chip = the place up to its first comma). The index's Timeline section renders through the same helpers, so adding a chapter adds a station and an index row.
 - `lib/game/movement.ts` and `lib/game/interactions.ts` are pure and have no React or browser dependencies.
 - `lib/motion/animate-element.ts` is the small anime.js boundary. Defaults and reusable presets can be tuned independently from component state.
 
@@ -230,7 +231,8 @@ canvas binding, so it is unit-testable and safe to import anywhere:
 - `raster.ts` — the `Raster` primitive (`draw(x, y, w, h, colour)` in **art pixels**) plus shared helpers: sprites, hills, roof pitches, windows, sign-band dashes, trees, lamps, smoke, and deterministic `scatter` noise.
 - `buildings.ts` — one routine per structure, drawn bottom-anchored on a transparent background in its own local space.
 - `characters.ts` — Edward's poses and four-frame walk cycle, on the 16x24 grid from the character asset spec; drawn from photo reference (black two-block cut, earbud, black zip shirt, slate jeans, white sneakers).
-- `backdrop.ts` — sky, hills, terrain, path, stream, oval and town props as one full-width layer.
+- `backdrop.ts` — sky, hills, terrain, path, stream, oval, town props and the timeline street's low wall as one full-width layer.
+- `timeline.ts` — the timeline stations: one shared plaque on a post, Edward's height, with a motif per chapter and a `signAccent` top rail as its only accent.
 
 `lib/game/terrain.ts` is the pure ground profile. It is a stepped function on
 purpose: constant-height terraces keep everything standing on it aligned to the

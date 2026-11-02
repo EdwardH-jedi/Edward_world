@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { buildings, signs, WORLD_CONFIG } from "@/data/world";
 import {
-  DIRT_START_X,
   getGroundY,
   getGroundYForFootprint,
   getTerraceProfile,
   HILL_GROUND_Y,
   PIXEL_UNIT,
+  TIMELINE_STREET,
   TOWN_GROUND_Y,
 } from "@/lib/game/terrain";
 
@@ -34,10 +34,22 @@ describe("ground profile", () => {
     expect(getGroundYForFootprint(700, 48)).toBe(HILL_GROUND_Y);
   });
 
-  it("turns to dirt before the construction area, not after it", () => {
-    const construction = buildings.find(({ id }) => id === "construction-area");
-    expect(construction).toBeDefined();
-    expect(DIRT_START_X).toBeLessThan(construction!.position.x);
+  /*
+   * The scaffolding and the dirt band that led to it are gone; the stretch
+   * past the Arcade is the timeline street, on the same town ground as the
+   * projects, with the player's width of clear space at both ends.
+   */
+  it("lays the timeline street on town ground, between the Arcade and the exit", () => {
+    const arcade = buildings.find(({ id }) => id === "arcade")!;
+    const exit = signs.find(({ id }) => id === "world-exit")!;
+    const { startX, endX } = TIMELINE_STREET;
+    expect(startX % PIXEL_UNIT).toBe(0);
+    expect(endX % PIXEL_UNIT).toBe(0);
+    expect(startX - (arcade.position.x + arcade.size.width)).toBeGreaterThan(48);
+    expect(exit.position.x - endX).toBeGreaterThan(48);
+    for (let x = startX; x <= endX; x += PIXEL_UNIT) {
+      expect(getGroundY(x), `ground at ${x}`).toBe(TOWN_GROUND_Y);
+    }
   });
 });
 

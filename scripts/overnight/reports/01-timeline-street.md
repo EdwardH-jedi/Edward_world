@@ -1,0 +1,20 @@
+# 01 — Timeline street
+
+**Changed.** `lib/game/terrain.ts` (`DIRT_START_X` → shared `TIMELINE_STREET` 3256–3668) · `types/portfolio.ts` (no `construction-area`) · `lib/pixel/buildings.ts` (scaffolding art gone) · **new** `data/timeline.ts` (stations derived from `chapters`) · `data/world.ts` (scaffolding out; `signs` = directions, four stations, exit — exit unmoved) · **new** `lib/pixel/timeline.ts` (shared 10×24 plaque, per-chapter motif: Hallasan over the sea, flask, sandstone arch, fence post + sensor; `signAccent` top rail only; Jeju's sea and Hungary's LED tick with the ambient frame, nothing else moves) · `lib/pixel/backdrop.ts` (no dirt band; stone path to the world edge; low dry-stone wall with end piers across the street; tree at art x 806 dropped — it sat on the left pier) · `components/world/main-world.tsx` (station ids → station art) · `components/index/portfolio-index.tsx` + `app/globals.css` (Timeline section after the four projects; About line now points back to it) · `lib/pixel/palette.ts`, `docs/ARCHITECTURE.md` (comments/docs).
+
+**Tests.** New `tests/timeline.test.ts` (one station per chapter, order, no overlap, grid, ground, inside the world, left of the exit, verbatim READ copy, ≤18-char chips, a 5-chapter list still lays out). Scaffolding/dirt tests replaced in `world-data` (walk from the Arcade to the world's end must hand over arcade → 4 stations → exit, once each, never nothing), `terrain`, `palette-accents` (stations: accent only on row 0, no `warmGlow`, adjacency ≥3:1; street wall spends no accent). Extended `world-art` (footprint, bounds, palette, distinct motifs, motion confined to the face, as tall as Edward, no dirt, path + wall span the street), `interactions`, `content`. New `e2e/timeline.spec.ts`.
+
+**Readings taken.**
+- *Spacing.* 516 px lie between the Arcade (ends 3204) and the gate (3720). With range 68 and the 48 px player, four mutually exclusive reach zones cannot fit. Stations are 40 px wide on a 124 px pitch (84 px gaps, 52 px clear of both neighbours, so Edward never overlaps two objects); `findNearestInteractable`'s nearest-wins keeps exactly one thing "nearby" at every x, and each station owns ≥96 px of street. Side effect: the Arcade now answers to x≈3206 (was 3276) and the exit from x≈3670 (was 3596). Both are still reached; tests pin it.
+- *Labels.* Chip = `place` up to its first comma ("Jeju Island", "Seoul", "Sydney", "Hungary"); years go in the heading. Measured in Chromium at `--k` 3, "Jeju · 2017–2022"-style chips are 38–47 units wide against a 31-unit pitch, so they would collide.
+- *Copy.* Heading `place · years`, body `detail.join(" ")`, both verbatim; nothing added.
+- *Height.* Stations are Edward's height (96 px), because at 72 px the chip of the station he is reading sat behind his head (seen in a screenshot, then fixed).
+
+**Verified.** `lint` clean, `typecheck` clean, `npm test` 837/837 (53 files), `build` OK, `npx playwright test` 37/37. The e2e walks right from the Arcade at 1280×800 through every station: prompt "E TO READ", chips on the unit grid, E opens the READ dialog with the right heading and text, Escape closes it, then the exit shows "E TO LEAVE" and E opens the farewell. It also checks the street chips keep ≥1 unit of clearance at 1280×800 (k=3) and 1280×560 (k=4). Screenshots: `docs/review/timeline/` (Seoul and Hungary at 1280×800 and 390×844, the Hungary dialog, the index Timeline).
+
+**Left out / known.**
+- At `--k` 5 (viewports ≤400 px tall, landscape phones) the street chips crowd by 1–3 units (Jeju Island/Seoul, Hungary/Exit). That would need shorter chips or a per-k layout. Not tested.
+- The now-unused scenery branch of `Building` (`interactionRange: 0`) is left in `types/world.ts`.
+- `index.html` and dated docs that mention the construction fence are historical and untouched.
+- The full e2e run rewrote the tracked `docs/review/interior-grid/*.png` (the existing spec saves them). `git checkout` was not permitted, so they stay rewritten; interiors are unchanged.
+- The untracked `docs/*` audit files and `scripts/check-browser-env.sh` were there before this task.

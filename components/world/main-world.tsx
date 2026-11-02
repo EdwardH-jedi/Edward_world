@@ -12,6 +12,7 @@ import {
 import { InteractionPrompt } from "@/components/world/interaction-prompt";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
 import { WorldLabel } from "@/components/world/world-label";
+import { chapterIdOfStation } from "@/data/timeline";
 import { initialPlayer, WORLD_CONFIG, worldObjects } from "@/data/world";
 import { findNearestInteractable, getInteractionPrompt } from "@/lib/game/interactions";
 import {
@@ -51,6 +52,7 @@ import {
   drawBackdropMid,
 } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt, type BuildingArt } from "@/lib/pixel/buildings";
+import { stationArt } from "@/lib/pixel/timeline";
 import { worldExitArt } from "@/lib/pixel/world-exit";
 import {
   EDWARD_ART_SIZE,
@@ -92,6 +94,9 @@ function getObjectArt(object: WorldObject): BuildingArt {
   // The exit is a sign by kind, because it is not a building and not a
   // project, but it is a gateway and has to read as one.
   if (object.id === "world-exit") return worldExitArt;
+  // Each chapter's station on the timeline street has its own plaque.
+  const chapterId = chapterIdOfStation(object.id);
+  if (chapterId !== undefined) return stationArt(chapterId);
   return signpostArt;
 }
 

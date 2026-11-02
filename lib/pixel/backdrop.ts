@@ -1,4 +1,4 @@
-import { DIRT_START_X, getGroundY, PIXEL_UNIT } from "@/lib/game/terrain";
+import { getGroundY, PIXEL_UNIT, TIMELINE_STREET } from "@/lib/game/terrain";
 import { drawBird, drawClouds } from "@/lib/pixel/ambient";
 import { palette } from "@/lib/pixel/palette";
 import type { ArtRoutine, Raster } from "@/lib/pixel/raster";
@@ -37,8 +37,6 @@ export function backdropLayerWidth(factor: number, viewportArtWidth: number) {
   const visible = Math.min(width, Math.max(1, viewportArtWidth));
   return Math.min(width, Math.ceil(visible + (width - visible) * factor));
 }
-
-const DIRT_START_ART_X = DIRT_START_X / PIXEL_UNIT;
 
 /** Ground line in art pixels at an art-pixel x. */
 function groundArtY(artX: number) {
@@ -167,12 +165,9 @@ export const drawBackdropMid: ArtRoutine = (draw) => {
 function terrain(draw: Raster) {
   for (let x = 0; x < W; x += 1) {
     const ground = groundArtY(x);
-    // A dithered band lets the grass die back towards the construction fence.
-    const intoDirt = x - (DIRT_START_ART_X - 26);
-    const isDirt =
-      intoDirt > 0 && (intoDirt >= 26 || scatter(x) % 26 < intoDirt);
-    draw(x, ground, 1, 1, isDirt ? palette.dirt : palette.green);
-    draw(x, ground + 1, 1, 3, isDirt ? palette.brown2 : palette.green2);
+    // Grass all the way to the exit: the timeline street is town, not a site.
+    draw(x, ground, 1, 1, palette.green);
+    draw(x, ground + 1, 1, 3, palette.green2);
     // Three strata rather than one slab, so the cutaway reads as ground.
     draw(x, ground + 4, 1, 6, palette.soil);
     draw(x, ground + 10, 1, 12, palette.soilDark);
@@ -189,7 +184,7 @@ function terrain(draw: Raster) {
     if (noise % 41 < 2) {
       draw(x, ground + 24 + (noise % 10), 2, 1, palette.soilDark);
     }
-    if (!isDirt && noise % 23 === 0) {
+    if (noise % 23 === 0) {
       draw(x, ground - 1, 1, 1, palette.green3);
     }
   }
@@ -199,8 +194,9 @@ function terrain(draw: Raster) {
 /** Stream and footbridge, in the gap between SportsGang and the AFL Lab. */
 const STREAM = { left: 512, right: 538 } as const;
 
+/** The stone path runs from the hill to the world's edge, out through the gate. */
 function stonePath(draw: Raster) {
-  for (let x = 14; x < DIRT_START_ART_X + 26; x += 1) {
+  for (let x = 14; x < W; x += 1) {
     if (x >= STREAM.left - 7 && x <= STREAM.right + 7) continue;
     const ground = groundArtY(x);
     const noise = scatter(x);
@@ -300,7 +296,43 @@ function townCluster(draw: Raster, frame: number) {
   draw(388, 92, 1, 3, palette.blue3);
 }
 
-/** Trees, kept out of the building footprints and off the bare dirt. */
+/**
+ * The timeline street's low wall, which is what makes four separate plaques
+ * read as one street: a dry-stone run behind the stations from just past the
+ * Arcade to just short of the exit gate, with a pier at each end.
+ *
+ * Four rows tall, so it stops below every plaque and the plaques' accent rails
+ * only ever stand against open sky. Scenery, so it is stone throughout and
+ * spends no accent.
+ */
+const STREET_WALL = {
+  left: TIMELINE_STREET.startX / PIXEL_UNIT - 6,
+  right: TIMELINE_STREET.endX / PIXEL_UNIT + 6,
+  height: 4,
+} as const;
+
+function timelineStreet(draw: Raster) {
+  const { left, right, height } = STREET_WALL;
+  const ground = groundArtY(left);
+  const top = ground - height;
+  draw(left, top + 1, right - left, height - 1, palette.stone2);
+  draw(left, top, right - left, 1, palette.stone);
+  // Running bond: the joints of one course sit over the middle of the stones below.
+  for (let x = left + 2; x < right - 2; x += 1) {
+    if ((x - left) % 6 === 0) draw(x, top + 1, 1, 1, palette.stone3);
+    if ((x - left) % 6 === 3) draw(x, top + 3, 1, 1, palette.stone3);
+    // A few weathered faces in the middle course, placed by `scatter`.
+    if (scatter(x * 3 + 1) % 9 === 0) draw(x, top + 2, 1, 1, palette.stone3);
+  }
+  // End piers, two stones taller than the run, each with a cap.
+  for (const x of [left - 2, right]) {
+    draw(x, top - 2, 2, height + 2, palette.stone2);
+    draw(x, top - 2, 2, 1, palette.stone);
+    draw(x + 1, top - 1, 1, height + 1, palette.stone3);
+  }
+}
+
+/** Trees, kept out of the building footprints and clear of the street wall. */
 const TREES: readonly (readonly [number, 0 | 1 | 2])[] = [
   [4, 2],
   [70, 1],
@@ -315,7 +347,8 @@ const TREES: readonly (readonly [number, 0 | 1 | 2])[] = [
   [542, 1],
   [626, 1],
   [714, 2],
-  [806, 1],
+  // None past the Arcade: the street wall's left pier is what marks the
+  // timeline street's start, and a crown over it would hide the pier.
 ];
 
 function foliage(draw: Raster, frame: number) {
@@ -369,6 +402,7 @@ function houseSmoke(draw: Raster, frame: number) {
 export const drawBackdrop: ArtRoutine = (draw, frame) => {
   terrain(draw);
   stonePath(draw);
+  timelineStreet(draw);
   stream(draw, frame);
   aflOval(draw);
   townCluster(draw, frame);

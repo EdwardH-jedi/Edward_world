@@ -1513,6 +1513,36 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
   margin-top: 0.6rem !important;
 }
 
+/* The timeline: the same chapters the world's timeline street walks past,
+   compact enough to sit between the work and the direct links. */
+.index-timeline {
+  margin-bottom: 1.4rem;
+}
+
+.index-timeline__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.index-timeline__list > li {
+  border-top: 1px solid var(--index-rule);
+  padding: 0.7rem 0;
+}
+
+.index-timeline .index-timeline__when {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  margin: 0 0 0.25rem;
+}
+
+.index-timeline .index-timeline__detail {
+  color: #4a443a;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
 .index-footer {
   color: #a89e88;
   font-family: var(--font-mono), ui-monospace, monospace;
