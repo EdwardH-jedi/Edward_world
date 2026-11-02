@@ -1,7 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { fitPixelUnit, getPixelUnit } from "@/lib/game/pixel-unit";
+import { fitPixelUnit, getPixelUnit, getWorldUnit } from "@/lib/game/pixel-unit";
 import { PIXEL_UNIT } from "@/lib/game/terrain";
 
 function subscribe(onChange: () => void) {
@@ -17,6 +17,17 @@ const getServerSnapshot = () => PIXEL_UNIT;
 /** The live art-pixel unit for this viewport, re-chosen on resize. */
 export function usePixelUnit() {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
+const getWorldSnapshot = () =>
+  getWorldUnit({ width: window.innerWidth, height: window.innerHeight });
+
+/**
+ * The live unit for the side-scrolling world, which frames the ground higher
+ * than the other scenes by letting some sky run off the top. See `getWorldUnit`.
+ */
+export function useWorldUnit() {
+  return useSyncExternalStore(subscribe, getWorldSnapshot, getServerSnapshot);
 }
 
 /**

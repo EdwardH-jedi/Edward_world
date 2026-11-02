@@ -5,6 +5,10 @@ the art can be made to fit the world rather than the world bent to fit the art.
 
 Everything below is a constraint of the existing renderer, not a preference.
 
+> **Status:** the 16 × 24 avatar landed in `lib/pixel/characters.ts` as
+> procedural rows rather than a PNG, drawn from photo reference. The format
+> and dimension constraints below still apply to any replacement.
+
 ---
 
 ## 1. Format

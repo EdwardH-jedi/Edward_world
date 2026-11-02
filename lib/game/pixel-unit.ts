@@ -19,6 +19,53 @@ export function getPixelUnit(
 }
 
 /**
+ * Sky rows the side-scrolling world may lose off the top of the viewport.
+ *
+ * The backdrop is 138 rows tall and the ground sits around row 100, so fitting
+ * the whole backdrop leaves most of the screen to sky and the walk feels small.
+ * The world instead fits `138 - WORLD_SKY_CROP` rows and lets the sky run off
+ * the top: at 1280x800 the unit goes from 5 to 7 and Edward from 80 to 168
+ * CSS px tall. 24 rows keeps the hill house's roofline (row 32) and its label
+ * clear of the edge at every viewport.
+ */
+export const WORLD_SKY_CROP = 24;
+
+/**
+ * The fewest art columns the world should show at once — a building plus a
+ * step either side — so a phone in portrait is not framed on half a facade.
+ */
+export const WORLD_MIN_VISIBLE_ART_WIDTH = 64;
+
+/**
+ * The unit for the side-scrolling world alone: the largest whole number at
+ * which the *framed* backdrop still fits the height, capped so at least
+ * `WORLD_MIN_VISIBLE_ART_WIDTH` columns are on screen. Every other scene keeps
+ * `getPixelUnit`, which fits the full backdrop.
+ */
+export function getWorldUnit(
+  viewport: { width: number; height: number },
+  artHeight: number = BACKDROP_ART_SIZE.height,
+) {
+  const byHeight = Math.floor(viewport.height / (artHeight - WORLD_SKY_CROP));
+  const byWidth = Math.floor(viewport.width / WORLD_MIN_VISIBLE_ART_WIDTH);
+  return Math.min(MAX_PIXEL_UNIT, Math.max(MIN_PIXEL_UNIT, Math.min(byHeight, byWidth)));
+}
+
+/**
+ * CSS pixels of the world track that run off the top of a viewport at a unit,
+ * on the unit grid. Zero whenever the whole backdrop fits. The track's origin
+ * is snapped down to the grid, so the viewport height is too.
+ */
+export function getWorldCrop(
+  viewportHeight: number,
+  unit: number,
+  artHeight: number = BACKDROP_ART_SIZE.height,
+) {
+  const visible = Math.floor(viewportHeight / unit) * unit;
+  return Math.max(0, artHeight * unit - visible);
+}
+
+/**
  * World values are authored at `PIXEL_UNIT`; these two bring them to a live
  * unit. `toCss` is exact for anything already on the art grid (every authored
  * position and size). `snapToCss` floors first, for continuous values such as

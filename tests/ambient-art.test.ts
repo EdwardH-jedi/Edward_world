@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { BIRD_PERIOD, drawBird, drawClouds } from "@/lib/pixel/ambient";
-import { drawBackdrop } from "@/lib/pixel/backdrop";
+import { drawBackdrop, drawBackdropFar, drawBackdropMid } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt } from "@/lib/pixel/buildings";
 import { edwardPoses } from "@/lib/pixel/characters";
 import { palette } from "@/lib/pixel/palette";
@@ -102,8 +102,14 @@ describe("hanging signs", () => {
 });
 
 describe("Edward idle", () => {
-  it("breathes over two frames while standing", () => {
-    expectLoop(edwardPoses.front, 2);
+  it("breathes over two frames while standing, and blinks once in eight", () => {
+    // The breath is a two-frame loop; the blink on frame 6 is the one
+    // exception in the eight-frame cycle, so the full loop is eight long.
+    expectLoop(edwardPoses.front, 8, 3);
+    const keys = FRAMES.map((frame) => key(record(edwardPoses.front, frame)));
+    for (const frame of [0, 2, 4]) expect(keys[frame]).toBe(keys[0]);
+    for (const frame of [1, 3, 5, 7]) expect(keys[frame]).toBe(keys[1]);
+    expect(keys[6]).not.toBe(keys[0]);
   });
 });
 
@@ -186,12 +192,20 @@ describe("cloud drift and the still skyline", () => {
     expect(key(record(routine, 4_003))).toBe(key(record(routine, 3)));
   });
 
-  it("leaves the far skyline untouched in the full backdrop", () => {
+  it("leaves the far skyline untouched in the parallax layers", () => {
     const hillsOf = (frame: number) =>
-      record(drawBackdrop, frame).filter(
+      [...record(drawBackdropFar(960), frame), ...record(drawBackdropMid, frame)].filter(
         ([, , , , color]) => color === palette.farHill || color === palette.midHill,
       );
     expect(hillsOf(0).length).toBeGreaterThan(0);
     for (const frame of FRAMES) expect(key(hillsOf(frame))).toBe(key(hillsOf(0)));
+  });
+
+  it("keeps the sky and hills out of the near backdrop, which is world space", () => {
+    const near = new Set(record(drawBackdrop, 0).map(([, , , , color]) => color));
+    // (`sky2` stays: the motes drifting through the near air are drawn in it.)
+    for (const color of [palette.sky, palette.farHill, palette.midHill, palette.treeline]) {
+      expect(near.has(color), color).toBe(false);
+    }
   });
 });

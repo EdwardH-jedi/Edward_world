@@ -780,6 +780,17 @@ p {
   image-rendering: pixelated;
 }
 
+/* The parallax layers behind the near backdrop. Each is translated by its
+   share of the camera inside the camera-driven track, so it stays aligned to
+   the track vertically and follows only part of its travel horizontally. */
+.world-layer {
+  left: 0;
+  position: absolute;
+  top: 0;
+  will-change: transform;
+  z-index: 0;
+}
+
 .world-backdrop {
   inset: 0;
   position: absolute;
@@ -802,6 +813,17 @@ p {
 /* The signage posts carry the real labels, so the label chips are both the
    approved world callout and the object's accessible name. A chip is six units
    tall: four of line, two of border. */
+/* The chips stack above their object: the prompt on top, the label under it.
+   The world runs up to `--crop` px of sky off the top of the viewport, so an
+   object high on the hill would carry its chips off screen with it; both are
+   held at least two units below the crop line instead, and the label keeps
+   its place under the prompt either way, so it never jumps when the prompt
+   appears. All on the unit grid: `--crop` and `--object-top` are unit multiples. */
+.world-object {
+  --chip-floor: calc(var(--crop, 0px) + var(--unit) * 2 - var(--object-top, 0px));
+  --prompt-top: max(calc(var(--unit) * (2 * var(--k) + 11) * -1), var(--chip-floor));
+}
+
 .world-object__label {
   background: var(--world-char);
   border-color: var(--world-cream);
@@ -812,7 +834,7 @@ p {
   padding: 0 calc(var(--unit) * 2);
   position: absolute;
   text-align: center;
-  top: calc(var(--unit) * (var(--k) + 6) * -1);
+  top: calc(var(--prompt-top) + var(--unit) * (var(--k) + 5));
   white-space: nowrap;
   z-index: 2;
 }
@@ -826,7 +848,7 @@ p {
   padding: 0 calc(var(--unit) * 2);
   position: absolute;
   text-align: center;
-  top: calc(var(--unit) * (2 * var(--k) + 11) * -1);
+  top: var(--prompt-top);
   white-space: nowrap;
   z-index: 2;
 }

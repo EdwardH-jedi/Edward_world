@@ -4,13 +4,16 @@ import { HILL_GROUND_Y, PIXEL_UNIT, TOWN_GROUND_Y, getGroundY } from "@/lib/game
 import {
   MAX_PIXEL_UNIT,
   MIN_PIXEL_UNIT,
+  WORLD_SKY_CROP,
   courtUnit,
   getPixelUnit,
+  getWorldCrop,
+  getWorldUnit,
   snapToCss,
   toCss,
   fitPixelUnit,
 } from "@/lib/game/pixel-unit";
-import { BACKDROP_ART_SIZE } from "@/lib/pixel/backdrop";
+import { BACKDROP_ART_SIZE, BACKDROP_LAYERS, backdropLayerWidth } from "@/lib/pixel/backdrop";
 import { EDWARD_ART_SIZE, getAvatarAnchor } from "@/lib/pixel/characters";
 
 const UNITS = Array.from(
@@ -48,6 +51,66 @@ describe("getPixelUnit", () => {
   });
 });
 
+describe("getWorldUnit", () => {
+  it.each([
+    [1280, 800, 7], // desktop: one step up from getPixelUnit's 5
+    [1440, 900, 7],
+    [1920, 1080, MAX_PIXEL_UNIT],
+    [390, 844, 6], // phone: the width cap holds it at today's unit
+    [320, 568, 4],
+    [1280, 138, MIN_PIXEL_UNIT],
+  ])("a %ix%i viewport uses unit %i", (width, height, unit) => {
+    expect(getWorldUnit({ width, height })).toBe(unit);
+  });
+
+  it("never crops more than WORLD_SKY_CROP rows of sky off the top", () => {
+    for (let height = 276; height <= 2000; height += 1) {
+      const unit = getWorldUnit({ width: 1920, height });
+      expect(getWorldCrop(height, unit) / unit).toBeLessThanOrEqual(WORLD_SKY_CROP);
+    }
+  });
+
+  it("keeps the hill house's label clear of the top edge at every viewport", () => {
+    // The house roof is at art row 32 on the hill; its chips sit above it and
+    // are held two units under the crop line, so the crop must leave room.
+    for (let height = 276; height <= 2000; height += 1) {
+      const unit = getWorldUnit({ width: 1920, height });
+      expect(getWorldCrop(height, unit) / unit + 2).toBeLessThan(32);
+    }
+  });
+
+  it("never shows fewer than 64 art columns", () => {
+    for (let width = 128; width <= 2560; width += 7) {
+      const unit = getWorldUnit({ width, height: 2000 });
+      if (unit > MIN_PIXEL_UNIT) expect(width / unit).toBeGreaterThanOrEqual(64);
+    }
+  });
+
+  it("reports the crop on the unit grid, and zero when the world fits", () => {
+    expect(getWorldCrop(800, 7)).toBe(138 * 7 - Math.floor(800 / 7) * 7);
+    expect(getWorldCrop(800, 7) % 7).toBe(0);
+    expect(getWorldCrop(1200, 8)).toBe(0);
+  });
+});
+
+describe("backdropLayerWidth", () => {
+  it("is exactly what a layer's share of the camera travel needs", () => {
+    // 1280px at unit 7 shows 183 columns; the camera travels the other 777.
+    expect(backdropLayerWidth(BACKDROP_LAYERS.far, 183)).toBe(Math.ceil(183 + 777 * 0.25));
+    expect(backdropLayerWidth(BACKDROP_LAYERS.mid, 183)).toBe(Math.ceil(183 + 777 * 0.5));
+  });
+
+  it("never exceeds the world and covers a viewport wider than it", () => {
+    for (const columns of [1, 64, 183, 480, 960, 1400]) {
+      for (const factor of Object.values(BACKDROP_LAYERS)) {
+        const width = backdropLayerWidth(factor, columns);
+        expect(width).toBeLessThanOrEqual(BACKDROP_ART_SIZE.width);
+        expect(width).toBeGreaterThanOrEqual(Math.min(columns, BACKDROP_ART_SIZE.width));
+      }
+    }
+  });
+});
+
 describe("layout at a live unit", () => {
   const authored = [
     WORLD_CONFIG.width,
@@ -75,7 +138,8 @@ describe("layout at a live unit", () => {
   it.each(UNITS)("the avatar anchor lands on the unit grid at %i", (unit) => {
     const anchor = getAvatarAnchor(EDWARD_ART_SIZE, initialPlayer.size, PIXEL_UNIT);
     for (const value of [anchor.width, anchor.height, anchor.left, anchor.top]) {
-      expect(toCss(value, unit) % unit).toBe(0);
+      // The overhangs are negative, and -8 % 4 is -0 in JavaScript.
+      expect(Math.abs(toCss(value, unit) % unit)).toBe(0);
     }
   });
 

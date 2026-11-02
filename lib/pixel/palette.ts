@@ -58,6 +58,10 @@ export const palette = {
   shirt: "#DCD5C0",
   hairLift: "#453D34",
   skinShade: "#BC946E",
+  // The black zip-collar shirt he actually wears: one step above the outline
+  // and `char`, which is its fold shadow, so it still reads as black against
+  // the cream sky but does not vanish against a dark facade.
+  jacketLift: "#3F3A33",
   // Accents. They mark what can be used, so they are spent only on the player
   // and on enterable places — the scaffolding and backdrop stay plain, which is
   // how the eye learns "accent = interactive".

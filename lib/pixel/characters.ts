@@ -3,20 +3,25 @@ import type { ArtRoutine, Raster, SpriteMap, SpriteRows } from "@/lib/pixel/rast
 import { sprite } from "@/lib/pixel/raster";
 
 /**
- * Character sprites, authored on the approved 12x16 grid.
+ * Character sprites, authored on the 16x24 grid the character asset spec
+ * recommends (`docs/CHARACTER_ASSET_SPEC.md`).
  *
- * Edward is drawn from the concept board's approved `AVATAR` model sheet: a
- * full, rounded head of near-black hair parted in the middle into a curtain
- * fringe, a slim youthful face with two dark eyes and no mouth at this scale,
- * and a slim body. The outfit is the approved direction — dark slate-navy
- * outerwear over a light shirt, dark trousers, dark shoes, and a brown
- * messenger bag worn across the body.
+ * Edward is drawn from photo reference. At this scale a likeness is carried by
+ * hair silhouette, outfit shape and palette, so those are what the sprite
+ * commits to: a full, near-black two-block cut with a straight fringe that
+ * sits on the eyebrows, a white earbud in the ear, a black zip-collar shirt
+ * with the zip read as a single lighter seam, dark slate jeans and white
+ * sneakers. The shirt sits one step above the outline and the hair one step
+ * below it, so the upper body is one dark silhouette against the cream sky
+ * that still separates from a dark facade, and the face, the earbud, the zip
+ * and the shoes are the only light reads.
  *
- * Everything is authored as whole art pixels on the 12x16 grid, so the sprite
- * scales by integers only and never picks up a soft edge.
+ * Everything is authored as whole art pixels, so the sprite scales by integers
+ * only and never picks up a soft edge. The hitbox is `player.size` in
+ * `data/world.ts` and is not this grid; `getAvatarAnchor` places the art on it.
  */
 
-export const EDWARD_ART_SIZE = { width: 12, height: 16 } as const;
+export const EDWARD_ART_SIZE = { width: 16, height: 24 } as const;
 
 /** Poses the world actually asks for. `walk` doubles as the standing side idle. */
 export type EdwardPose = "walk" | "front" | "back" | "inspect";
@@ -26,16 +31,21 @@ const EDWARD_MAP: SpriteMap = {
   H: palette.hairLift,
   f: palette.skin,
   g: palette.skinShade,
+  m: palette.skinShade,
   e: palette.ink,
-  c: palette.blue3,
-  C: palette.navy,
+  w: palette.glow,
+  j: palette.jacketLift,
+  J: palette.char,
+  z: palette.stone3,
+  p: palette.navy,
+  P: palette.navy2,
+  s: palette.cream,
+  S: palette.stone2,
   o: palette.playerOutline,
-  w: palette.shirt,
-  p: palette.denim,
-  s: palette.ink,
-  t: palette.brown2,
-  b: palette.brown3,
 };
+
+const { width: W, height: H } = EDWARD_ART_SIZE;
+const EMPTY_ROW = ".".repeat(W);
 
 /**
  * Contact shadow. Translucent rather than a flat swatch so the same sprite
@@ -48,113 +58,181 @@ const SHADOW_CORE = "rgba(30, 27, 23, 0.14)";
 /* ── Front ──────────────────────────────────────────────────────────────── */
 
 /**
- * The canonical pose, straight off the approved model sheet. The middle part
- * only reads from the front — the two hair highlights either side of an
- * unlit centre are what make it a curtain fringe and not a helmet.
+ * The canonical pose, facing the visitor. The fringe is a straight band with
+ * two notches of forehead showing through its tips, which is what separates
+ * a cut fringe from a helmet; the earbuds sit on both ears.
  */
 const EDWARD_FRONT: SpriteRows = [
-  "....hhhh....",
-  "...HHhhHH...",
-  "..hHHhhHHh..",
-  "..hhffffhh..",
-  "..hffffffh..",
-  "..hfeffefh..",
-  "...ffffff...",
-  "...cwffwc...",
-  "..tccwwccc..",
-  ".cctcwwcccC.",
-  ".ccctccccCC.",
-  ".fccctcccCf.",
-  "..pppppppp..",
-  "..ppp..ppp..",
-  "..ppp..ppp..",
-  "..sss..sss..",
+  ".....hhhhhh.....",
+  "....hhhhhhhh....",
+  "...hhHHhhhhhhh..",
+  "...hhhhhhhhhhh..",
+  "..hhhhhhhhhhhhh.",
+  "..hhhhhhhhhhhhh.",
+  "..hhhffhhhhffhh.",
+  ".hwffffffffffwh.",
+  "..hffeffffffeff.",
+  "...gffffffffffg.",
+  "....gffffmfffg..",
+  ".....gffffffg...",
+  "......jjzzjj....",
+  "....jjjjjzzjjjj.",
+  "...jjjjjjzjjjjjj",
+  "...jJjjjjzjjjjjj",
+  "...jJjjjjzjjjjjj",
+  "...fjjjjjzjjjjjf",
+  "....ppppppppppp.",
+  "....pppppPppppp.",
+  "....ppppp.ppppp.",
+  "....ppppp.ppppp.",
+  "....sssss.sssss.",
+  "....SSSSS.SSSSS.",
 ];
 
 /* ── Back ───────────────────────────────────────────────────────────────── */
 
-/** Walking away: all hair, no face, and the bag now clearly on his back. */
+/** Walking away: all hair, the ears just showing under the two-block. */
 const EDWARD_BACK: SpriteRows = [
-  "....hhhh....",
-  "...HHhhHH...",
-  "..hHHhhHHh..",
-  "..hhhhhhhh..",
-  "..hhhhhhhh..",
-  "..hhhhhhhh..",
-  "...hhhhhh...",
-  "...cchhcc...",
-  "..cctcccccc.",
-  ".ccctttccCC.",
-  ".ccctbbbbCC.",
-  ".fcctbbbbCf.",
-  "..pppppppp..",
-  "..ppp..ppp..",
-  "..ppp..ppp..",
-  "..sss..sss..",
+  ".....hhhhhh.....",
+  "....hhhhhhhh....",
+  "...hhhhhhHHhhh..",
+  "...hhhhhhhhhhh..",
+  "..hhhhhhhhhhhhh.",
+  "..hhhhhhhhhhhhh.",
+  "..hhhhhhhhhhhhh.",
+  "..hhhhhhhhhhhhh.",
+  "..hhhhhhhhhhhhh.",
+  "...hhhhhhhhhhhh.",
+  "....ffhhhhhhff..",
+  ".....gffffffg...",
+  "......jjjjjj....",
+  "....jjjjjjjjjjj.",
+  "...jjjjjjjjjjjjj",
+  "...jJjjjjjjjjjjj",
+  "...jJjjjjjjjjjjj",
+  "...fjjjjjjjjjjjf",
+  "....ppppppppppp.",
+  "....pppppPppppp.",
+  "....ppppp.ppppp.",
+  "....ppppp.ppppp.",
+  "....sssss.sssss.",
+  "....SSSSS.SSSSS.",
 ];
 
 /* ── Side ───────────────────────────────────────────────────────────────── */
 
 /**
- * Head, neck and shoulders for every side frame, turned three-quarters to the
- * right. `flipX` on the canvas gives the left-facing walk, which also swaps
- * the bag to the other shoulder — the ordinary cost of a mirrored 2D sprite.
+ * Head, neck and torso for every side frame, turned three-quarters to the
+ * right. `flipX` on the canvas gives the left-facing walk. Seventeen rows;
+ * the last three carry the arms and are swapped per frame.
  */
 const EDWARD_SIDE_UPPER: SpriteRows = [
-  "....hhhh....",
-  "...hHhhhh...",
-  "..hhHhhhhh..",
-  "..hhhhhffh..",
-  "..hhhffeff..",
-  "..hhhffffg..",
-  "...hffffg...",
-  "...cwffc....",
-  "..cccccctc..",
-  ".cccccctccC.",
+  ".....hhhhhhh....",
+  "....hhhhhhhhhh..",
+  "...hhHHhhhhhhhh.",
+  "...hhhhhhhhhhhhh",
+  "...hhhhhhhhhhhhh",
+  "...hhhhhhhhhfhfh",
+  "...hhhwhhfefffef",
+  "....hhhgffffffff",
+  ".....gfffffffff.",
+  "......ggffffmg..",
+  ".......jzffzj...",
+  ".....jjjjzzjjjj.",
+  "....jjjjjjzjjjjj",
+  "....jJjjjjzjjjjj",
+  "....jJjjjjzjjjjj",
+  "....jJjjjjzjjjjj",
+  "....fjjjjjzjjjj.",
 ];
 
-/**
- * Rows 10 and 11: the messenger bag riding on the back hip, and the near arm.
- * Rest, swung forward, swung back.
- */
-const EDWARD_ARMS: readonly SpriteRows[] = [
-  ["ttbcccccccc.", ".tbbcccccccf"],
-  ["ttbccccccccf", ".tbbccccccc."],
-  ["ttbcccccccc.", ".tbbccccccc."],
-];
+/** Rows 14–16 of the side upper: the near arm at rest, swung forward, swung back. */
+const EDWARD_ARMS: Readonly<Record<"rest" | "forward" | "back", SpriteRows>> = {
+  rest: ["....jJjjjjzjjjjj", "....jJjjjjzjjjjf", "....fjjjjjzjjjj."],
+  forward: ["....jJjjjjzjjjjj", "....jJjjjjzjjjJf", "....jjjjjjzjjjj."],
+  back: ["...jJjjjjjzjjjjj", "...fjJjjjjzjjjjj", "....jjjjjjzjjjj."],
+};
 
-/** Contact, passing and reach poses for the legs. */
-const EDWARD_LEGS: readonly SpriteRows[] = [
-  ["..pppppppp..", "..ppp..ppp..", "..ppp..ppp..", "..sss..sss.."],
-  ["..pppppppp..", "...ppppp....", "..pp...pp...", ".sss...sss.."],
-  ["..pppppppp..", "..ppp..ppp..", "..ppp..ppp..", "..sss..sss.."],
-  ["..pppppppp..", "....ppppp...", "...pp...pp..", "..sss...sss."],
-];
-
-function sideFrame(armIndex: number, legIndex: number): SpriteRows {
-  return [
-    ...EDWARD_SIDE_UPPER,
-    ...EDWARD_ARMS[armIndex],
-    ...EDWARD_LEGS[legIndex],
-  ];
+function sideUpper(arm: keyof typeof EDWARD_ARMS): SpriteRows {
+  return [...EDWARD_SIDE_UPPER.slice(0, 14), ...EDWARD_ARMS[arm]];
 }
 
-/** Four-step walk cycle. Index 0 doubles as the standing side idle. */
+/**
+ * Legs. The passing frames stand tall on seven rows; the contact frames
+ * spread the stride over six, so the whole body sits one pixel lower on
+ * them — the bob of a walk, done with the feet rather than the head.
+ */
+const LEGS_PASSING: readonly SpriteRows[] = [
+  [
+    ".....ppppppppp..",
+    ".....ppppPpppp..",
+    ".....pppp.pppp..",
+    ".....pppp.pppp..",
+    ".....pppp.pppp..",
+    ".....ssss.ssss..",
+    ".....SSSS.SSSS..",
+  ],
+  [
+    ".....ppppppppp..",
+    ".....ppppPpppp..",
+    ".....pppp.pppp..",
+    ".....pppp.pppp..",
+    "......ppp..ppp..",
+    ".....ssss.ssss..",
+    ".....SSSS.SSSS..",
+  ],
+];
+
+const LEGS_CONTACT: readonly SpriteRows[] = [
+  // Near leg forward.
+  [
+    ".....ppppppppp..",
+    "....ppppP.pppp..",
+    "....ppp...pppp..",
+    "...ppp.....ppp..",
+    "...ssss....ssss.",
+    "...SSSS....SSSS.",
+  ],
+  // Far leg forward.
+  [
+    ".....ppppppppp..",
+    "....pppp.Ppppp..",
+    "....pppp...ppp..",
+    "...ppp.....ppp..",
+    "...ssss....ssss.",
+    "...SSSS....SSSS.",
+  ],
+];
+
+function sideFrame(arm: keyof typeof EDWARD_ARMS, legs: SpriteRows): SpriteRows {
+  const upper = sideUpper(arm);
+  const drop = H - upper.length - legs.length;
+  return [...Array<string>(drop).fill(EMPTY_ROW), ...upper, ...legs];
+}
+
+/**
+ * Four-step walk cycle: contact, pass, contact, pass. Index 0 doubles as the
+ * standing side idle. Every frame is distinct — the arms swing against the
+ * legs and the two passing frames differ in the trailing foot.
+ */
 const EDWARD_WALK: readonly SpriteRows[] = [
-  sideFrame(0, 0),
-  sideFrame(1, 1),
-  sideFrame(0, 2),
-  sideFrame(2, 3),
+  sideFrame("forward", LEGS_CONTACT[0]),
+  sideFrame("rest", LEGS_PASSING[0]),
+  sideFrame("back", LEGS_CONTACT[1]),
+  sideFrame("rest", LEGS_PASSING[1]),
 ];
 
 /** Side view with the near hand raised, for looking something over. */
 const EDWARD_INSPECT: SpriteRows = [
-  ...EDWARD_SIDE_UPPER.slice(0, 8),
-  "..cccccctcf.",
-  ".cccccctccf.",
-  "ttbcccccccc.",
-  ".tbbccccccc.",
-  ...EDWARD_LEGS[0],
+  ...EDWARD_SIDE_UPPER.slice(0, 10),
+  ".......jzffzj..f",
+  ".....jjjjzzjjjjf",
+  "....jJjjjjzjjjjf",
+  "....jJjjjjzjjjjJ",
+  "....jJjjjjzjjjJ.",
+  "....jJjjjjzjjjj.",
+  "....fjjjjjzjjjj.",
+  ...LEGS_PASSING[0],
 ];
 
 /* ── Outline ────────────────────────────────────────────────────────────── */
@@ -162,7 +240,7 @@ const EDWARD_INSPECT: SpriteRows = [
 /**
  * Turns the outermost ring of a sprite into the 1px player outline.
  *
- * Done inside the 12x16 grid, replacing edge pixels rather than adding a ring
+ * Done inside the grid, replacing edge pixels rather than adding a ring
  * outside them, so the silhouette — and with it the hitbox, the anchor and
  * every bounds test — is exactly what it was. A pixel is "edge" when any of
  * its four neighbours is transparent or off the sprite.
@@ -181,7 +259,6 @@ function outlined(rows: SpriteRows): SpriteRows {
 
 /* ── Drawing ────────────────────────────────────────────────────────────── */
 
-/** Art pixels of travel per walk frame. Tied to distance, not to time. */
 /**
  * Art pixels travelled per walk-cycle frame.
  *
@@ -202,38 +279,39 @@ export function getWalkFrame(worldX: number, unit: number, moving: boolean) {
 }
 
 function shadow(draw: Raster) {
-  draw(1, 15, 10, 1, SHADOW_WIDE);
-  draw(2, 15, 8, 1, SHADOW_CORE);
+  draw(2, H - 1, W - 4, 1, SHADOW_WIDE);
+  draw(3, H - 1, W - 6, 1, SHADOW_CORE);
 }
+
+/** Row at which a standing pose's legs begin: everything above it breathes. */
+const STANDING_LEG_ROW = 18;
+
+/**
+ * Eyes closed: the eye pixels take the skin's shade for one tick. Every eighth
+ * ambient frame (3.6s), which is a blink, not a twitch; it is never on frames
+ * 0–3 so the breath and outline contracts are unaffected.
+ */
+const BLINK_EVERY = 8;
+const BLINK_FRAME = 6;
+const EDWARD_MAP_BLINK: SpriteMap = { ...EDWARD_MAP, e: palette.skinShade };
 
 /**
  * The standing poses breathe on the ambient tick: the whole upper body drops
- * one pixel on every other beat while the feet stay planted. One pixel at
- * 450ms is deliberately below the threshold of looking animated.
+ * one pixel on every other beat while the feet stay planted, and he blinks
+ * now and then. One pixel at 450ms is deliberately below the threshold of
+ * looking animated.
  */
 function drawStanding(source: SpriteRows, draw: Raster, frame: number) {
   const rows = outlined(source);
   const bob = frame % 2 === 1 ? 1 : 0;
+  const map = frame % BLINK_EVERY === BLINK_FRAME ? EDWARD_MAP_BLINK : EDWARD_MAP;
   shadow(draw);
-  sprite(draw, 0, bob, rows.slice(0, 12), EDWARD_MAP);
-  sprite(draw, 0, 12, rows.slice(12), EDWARD_MAP);
-}
-
-/**
- * Passing frames get the coat hem lifting off the leg and the bag catching up
- * half a beat late. Two pixels is the whole of the secondary motion, and they
- * are added to the rows *before* outlining so the outline is always the last
- * word on the silhouette.
- */
-function withPassingHem(rows: SpriteRows): SpriteRows {
-  return rows.map((row, y) =>
-    y === 12 ? `${row[0]}b${row.slice(2, 10)}c${row.slice(11)}` : row,
-  );
+  sprite(draw, 0, bob, rows.slice(0, STANDING_LEG_ROW), map);
+  sprite(draw, 0, STANDING_LEG_ROW, rows.slice(STANDING_LEG_ROW), map);
 }
 
 function drawSide(draw: Raster, frame: number) {
-  const index = frame % EDWARD_WALK.length;
-  const rows = index % 2 === 1 ? withPassingHem(EDWARD_WALK[index]) : EDWARD_WALK[index];
+  const rows = EDWARD_WALK[frame % EDWARD_WALK.length];
   shadow(draw);
   sprite(draw, 0, 0, outlined(rows), EDWARD_MAP);
 }
@@ -289,8 +367,8 @@ export const drawEdward: ArtRoutine = edwardPoses.walk;
  * or wider grid grows upward and outward from the same standing point instead
  * of shifting where the player actually is.
  *
- * With today's 12x16 art at unit 4 both offsets are zero and this is a no-op.
- * It exists so that swapping in art on another grid stays a data change.
+ * With the 16x24 art on the 48x64 footprint at unit 4 the sprite overhangs by
+ * 8 CSS px each side and 32 above; the feet and the standing point agree.
  */
 export function getAvatarAnchor(
   art: { readonly width: number; readonly height: number },

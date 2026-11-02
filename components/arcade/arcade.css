@@ -476,6 +476,8 @@
 
 .ar-player { position: absolute; }
 
+.ar-player__art { position: absolute; }
+
 /* A contact shadow, so a landing reads as a landing. Centred and narrow: the
    sprite's canvas is auto-width, so a box-width shadow peeks out beside it. */
 .ar-player::after {
