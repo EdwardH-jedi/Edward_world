@@ -314,6 +314,10 @@ p {
 
 .title-screen {
   --unit: 4px;
+  /* The HUD strip's height (WORLD / INDEX / ♪, pinned two units down), so the
+     title can clear it. Same expression as the strip; see the @supports rule
+     beside the HUD styles. */
+  --hud-h: calc(var(--unit) * 11);
   align-items: center;
   background: #161713;
   display: flex;
@@ -345,10 +349,11 @@ p {
 /* The sky the type sits over is the scene's own dusk cream, so the wordmark
    stays dark ink. */
 .title-copy {
+  --title-top: 15%;
   left: 50%;
   position: absolute;
   text-align: center;
-  top: 15%;
+  top: var(--title-top);
   transform: translateX(-50%);
   z-index: 2;
 }
@@ -382,6 +387,25 @@ p {
   margin: calc(var(--unit) * 3) auto 0;
   max-width: 100%;
   text-transform: uppercase;
+}
+
+/* Each pair in the component's TITLE_COPY shows one half. The purpose line
+   has a short form for a phone's width; the call to action names the input
+   the device has. Media queries, not script, so server and client render the
+   same markup and the right words are there on the first paint. */
+.title-purpose__short,
+.title-enter__touch {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .title-purpose__long { display: none; }
+  .title-purpose__short { display: inline; }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .title-enter__keys { display: none; }
+  .title-enter__touch { display: inline; }
 }
 
 .doc-copy {
@@ -465,7 +489,7 @@ p {
     color: #efe7d3;
     padding: var(--unit) calc(var(--unit) * 2);
   }
-  .title-copy { top: 11%; width: 94%; }
+  .title-copy { --title-top: 11%; width: 94%; }
   .title-wordmark {
     font-size: calc(var(--unit) * 4);
     line-height: calc(var(--unit) * 6);
@@ -500,7 +524,7 @@ p {
     right: 0;
     top: calc(100% + 0.5rem);
   }
-  .title-copy { top: 8%; width: 94%; }
+  .title-copy { --title-top: 8%; width: 94%; }
   .title-wordmark {
     font-size: calc(var(--unit) * (var(--k) + 4));
     line-height: calc(var(--unit) * (var(--k) + 6));
@@ -549,6 +573,35 @@ p {
 
 }
 
+/* A phone on its side. The sky is a short band here, so the heading stays at
+   the top of it, beside the HUD strip rather than under it: the copy is only
+   as wide as its longest line (a 94% box reached under WORLD / INDEX / ♪),
+   and because the cover stage overhangs the viewport above and below, its
+   top is held at least two units inside the screen (a percentage of the
+   stage alone put WELCOME TO off the top). Desktop widths are untouched. */
+@media (min-aspect-ratio: 1/1) and (max-width: 950px) {
+  .title-copy {
+    max-width: 94%;
+    top: max(
+      var(--title-top),
+      calc((var(--stage-w) * 9 / 16 - 100dvh) / 2 + var(--unit) * 2)
+    );
+    width: max-content;
+  }
+}
+
+/* Short and narrow, the lawn is only a few units tall on screen and the
+   avatar stands just above PRESS ENTER: the prompt drops to two units off the
+   edge with a one-unit pad, keeping a 24px target (12 or 8 units at the 2-3px
+   unit these screens get). The whole screen is the tap target anyway. */
+@media (min-aspect-ratio: 1/1) and (max-height: 500px) and (max-width: 950px) {
+  .title-enter {
+    bottom: calc(var(--unit) * 2);
+    min-height: 24px;
+    padding: var(--unit) calc(var(--unit) * 4);
+  }
+}
+
 /* Landscape screens: the stage is scaled to cover the viewport rather than sit
    in it, and the screen simply clips what overhangs. The stage stays one 16:9
    box, so everything positioned in percentages (the name slab's tap target
@@ -577,11 +630,13 @@ p {
     top: auto;
   }
 
+  /* The column starts one unit below the HUD strip, whatever the unit: the
+     strip is two units down and one HUD height tall. */
   .title-stage {
     align-items: center;
     display: flex;
     flex-direction: column;
-    padding: calc(var(--unit) * 11) calc(var(--unit) * 3) calc(var(--unit) * 2);
+    padding: calc(var(--hud-h) + var(--unit) * 3) calc(var(--unit) * 3) calc(var(--unit) * 2);
   }
 
   .title-copy {
@@ -597,12 +652,23 @@ p {
     z-index: 2;
   }
 
+  /* Whole-unit line boxes, so the heading block stays on the grid. */
+  .title-welcome {
+    line-height: calc(var(--unit) * (var(--k) + 1));
+  }
+
   .title-wordmark {
     margin-top: var(--unit);
   }
 
+  /* The purpose line sits with the heading over the sky, in the heading's
+     ink, rather than in a panel on the lawn where it hid the avatar. */
   .title-purpose {
-    margin: auto 0 calc(var(--unit) * 2);
+    background: none;
+    border: 0;
+    color: #57473a;
+    margin: calc(var(--unit) * 2) 0 0;
+    padding: 0;
     text-align: center;
   }
 
@@ -616,8 +682,9 @@ p {
     transform: none;
   }
 
+  /* margin-top: auto sends the prompt and VIEW PROJECTS to the bottom. */
   .title-enter {
-    margin-bottom: var(--unit);
+    margin: auto 0 var(--unit);
     padding: var(--unit) calc(var(--unit) * 4);
   }
 
@@ -625,9 +692,10 @@ p {
 
 /* Portrait screens: the stage is the viewport, and the 16:9 art covers it,
    cropped sideways around its middle. The type is laid out in the viewport,
-   not over the art, as a column: the heading in the top fifth, below the HUD
-   strip, then the purpose panel, PRESS ENTER and VIEW PROJECTS stacked in the
-   bottom quarter. Every block is in flow, so none can overlap another. */
+   not over the art, as a column: WELCOME TO, the wordmark and the purpose
+   line together over the sky, one unit below the HUD strip; PRESS ENTER and
+   VIEW PROJECTS stacked in the bottom quarter, below the avatar on the lawn.
+   Every block is in flow, so none can overlap another. */
 
 .primary-button {
   background: var(--foreground);
@@ -1019,6 +1087,7 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control {
   --hud-h: calc(var(--unit) * 11);
   top: calc(var(--unit) * 2);
 }@supports (height: round(up, 44px, 4px)) {
+  .title-screen,
   .experience-shell:has(.world-screen, .title-screen, .intro-screen) .world-index-control,
   body:has(.world-screen, .title-screen, .intro-screen) > .music-control {
     --hud-h: round(up, 44px, var(--unit));
