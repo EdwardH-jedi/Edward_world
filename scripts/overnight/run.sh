@@ -8,7 +8,7 @@
 #   scripts/overnight/run.sh
 #
 # Environment (all optional):
-#   OVERNIGHT_BASE    branch to start from        (default: feat/world-feel-pass)
+#   OVERNIGHT_BASE    branch to start from        (default: main)
 #   OVERNIGHT_BRANCH  branch to work on           (default: overnight/<date>)
 #   OVERNIGHT_MODEL   Claude model alias          (default: opus)
 #   OVERNIGHT_TASKS   space-separated task files  (default: every tasks/*.md)
@@ -27,7 +27,7 @@ set -u
 cd "$(dirname "$0")/../.." || exit 1
 ROOT=$(pwd)
 
-BASE="${OVERNIGHT_BASE:-feat/world-feel-pass}"
+BASE="${OVERNIGHT_BASE:-main}"
 BRANCH="${OVERNIGHT_BRANCH:-overnight/$(date +%Y-%m-%d)}"
 MODEL="${OVERNIGHT_MODEL:-opus}"
 E2E="${OVERNIGHT_E2E:-1}"
@@ -110,6 +110,7 @@ if [ -n "${OVERNIGHT_TASKS:-}" ]; then
   # shellcheck disable=SC2206
   TASKS=($OVERNIGHT_TASKS)
 else
+  # Only the top-level task files; finished ones live in tasks/done/.
   TASKS=("$ROOT"/scripts/overnight/tasks/[0-9]*.md)
 fi
 

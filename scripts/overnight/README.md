@@ -4,9 +4,12 @@ Sequential, unattended Claude Code sessions, one per task file, on one branch.
 
 ```bash
 cd ~/Desktop/developer/edward_world
-git fetch origin && git checkout feat/world-feel-pass && git pull
-scripts/overnight/run.sh
+git checkout main && git pull
+caffeinate -i scripts/overnight/run.sh
 ```
+
+Finished task files are moved to `tasks/done/` so they are not run again; the
+queue is whatever `tasks/NN-*.md` is left at the top level.
 
 What it does, per task in `tasks/NN-*.md` (in order):
 
@@ -17,7 +20,7 @@ What it does, per task in `tasks/NN-*.md` (in order):
    Red → `git reset --hard`, the task is marked FAILED in the summary, the next task starts.
 5. Writes `logs/<run>/SUMMARY.md` and the per-task reports Claude wrote to `reports/`.
 
-Knobs (env vars): `OVERNIGHT_BASE` (default `feat/world-feel-pass`), `OVERNIGHT_BRANCH` (default `overnight/<date>`), `OVERNIGHT_MODEL` (`opus`), `OVERNIGHT_TASKS` (subset of task files), `OVERNIGHT_E2E=0` to skip Playwright, `OVERNIGHT_YOLO=1` to use `--dangerously-skip-permissions` if the allow-list turns out to block something the task needs.
+Knobs (env vars): `OVERNIGHT_BASE` (default `main`), `OVERNIGHT_BRANCH` (default `overnight/<date>`), `OVERNIGHT_MODEL` (`opus`), `OVERNIGHT_TASKS` (subset of task files), `OVERNIGHT_E2E=0` to skip Playwright, `OVERNIGHT_YOLO=1` to use `--dangerously-skip-permissions` if the allow-list turns out to block something the task needs.
 
 Re-running the same day continues the same branch and skips tasks already committed on it.
 
