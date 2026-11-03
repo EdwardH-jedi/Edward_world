@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
+import { chapters } from "@/data/personal";
+import { chapterIdOfStation, timelineStations } from "@/data/timeline";
 import { buildings, initialPlayer, signs, WORLD_CONFIG } from "@/data/world";
-import { PIXEL_UNIT } from "@/lib/game/terrain";
-import { BACKDROP_ART_SIZE } from "@/lib/pixel/backdrop";
+import { getGroundY, PIXEL_UNIT, TIMELINE_STREET } from "@/lib/game/terrain";
+import { BACKDROP_ART_SIZE, drawBackdrop } from "@/lib/pixel/backdrop";
 import { buildingArt, signpostArt } from "@/lib/pixel/buildings";
+import { STATION_ART_SIZE, STATION_MOTIFS, stationArt } from "@/lib/pixel/timeline";
 import {
   EDWARD_ART_SIZE,
   edwardPoses,
@@ -39,6 +42,121 @@ describe("art grid alignment", () => {
   it("sizes the sign art to its world footprint", () => {
     expect(signpostArt.size.width * PIXEL_UNIT).toBe(signs[0].size.width);
     expect(signpostArt.size.height * PIXEL_UNIT).toBe(signs[0].size.height);
+  });
+
+  it("gives every timeline station art sized exactly to its world footprint", () => {
+    expect(timelineStations).toHaveLength(chapters.length);
+    for (const station of timelineStations) {
+      const art = stationArt(chapterIdOfStation(station.id)!);
+      expect(art.size.width * PIXEL_UNIT, station.id).toBe(station.size.width);
+      expect(art.size.height * PIXEL_UNIT, station.id).toBe(station.size.height);
+    }
+  });
+});
+
+describe("timeline station art", () => {
+  const ids = [...chapters.map(({ id }) => id), "a-chapter-with-no-motif"];
+
+  it("draws on whole pixels, inside its grid, from the approved palette", () => {
+    const approved = new Set<string>(Object.values(palette));
+    for (const id of ids) {
+      for (const frame of [0, 1, 2, 3]) {
+        for (const rect of record(stationArt(id).draw, frame)) {
+          for (const value of [rect.x, rect.y, rect.width, rect.height]) {
+            expect(Number.isInteger(value), `${id} ${frame}`).toBe(true);
+          }
+          expect(rect.x, id).toBeGreaterThanOrEqual(0);
+          expect(rect.y, id).toBeGreaterThanOrEqual(0);
+          expect(rect.x + rect.width, id).toBeLessThanOrEqual(STATION_ART_SIZE.width);
+          expect(rect.y + rect.height, id).toBeLessThanOrEqual(STATION_ART_SIZE.height);
+          expect(approved.has(rect.color), `${id} uses ${rect.color}`).toBe(true);
+        }
+      }
+    }
+  });
+
+  /*
+   * A label chip hangs three units over its object's top. A station shorter
+   * than Edward would put the chip of the station he is reading behind his
+   * own head, so the plaque's top is held level with it.
+   */
+  it("stands as tall as Edward, so the chip of the station he is at clears his head", () => {
+    expect(STATION_ART_SIZE.height).toBeGreaterThanOrEqual(EDWARD_ART_SIZE.height);
+    for (const station of timelineStations) {
+      expect(station.size.height, station.id).toBeGreaterThanOrEqual(EDWARD_ART_SIZE.height * PIXEL_UNIT);
+    }
+  });
+
+  it("stands every station on its ground line", () => {
+    for (const id of ids) {
+      const bottom = Math.max(...record(stationArt(id).draw, 0).map((r) => r.y + r.height));
+      expect(bottom, id).toBe(STATION_ART_SIZE.height);
+    }
+  });
+
+  it("gives every chapter its own motif, distinct from the others and the plain plaque", () => {
+    for (const chapter of chapters) {
+      expect(STATION_MOTIFS[chapter.id], `motif for ${chapter.id}`).toBeDefined();
+    }
+    const drawings = ids.map((id) => JSON.stringify(record(stationArt(id).draw, 0)));
+    expect(new Set(drawings).size).toBe(ids.length);
+  });
+
+  it("keeps the shared plaque still: ambient motion stays inside the face", () => {
+    for (const id of ids) {
+      const still = new Set(record(stationArt(id).draw, 0).map((r) => JSON.stringify(r)));
+      for (const frame of [1, 2, 3]) {
+        for (const rect of record(stationArt(id).draw, frame)) {
+          if (still.has(JSON.stringify(rect))) continue;
+          // Anything that moves is inside the paper face (x 1–8, y 1–9).
+          expect(rect.x, `${id} ${frame}`).toBeGreaterThanOrEqual(1);
+          expect(rect.x + rect.width, `${id} ${frame}`).toBeLessThanOrEqual(9);
+          expect(rect.y, `${id} ${frame}`).toBeGreaterThanOrEqual(1);
+          expect(rect.y + rect.height, `${id} ${frame}`).toBeLessThanOrEqual(10);
+        }
+      }
+    }
+  });
+});
+
+describe("timeline street backdrop", () => {
+  const rects = record(drawBackdrop, 0);
+  const left = TIMELINE_STREET.startX / PIXEL_UNIT;
+  const right = TIMELINE_STREET.endX / PIXEL_UNIT;
+
+  it("is grass and stone like the rest of town, with no bare dirt anywhere", () => {
+    expect(rects.some((rect) => rect.color === palette.dirt)).toBe(false);
+  });
+
+  it("carries the stone path under every station, out to the world's edge", () => {
+    for (let x = left; x < BACKDROP_ART_SIZE.width; x += 1) {
+      const ground = getGroundY(x * PIXEL_UNIT) / PIXEL_UNIT;
+      const paved = rects.some(
+        (rect) =>
+          rect.x <= x &&
+          rect.x + rect.width > x &&
+          rect.y === ground &&
+          (rect.color === palette.stone || rect.color === palette.stone2),
+      );
+      expect(paved, `path at art x ${x}`).toBe(true);
+    }
+  });
+
+  it("runs one low wall behind the whole street, below every plaque", () => {
+    const ground = getGroundY(TIMELINE_STREET.startX) / PIXEL_UNIT;
+    const plaqueBottom = ground - STATION_ART_SIZE.height + 11;
+    const wall = rects.filter(
+      (rect) =>
+        rect.y < ground &&
+        rect.y + rect.height <= ground &&
+        rect.x <= left &&
+        rect.x + rect.width >= right &&
+        rect.width > right - left,
+    );
+    expect(wall.length).toBeGreaterThan(0);
+    for (const rect of wall) {
+      expect(rect.y, "wall top").toBeGreaterThanOrEqual(plaqueBottom);
+    }
   });
 });
 

@@ -71,8 +71,9 @@ describe("getWorldUnit", () => {
   });
 
   it("keeps the hill house's label clear of the top edge at every viewport", () => {
-    // The house roof is at art row 32 on the hill; its chips sit above it and
-    // are held two units under the crop line, so the crop must leave room.
+    // The house's chimney is at art row 32 on the hill; its sign hangs above
+    // it and is held a unit under the crop line, so the crop must leave room
+    // (two rows here, one more than the floor needs).
     for (let height = 276; height <= 2000; height += 1) {
       const unit = getWorldUnit({ width: 1920, height });
       expect(getWorldCrop(height, unit) / unit + 2).toBeLessThan(32);

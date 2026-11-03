@@ -1,26 +1,24 @@
 "use client";
 
-import { memo, useLayoutEffect, useRef, type RefObject } from "react";
+import { memo, useCallback, useLayoutEffect, useRef, type RefObject } from "react";
+import { type ChipPlacement, placeChip } from "@/lib/game/chip-layout";
+import { signDrop, stemFoot } from "@/lib/pixel/signage";
 
 /**
- * Snaps a chip to the unit grid.
- *
- * Text decides a chip's width, and glyph advances are not unit multiples, so a
- * chip centred on its object would otherwise land on a fractional pixel. The
- * width is rounded up to whole units, and to the same parity as the object's
- * width in units, so centring it on the object is a whole number of units
- * (`--chip-left`). Centring with `translateX(-50%)` instead would leave the
- * prompt on a half pixel, because the enter animation owns its transform.
+ * Snaps a chip to the unit grid (see `placeChip`) and writes the result as
+ * its width and `--chip-left`. `decorate` then gets the same placement, plus
+ * the one it would have had centred, to place anything that hangs off it.
  */
 export function useUnitChipWidth(
   ref: RefObject<HTMLElement | null>,
   unit: number,
   anchorUnits: number,
   content: string,
-  /** The object's left edge on screen and the viewport width, both in CSS px.
-      Given only for the nearby object, whose chip must stay on screen. */
+  /** The anchor's left edge on screen and the viewport width, both in CSS px.
+      Given only for a chip that must stay on screen. */
   screenLeft?: number,
   viewportWidth?: number,
+  decorate?: (element: HTMLElement, placement: ChipPlacement, centred: ChipPlacement) => void,
 ) {
   useLayoutEffect(() => {
     const element = ref.current;
@@ -30,19 +28,12 @@ export function useUnitChipWidth(
       element.style.width = "";
       // Layout width, not the bounding box: the prompt arrives mid-animation,
       // and a transform would shrink the rectangle being measured.
-      const units = Math.ceil(element.offsetWidth / unit);
-      const snapped = (units - anchorUnits) % 2 === 0 ? units : units + 1;
-      element.style.width = `${snapped * unit}px`;
-      let left = ((anchorUnits - snapped) / 2) * unit;
-      if (screenLeft !== undefined && viewportWidth) {
-        // Clamp into the visible strip, a unit in from each edge, in whole
-        // units so the chip stays on the grid (screenLeft is a unit multiple).
-        const min = Math.ceil((unit - screenLeft) / unit) * unit;
-        const max =
-          Math.floor((viewportWidth - unit * 2 - screenLeft - snapped * unit) / unit) * unit;
-        left = Math.max(min, Math.min(max, left));
-      }
-      element.style.setProperty("--chip-left", `${left}px`);
+      const naturalWidth = element.offsetWidth;
+      const centred = placeChip({ naturalWidth, unit, anchorUnits });
+      const placement = placeChip({ naturalWidth, unit, anchorUnits, screenLeft, viewportWidth });
+      element.style.width = `${placement.width * unit}px`;
+      element.style.setProperty("--chip-left", `${placement.left * unit}px`);
+      decorate?.(element, placement, centred);
     };
 
     snap();
@@ -54,7 +45,7 @@ export function useUnitChipWidth(
     return () => {
       live = false;
     };
-  }, [ref, unit, anchorUnits, content, screenLeft, viewportWidth]);
+  }, [ref, unit, anchorUnits, content, screenLeft, viewportWidth, decorate]);
 }
 
 interface WorldLabelProps {
@@ -62,24 +53,46 @@ interface WorldLabelProps {
   unit: number;
   /** The object's width in art pixels, which the chip is centred on. */
   anchorUnits: number;
+  /** The first solid row of each column of the object's art (`topProfile`). */
+  profile: readonly number[];
   /** See `useUnitChipWidth`; only the nearby object passes these. */
   screenLeft?: number;
   viewportWidth?: number;
 }
 
-/** The name chip over an object. It is also the object's accessible name. */
+/**
+ * The name sign on an object. It is also the object's accessible name.
+ *
+ * It hangs a clear unit above the highest art under it (`--sign-drop`), and a
+ * one-unit stem drops from its middle to the art below, so it reads as a sign
+ * fixed to the building rather than a tooltip over it. Both are whole units.
+ */
 export const WorldLabel = memo(function WorldLabel({
   text,
   unit,
   anchorUnits,
+  profile,
   screenLeft,
   viewportWidth,
 }: WorldLabelProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  useUnitChipWidth(ref, unit, anchorUnits, text, screenLeft, viewportWidth);
+  const hang = useCallback(
+    (element: HTMLElement, placement: ChipPlacement, centred: ChipPlacement) => {
+      element.style.setProperty("--sign-drop", `${signDrop(profile, centred) * unit}px`);
+      // The stem stands under the chip's middle column, in the object's columns.
+      const middle = Math.floor((placement.width - 1) / 2);
+      const foot = stemFoot(profile, placement.left + middle);
+      element.style.setProperty("--stem-left", `${(middle - 1) * unit}px`);
+      element.style.setProperty("--stem-foot", `${(foot ?? 0) * unit}px`);
+      element.dataset.stem = foot === null ? "off" : "on";
+    },
+    [profile, unit],
+  );
+  useUnitChipWidth(ref, unit, anchorUnits, text, screenLeft, viewportWidth, hang);
   return (
     <span className="world-object__label" ref={ref}>
       {text}
+      <span aria-hidden="true" className="world-object__stem" />
     </span>
   );
 });

@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { MusicToggle } from "@/components/audio/music-control";
 import { AccessibleDialog } from "@/components/ui/accessible-dialog";
-import { contact } from "@/data/personal";
+import { chapters, contact } from "@/data/personal";
 import { projects } from "@/data/projects";
+import { stationHeading, stationText } from "@/data/timeline";
 import type { PortfolioProject } from "@/types/portfolio";
 
 interface PortfolioIndexProps {
@@ -74,6 +75,21 @@ export function PortfolioIndex({ onClose }: PortfolioIndexProps) {
         ))}
       </ol>
 
+      {/* Edward's chapters, the same ones the timeline street walks past.
+          A section of its own rather than more rows of work: the index still
+          lists exactly four projects. */}
+      <section className="index-about index-timeline" aria-labelledby="index-timeline-title">
+        <h3 id="index-timeline-title">Timeline</h3>
+        <ol className="index-timeline__list">
+          {chapters.map((chapter) => (
+            <li key={chapter.id}>
+              <p className="index-timeline__when">{stationHeading(chapter)}</p>
+              <p className="index-timeline__detail">{stationText(chapter)}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       <div className="index-direct">
         <Link className="index-direct__item" href="/resume">
           <span>Background &amp; contact</span>
@@ -115,8 +131,9 @@ export function PortfolioIndex({ onClose }: PortfolioIndexProps) {
         </p>
         <p className="index-about__more">
           Explore Edward&apos;s House for personal interests, collections and
-          life outside software. The professional timeline is in{" "}
-          <Link href="/resume">Background &amp; contact</Link>.
+          life outside software. The timeline above is also in{" "}
+          <Link href="/resume">Background &amp; contact</Link>, with contact
+          details.
         </p>
       </section>
 

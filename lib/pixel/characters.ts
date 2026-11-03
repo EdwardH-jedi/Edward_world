@@ -23,6 +23,14 @@ import { sprite } from "@/lib/pixel/raster";
 
 export const EDWARD_ART_SIZE = { width: 16, height: 24 } as const;
 
+/**
+ * The column at the middle of Edward's head, by the way he faces: the head
+ * spans columns 5-11 in profile, and the sprite is mirrored to face left. The
+ * prompt bubble's tail points here, and the head reaches the sprite's top row
+ * (or the one under it, on the breathing frame) in this column in every pose.
+ */
+export const EDWARD_HEAD_COLUMN = { right: 8, left: 7 } as const;
+
 /** Poses the world actually asks for. `walk` doubles as the standing side idle. */
 export type EdwardPose = "walk" | "front" | "back" | "inspect";
 

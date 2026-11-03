@@ -8,7 +8,7 @@
 #   scripts/overnight/run.sh
 #
 # Environment (all optional):
-#   OVERNIGHT_BASE    branch to start from        (default: feat/world-feel-pass)
+#   OVERNIGHT_BASE    branch to start from        (default: main)
 #   OVERNIGHT_BRANCH  branch to work on           (default: overnight/<date>)
 #   OVERNIGHT_MODEL   Claude model alias          (default: opus)
 #   OVERNIGHT_TASKS   space-separated task files  (default: every tasks/*.md)
@@ -27,7 +27,7 @@ set -u
 cd "$(dirname "$0")/../.." || exit 1
 ROOT=$(pwd)
 
-BASE="${OVERNIGHT_BASE:-feat/world-feel-pass}"
+BASE="${OVERNIGHT_BASE:-main}"
 BRANCH="${OVERNIGHT_BRANCH:-overnight/$(date +%Y-%m-%d)}"
 MODEL="${OVERNIGHT_MODEL:-opus}"
 E2E="${OVERNIGHT_E2E:-1}"
@@ -110,6 +110,7 @@ if [ -n "${OVERNIGHT_TASKS:-}" ]; then
   # shellcheck disable=SC2206
   TASKS=($OVERNIGHT_TASKS)
 else
+  # Only the top-level task files; finished ones live in tasks/done/.
   TASKS=("$ROOT"/scripts/overnight/tasks/[0-9]*.md)
 fi
 
@@ -128,6 +129,23 @@ ensure_pr() {
     [ -z "$PR_URL" ] && PR_URL=$(gh pr list --head "$BRANCH" --json url --jq '.[0].url' 2>/dev/null || true)
   fi
   [ -n "$PR_URL" ] && log "PR: $PR_URL"
+}
+
+# Files that were already untracked before the run belong to the person, not
+# to any task: they are never committed and never cleaned.
+PREEXISTING="$LOG_DIR/preexisting-untracked.txt"
+git ls-files --others --exclude-standard >"$PREEXISTING"
+[ -s "$PREEXISTING" ] && log "leaving $(wc -l <"$PREEXISTING" | tr -d ' ') pre-existing untracked file(s) alone"
+
+# Specs that rewrite tracked screenshots as a side effect (interior-grid).
+restore_spec_artifacts() {
+  rm -rf test-results
+  git checkout -q -- docs/review/interior-grid 2>/dev/null || true
+}
+
+# Untracked files created during this run, i.e. not in $PREEXISTING.
+new_untracked() {
+  git ls-files --others --exclude-standard | grep -vxF -f "$PREEXISTING" || true
 }
 
 for task in "${TASKS[@]}"; do
@@ -169,15 +187,15 @@ for task in "${TASKS[@]}"; do
       log "$name FAILED after repair; rolling back"
       cp "$task_log/checks-2.log" "$REPORT_DIR/$name.FAILED.log" 2>/dev/null
       git reset -q --hard HEAD
-      git clean -q -fd -e scripts/overnight/logs -e scripts/overnight/reports
+      new_untracked | grep -vE '^scripts/overnight/(logs|reports)/' | while IFS= read -r f; do rm -f -- "$f"; done
       printf '| %s | FAILED (rolled back; see logs/%s/%s) | |\n' "$name" "$RUN_ID" "$name" >>"$SUMMARY"
       continue
     fi
   fi
 
-  rm -rf test-results
-  git add -A
-  git reset -q -- scripts/overnight/logs 2>/dev/null
+  restore_spec_artifacts
+  git add -u
+  new_untracked | grep -vE '^scripts/overnight/logs/' | git add --pathspec-from-file=- 2>/dev/null || true
   if git diff --cached --quiet; then
     log "$name produced no changes"
     printf '| %s | no changes | |\n' "$name" >>"$SUMMARY"

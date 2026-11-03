@@ -156,6 +156,7 @@ settles the figure; the archive reducer has already run before it takes off.
 
 - `types/world.ts` defines the player, buildings, signs, positions, interactables, and the discriminated interaction action union.
 - `data/world.ts` supplies the world's real geometry and its typed object instances. Every coordinate is a whole number of art pixels, and every object's `y` is its ground line minus its height, so nothing floats or sinks.
+- `data/timeline.ts` derives the timeline street from `chapters` in `data/personal.ts`: one `READ` sign per chapter, spread evenly across `TIMELINE_STREET` (`lib/game/terrain.ts`) between the Arcade and the exit, worded only from the chapter (heading = place · years, body = the detail lines, chip = the place up to its first comma). The index's Timeline section renders through the same helpers, so adding a chapter adds a station and an index row.
 - `lib/game/movement.ts` and `lib/game/interactions.ts` are pure and have no React or browser dependencies.
 - `lib/motion/animate-element.ts` is the small anime.js boundary. Defaults and reusable presets can be tuned independently from component state.
 
@@ -192,6 +193,12 @@ its own native `Enter` and `Space`.
 
 ### Pointer and touch
 
+- The title screen is one tap/click target: a click anywhere on `.title-screen`
+  starts the pan, exactly as `Enter` does, except on its own buttons (PRESS
+  ENTER, VIEW PROJECTS), which answer for themselves. The HUD strip is mounted
+  outside it, so its taps never reach it. The prompt reads `[ TAP TO START ]`
+  under `(hover: none) and (pointer: coarse)` and `[ PRESS ENTER ]` otherwise —
+  both are in the markup and CSS picks one, so there is no hydration mismatch.
 - The world has on-screen walk buttons bound on `pointerdown`/`up`/`leave`/
   `cancel`, and its status bar is a real `<button>` that opens whatever the
   player is standing next to — so the world is fully playable with no keyboard.
@@ -230,7 +237,11 @@ canvas binding, so it is unit-testable and safe to import anywhere:
 - `raster.ts` — the `Raster` primitive (`draw(x, y, w, h, colour)` in **art pixels**) plus shared helpers: sprites, hills, roof pitches, windows, sign-band dashes, trees, lamps, smoke, and deterministic `scatter` noise.
 - `buildings.ts` — one routine per structure, drawn bottom-anchored on a transparent background in its own local space.
 - `characters.ts` — Edward's poses and four-frame walk cycle, on the 16x24 grid from the character asset spec; drawn from photo reference (black two-block cut, earbud, black zip shirt, slate jeans, white sneakers).
-- `backdrop.ts` — sky, hills, terrain, path, stream, oval and town props as one full-width layer.
+- `backdrop.ts` — sky, hills, terrain, path, stream, oval, town props and the timeline street's low wall as one full-width layer.
+- `timeline.ts` — the timeline stations: one shared plaque on a post, Edward's height, with a motif per chapter and a `signAccent` top rail as its only accent.
+- `object-art.ts` and `signage.ts` — which routine draws each world object, and where its name sign hangs: `topProfile` records each column's first solid row over every ambient frame, because an object's box is often sky (the Arcade's starts six rows above its roof). The sign hangs a clear unit above the highest art under it, and a one-unit stem drops from its middle to the art.
+
+The world's DOM chips are placed in whole units by `lib/game/chip-layout.ts` (pure, like `pixel-unit.ts`): `placeChip` snaps and centres a chip and clamps it onto the screen, `placeTail` keeps the prompt bubble's tail over Edward's head, and `clearOf` lifts the bubble clear of any sign it would cover. The name sign (`components/world/world-label.tsx`) stays on its object; the prompt (`interaction-prompt.tsx`) is Edward's speech bubble, rendered inside `.world-player`, so it draws over every sign and moves with him.
 
 `lib/game/terrain.ts` is the pure ground profile. It is a stepped function on
 purpose: constant-height terraces keep everything standing on it aligned to the
@@ -280,7 +291,15 @@ simulation and authored geometry. On landscape the title and intro stage is one
 and the controls pinned to the viewport. On portrait the stage is the viewport
 itself: the 16:9 art covers it, cropped sideways around its middle, and the
 title type is laid out as an in-flow column in the viewport rather than over the
-art. Nothing on a portrait title is contained or letterboxed.
+art: WELCOME TO, the wordmark and the purpose line together over the sky,
+starting one unit below the HUD strip (`--hud-h`, the strip's own height
+expression, shared on `.title-screen`), and the prompt and VIEW PROJECTS at the
+bottom, below the avatar on the lawn. At 480px and narrower the purpose line
+is the short form. Nothing on a portrait title is contained or letterboxed. On
+a landscape phone (≤ 950px wide) the copy shrink-wraps so it sits beside the
+HUD strip, never under it, and its top is held inside the viewport the cover
+stage overhangs. `e2e/title-layout.spec.ts` checks text, HUD and avatar
+rectangles for intersection at phone, tablet, desktop and landscape-phone sizes.
 
 ## Project location experiences
 

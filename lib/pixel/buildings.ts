@@ -343,50 +343,6 @@ const arcade: ArtRoutine = (draw, frame) => {
   dashes(draw, 58, 33, 6, palette.ink);
 };
 
-/** The path runs out here. Deliberately unfinished, deliberately honest. */
-const constructionArea: ArtRoutine = (draw, frame) => {
-  const groundY = 38;
-
-  // Scaffold frame.
-  draw(20, 4, 1, 34, palette.brown3);
-  draw(34, 4, 1, 34, palette.brown3);
-  draw(48, 4, 1, 34, palette.brown3);
-  draw(20, 10, 29, 1, palette.brown3);
-  draw(20, 22, 29, 1, palette.brown3);
-  draw(20, 9, 29, 1, palette.brown);
-  draw(20, 21, 29, 1, palette.brown);
-
-  // A first wall going up behind it.
-  draw(24, 26, 21, 12, palette.paper);
-  draw(24, 26, 8, 1, palette.dirt);
-  draw(37, 26, 4, 1, palette.dirt);
-  draw(24, 36, 21, 2, palette.stone2);
-
-  // Hazard barrier.
-  for (let x = 56; x < 80; x += 3) draw(x, 28, 2, 8, palette.stone);
-  draw(56, 29, 24, 1, palette.stone3);
-  draw(56, 34, 24, 1, palette.stone3);
-  draw(60, 24, 10, 3, palette.orange);
-  draw(61, 24, 2, 3, palette.cream);
-  draw(66, 24, 2, 3, palette.cream);
-
-  // Notice on a post, with the one warm lamp clipped to it.
-  draw(11, 22, 1, 16, palette.brown3);
-  draw(4, 12, 14, 10, palette.cream);
-  draw(4, 12, 14, 1, palette.brown3);
-  dashes(draw, 6, 15, 10, palette.ink);
-  dashes(draw, 6, 18, 8, palette.ink);
-  draw(4, 20, 14, 2, palette.orange);
-  draw(17, 10, 2, 2, frame % 3 === 0 ? palette.warm : palette.orange2);
-
-  // Spoil heap and a stray pebble or two.
-  draw(50, 34, 5, 4, palette.dirt);
-  draw(51, 33, 3, 1, palette.dirt);
-  draw(81, 36, 2, 2, palette.stone);
-  draw(0, 37, 2, 1, palette.stone2);
-  void groundY;
-};
-
 /** The directions post by the start of the path. */
 export const signpostArt: BuildingArt = {
   size: { width: 11, height: 15 },
@@ -429,5 +385,4 @@ export const buildingArt: Readonly<Record<WorldBuildingId, BuildingArt>> = {
     draw: arcade,
     openDoor: doorway(38, 24, 14, 22),
   },
-  "construction-area": { size: { width: 84, height: 38 }, draw: constructionArea },
 };

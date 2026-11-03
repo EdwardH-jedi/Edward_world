@@ -63,8 +63,8 @@ export const palette = {
   // the cream sky but does not vanish against a dark facade.
   jacketLift: "#3F3A33",
   // Accents. They mark what can be used, so they are spent only on the player
-  // and on enterable places — the scaffolding and backdrop stay plain, which is
-  // how the eye learns "accent = interactive".
+  // and on enterable or readable places — the backdrop and the timeline
+  // street's wall stay plain, which is how the eye learns "accent = interactive".
   warmGlow: "#F2C14E", // lamp, window and marquee light
   signAccent: "#A9482C", // door frames, signs and the interaction chip
   signBackplate: "#14110D", // 1px dark plate behind signAccent on dark surfaces

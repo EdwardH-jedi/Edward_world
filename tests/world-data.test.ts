@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { buildings, initialPlayer, signs, worldObjects } from "@/data/world";
+import { chapters } from "@/data/personal";
+import { buildings, initialPlayer, signs, WORLD_CONFIG, worldObjects } from "@/data/world";
 import { findNearestInteractable, getInteractionPrompt } from "@/lib/game/interactions";
 
 /**
@@ -73,25 +74,38 @@ describe("Edward's House survives the removal", () => {
 });
 
 describe("finished public world", () => {
-  it("keeps scaffolding as scenery without an action or interaction target", () => {
-    const scaffolding = buildings.find(({ id }) => id === "construction-area")!;
-    expect(scaffolding).toBeDefined();
-    expect(scaffolding.interaction).toBeUndefined();
-    for (let x = scaffolding.position.x - 72; x <= scaffolding.position.x + scaffolding.size.width + 72; x += 4) {
-      const walker = {
-        ...initialPlayer,
-        position: { ...initialPlayer.position, x },
-      };
-      // The scaffolding is never a target. The walk deliberately runs 72px
-      // past its right edge, which now reaches the world's exit gate — so the
-      // claim is stated as what it always meant: nothing here is interactable
-      // except the exit, and never the scaffolding.
+  /*
+   * The scaffolding was a placeholder with no payoff, and it is gone: the
+   * stretch it stood on is the timeline street now. Buildings are exactly the
+   * four project entrances and Edward's House, and the stations are signs.
+   */
+  it("has no scaffolding left: buildings are the four projects and the house", () => {
+    expect(JSON.stringify(worldObjects)).not.toMatch(/construction|scaffold/i);
+    expect(buildings.map(({ id }) => id).sort()).toEqual([
+      "afl-lab", "arcade", "edwards-house", "sportsgang", "wardrobe",
+    ]);
+  });
+
+  /*
+   * Walking right from the Arcade's door to the end of the world, exactly one
+   * thing answers E at every step, and the stations take over from each other
+   * in chapter order: never two at once, never one twice, nothing skipped.
+   */
+  it("hands the street over station by station, in chapter order, from the Arcade to the exit", () => {
+    const arcade = buildings.find(({ id }) => id === "arcade")!;
+    const end = WORLD_CONFIG.width - initialPlayer.size.width;
+    const sequence: string[] = [];
+    for (let x = arcade.position.x; x <= end; x += 4) {
+      const walker = { ...initialPlayer, position: { ...initialPlayer.position, x } };
       const found = findNearestInteractable(walker, worldObjects);
-      expect(found?.id, `target at x=${x}`).not.toBe("construction-area");
-      if (found !== undefined) {
-        expect(found.id, `target at x=${x}`).toBe("world-exit");
-      }
+      expect(found, `nothing answers at x=${x}`).toBeDefined();
+      if (sequence.at(-1) !== found!.id) sequence.push(found!.id);
     }
+    expect(sequence).toEqual([
+      "arcade",
+      ...chapters.map((chapter) => `station-${chapter.id}`),
+      "world-exit",
+    ]);
   });
 
   it("retains exactly the four current project entrances and Edward's House", () => {

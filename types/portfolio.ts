@@ -14,8 +14,7 @@ export type WorldBuildingId =
   | "wardrobe"
   | "sportsgang"
   | "afl-lab"
-  | "arcade"
-  | "construction-area";
+  | "arcade";
 
 export interface ProjectDetails {
   problem: string;
