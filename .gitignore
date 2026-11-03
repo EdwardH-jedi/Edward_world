@@ -49,3 +49,10 @@ Thumbs.db
 
 # Overnight runner logs
 /scripts/overnight/logs/
+
+# Edward's local working notes and audits (kept on disk, not tracked)
+/docs/ui-polish/
+/docs/visual-polish/
+/docs/VISUAL_POLISH_PASS_*.md
+/docs/WORK_SAMPLE_READINESS_AUDIT.md
+/scripts/check-browser-env.sh
