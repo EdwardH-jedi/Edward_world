@@ -76,7 +76,12 @@ export const ISLAND_CONTOURS = {
 
 export type IslandContour = keyof typeof ISLAND_CONTOURS;
 
+const contourCache = new WeakMap<IslandGround, Record<IslandContour, Loop[]>>();
+
+/** The plan's contours in plan units, traced once per island and kept. */
 export function islandContours(ground: IslandGround): Record<IslandContour, Loop[]> {
+  const cached = contourCache.get(ground);
+  if (cached) return cached;
   const out = {} as Record<IslandContour, Loop[]>;
   for (const name of Object.keys(ISLAND_CONTOURS) as IslandContour[]) {
     const { level, wobble } = ISLAND_CONTOURS[name];
@@ -84,6 +89,7 @@ export function islandContours(ground: IslandGround): Record<IslandContour, Loop
       loop.map(([x, y]) => [x * GROUND_CELL, y * GROUND_CELL] as const),
     );
   }
+  contourCache.set(ground, out);
   return out;
 }
 
@@ -172,8 +178,12 @@ function segmentDistance(p: Vec, a: Vec, b: Vec) {
   return Math.hypot(p.x - (a.x + dx * t), p.y - (a.y + dy * t));
 }
 
-/** Trees on the plan: sparse, inland, off the paths, clear of every place and the jetty. */
+const treeCache = new WeakMap<IslandGround, Tree[]>();
+
+/** Trees on the plan: sparse, inland, off the paths, clear of every place and the jetty. Planted once per island. */
 export function plantIsland(ground: IslandGround, plan: IslandPlan, landing: Landing): Tree[] {
+  const cached = treeCache.get(ground);
+  if (cached) return cached;
   const trees: Tree[] = [];
   const density = landing.woodland.density;
   for (let gy = 12; gy < plan.size.y; gy += 24) {
@@ -192,5 +202,17 @@ export function plantIsland(ground: IslandGround, plan: IslandPlan, landing: Lan
       trees.push({ x, y, r: 5 + hash(gx, gy) * 2.4, fruit: Boolean(landing.woodland.fruit) && hash(gy, gx) < 0.4 });
     }
   }
+  treeCache.set(ground, trees);
   return trees;
+}
+
+/**
+ * Does the slow part of going ashore ahead of time: the island's distance
+ * field, its contours and its trees. Called while the boat waits at the
+ * anchorage, so `E` finds them ready.
+ */
+export function prepareIsland(landing: Landing, plan: IslandPlan) {
+  const ground = groundFor(landing, plan);
+  islandContours(ground);
+  plantIsland(ground, plan, landing);
 }

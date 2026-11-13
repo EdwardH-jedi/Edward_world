@@ -35,6 +35,7 @@ import {
   type View,
 } from "@/lib/game/chart/camera";
 import { bottlesInReach, nearestAnchorage } from "@/lib/game/chart/docking";
+import { prepareIsland } from "@/lib/game/chart/island-walk";
 import {
   ageRipples,
   boatAt,
@@ -52,7 +53,7 @@ import { buildChartScene, type ChartScene } from "@/lib/game/chart/scene";
 import { INITIAL_VOYAGE, isAshore, voyageReducer } from "@/lib/game/chart/voyage-machine";
 import { setChartFonts, type ChartFonts } from "@/lib/chart-art/ink";
 import { createChartArt, drawChart, type ChartArt } from "@/lib/chart-art/render";
-import { drawVignette } from "@/lib/chart-art/sheet";
+import { paperLayer, paperOffset } from "@/lib/chart-art/sheet";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import type { LandingCard as CardContent, LandingId, Place, Vec } from "@/types/chart";
 import type { PortfolioProjectId } from "@/types/portfolio";
@@ -157,6 +158,7 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
 
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const paperRef = useRef<HTMLDivElement>(null);
   const islandCanvasRef = useRef<HTMLCanvasElement>(null);
   const pointerRef = useRef<HTMLDivElement>(null);
   const pointerArrowRef = useRef<HTMLSpanElement>(null);
@@ -222,11 +224,15 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
     };
     voyageRef.current = voyage;
 
+    const paper = paperRef.current;
+    if (paper) paper.style.backgroundImage = paperLayer(voyage.art.paper);
+    let paperAt = "";
     const resize = () => {
       voyage.screen = { width: stage.clientWidth, height: stage.clientHeight };
       voyage.dpr = Math.min(2, window.devicePixelRatio || 1);
       canvas.width = Math.round(voyage.screen.width * voyage.dpr);
       canvas.height = Math.round(voyage.screen.height * voyage.dpr);
+      if (paper) paper.style.backgroundSize = `${256 / voyage.dpr}px`;
     };
     resize();
     const observer = new ResizeObserver(resize);
@@ -234,6 +240,33 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
 
     let frame = 0;
     let last = performance.now();
+    const prepared = new Set<LandingId>();
+    let drawn = "";
+    // Text drawn before the faces arrive is in the fallback face; draw again once they have.
+    void document.fonts?.ready.then(() => {
+      drawn = "";
+    });
+    const idleHandles: number[] = [];
+    // Safari has no requestIdleCallback; a short timeout does the same job there.
+    const hasIdle = typeof window.requestIdleCallback === "function";
+    const whenIdle = (work: () => void) => {
+      idleHandles.push(hasIdle ? window.requestIdleCallback(work, { timeout: 1_000 }) : window.setTimeout(work, 50));
+    };
+
+    // While the captain's log is open the chart stands still, so that is when the
+    // islands are prepared: home port first, one per idle slot. Once under way the
+    // queue stops, so it never costs a sailing frame; arriving at an anchorage
+    // still prepares that island before E is pressed.
+    const queue = [HOME_LANDING, ...LANDINGS.map((l) => l.id).filter((id) => id !== HOME_LANDING)];
+    const prepareNext = () => {
+      if (stateRef.current.mode !== "LOG") return;
+      const id = queue.find((candidate) => !prepared.has(candidate));
+      if (!id) return;
+      prepared.add(id);
+      prepareIsland(getLanding(id), ISLAND_PLANS[id]);
+      whenIdle(prepareNext);
+    };
+    whenIdle(prepareNext);
 
     const sail = (dt: number) => {
       const pointer = voyage.steer
@@ -255,6 +288,11 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
       if (dock !== voyage.near) {
         voyage.near = dock;
         setNear(dock);
+        if (dock && !prepared.has(dock)) {
+          prepared.add(dock);
+          const landing = getLanding(dock);
+          whenIdle(() => prepareIsland(landing, ISLAND_PLANS[dock]));
+        }
       }
 
       const picked = bottlesInReach(scene.bottles, voyage.boat, voyage.found);
@@ -313,6 +351,16 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
       voyage.view = stepView(voyage.view, target, dt, reducedRef.current);
 
       const origin = viewOrigin(voyage.view, voyage.screen);
+      // Under reduced motion nothing moves on its own, so an unchanged frame is not redrawn.
+      const still = [
+        voyage.view.k, voyage.view.cx, voyage.view.cy, voyage.boat.x, voyage.boat.y, voyage.boat.facing,
+        voyage.ripples.length, chartedRef.current.size, voyage.found.size, canvas.width, canvas.height, mode,
+      ].join();
+      if (reducedRef.current && still === drawn) {
+        frame = requestAnimationFrame(tick);
+        return;
+      }
+      drawn = still;
       drawChart(g, scene, voyage.art, {
         k: voyage.view.k * voyage.dpr,
         camX: origin.x,
@@ -328,7 +376,11 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
         charted: chartedRef.current,
         found: voyage.found,
       });
-      drawVignette(g, canvas.width, canvas.height);
+      const at = paperOffset(origin.x, origin.y, voyage.view.k * voyage.dpr, voyage.dpr);
+      if (paper && at !== paperAt) {
+        paper.style.backgroundPosition = at;
+        paperAt = at;
+      }
       showBearing(mode === "CHART");
       frame = requestAnimationFrame(tick);
     };
@@ -337,6 +389,10 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
+      for (const handle of idleHandles) {
+        if (hasIdle) window.cancelIdleCallback(handle);
+        else window.clearTimeout(handle);
+      }
       voyageRef.current = null;
     };
   }, [fonts]);
@@ -474,6 +530,7 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
 
   return (
     <div className="chart-stage" ref={stageRef}>
+      <div aria-hidden="true" className="chart-paper" ref={paperRef} />
       <canvas
         aria-label="A nautical chart of Edward's World. Sail the boat between its eight landings."
         className="chart-sea"
@@ -485,6 +542,7 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
         role="img"
         tabIndex={0}
       />
+      <div aria-hidden="true" className="chart-vignette" />
 
       <p className="chart-hud chart-progress">
         Charted <i>{state.charted.length}</i>/{LANDINGS.length} · Bottles <i>{found}</i>/{BOTTLES.length}
@@ -497,22 +555,27 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
           Skip to index &rarr;
         </Link>
       </div>
-      <p className="chart-hud chart-hint">
-        <span className="chart-hint__keys">
-          WASD or arrow keys to sail, or hold the mouse on the water. E drops anchor. M lists the landings.
-        </span>
-        <span className="chart-hint__touch">Hold a finger on the water to sail toward it.</span>
+      <p aria-live="polite" className="chart-sr">
+        {nearLanding ? `Drop anchor at ${nearLanding.name}: press E.` : ""}
       </p>
-      {nearLanding ? (
-        <button
-          className="chart-hud chart-btn chart-btn--primary chart-prompt"
-          onClick={() => dispatch({ type: "DROP_ANCHOR", landing: nearLanding.id })}
-          type="button"
-        >
-          Drop anchor at {nearLanding.name}
-          <kbd>E</kbd>
-        </button>
-      ) : null}
+      <div className="chart-hud chart-dock">
+        {nearLanding ? (
+          <button
+            className="chart-btn chart-btn--primary chart-prompt"
+            onClick={() => dispatch({ type: "DROP_ANCHOR", landing: nearLanding.id })}
+            type="button"
+          >
+            Drop anchor at {nearLanding.name}
+            <kbd>E</kbd>
+          </button>
+        ) : null}
+        <p className="chart-hint">
+          <span className="chart-hint__keys">
+            WASD or arrow keys to sail, or hold the mouse on the water. E drops anchor. M lists the landings.
+          </span>
+          <span className="chart-hint__touch">Hold a finger on the water to sail toward it.</span>
+        </p>
+      </div>
       <div className="chart-hud chart-pointer" hidden ref={pointerRef}>
         <span className="chart-pointer__arrow" ref={pointerArrowRef} />
         <span ref={pointerTextRef} />

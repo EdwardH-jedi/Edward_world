@@ -100,7 +100,9 @@ export function drawChart(g: Pen, scene: ChartScene, art: ChartArt, f: ChartFram
   const t = f.reduced ? 0 : f.t;
 
   g.setTransform(1, 0, 0, 1, 0, 0);
-  drawPaper(g, paperFor(g, art), camX, camY, k, f.width, f.height);
+  // The live chart's paper is a CSS layer behind the canvas; only the overview paints its own.
+  if (overview) drawPaper(g, paperFor(g, art), camX, camY, k, f.width, f.height);
+  else g.clearRect(0, 0, f.width, f.height);
   g.setTransform(k, 0, 0, k, -camX * k, -camY * k);
 
   drawGraticule(g, SHEET, ROSE);

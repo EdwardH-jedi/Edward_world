@@ -7,7 +7,7 @@ import { cameraTarget, screenToChart, stepView, viewOrigin, type Screen, type Vi
 import { atJetty, groundFor, nearestDoor, stepWalker, walkerAt, type Walker } from "@/lib/game/chart/island-walk";
 import { steer } from "@/lib/game/chart/sailing";
 import { createIslandArt, drawIsland } from "@/lib/chart-art/island-plan";
-import { drawVignette } from "@/lib/chart-art/sheet";
+import { paperLayer, paperOffset } from "@/lib/chart-art/sheet";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
 import type { IslandPlan, Landing, Place, Vec } from "@/types/chart";
 
@@ -56,6 +56,7 @@ export function IslandScene({ landing, plan, active, covered, canvasRef, onLeave
   const reduced = useReducedMotion();
   const [near, setNear] = useState<Near>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const paperRef = useRef<HTMLDivElement>(null);
   const live = useRef({ active, covered, reduced, near: null as Near, onLeave, onEnter, onLandings });
   const keys = useRef(new Set<string>());
   const steerAt = useRef<Vec | null>(null);
@@ -71,6 +72,15 @@ export function IslandScene({ landing, plan, active, covered, canvasRef, onLeave
     }
   }, [active, covered, reduced, onLeave, onEnter, onLandings]);
 
+  // Ashore, and back from a place: the plan takes focus unless something else already has it.
+  useEffect(() => {
+    if (!active) return;
+    const focused = document.activeElement;
+    if (!focused || focused === document.body || !focused.isConnected) {
+      canvasRef.current?.focus({ preventScroll: true });
+    }
+  }, [active, canvasRef]);
+
   useEffect(() => {
     canvasRef.current?.focus({ preventScroll: true });
   }, [canvasRef]);
@@ -82,12 +92,20 @@ export function IslandScene({ landing, plan, active, covered, canvasRef, onLeave
     if (!stage || !canvas || !g) return;
     const ground = groundFor(landing, plan);
     const art = createIslandArt(ground, plan, landing);
+    const paper = paperRef.current;
+    if (paper) paper.style.backgroundImage = paperLayer(art.paper);
+    let paperAt = "";
+    let drawn = "";
+    void document.fonts?.ready.then(() => {
+      drawn = "";
+    });
     let dpr = 1;
     const resize = () => {
       screenRef.current = { width: stage.clientWidth, height: stage.clientHeight };
       dpr = Math.min(2, window.devicePixelRatio || 1);
       canvas.width = Math.round(screenRef.current.width * dpr);
       canvas.height = Math.round(screenRef.current.height * dpr);
+      if (paper) paper.style.backgroundSize = `${256 / dpr}px`;
     };
     resize();
     const observer = new ResizeObserver(resize);
@@ -124,9 +142,14 @@ export function IslandScene({ landing, plan, active, covered, canvasRef, onLeave
         }
       }
       viewRef.current = stepView(viewRef.current!, cameraTarget(focus(), screenRef.current, bounds), dt, state.reduced);
-      if (!state.covered) {
+      const nearId = state.near ? (state.near.kind === "jetty" ? "jetty" : state.near.place.id) : null;
+      const view = viewRef.current;
+      const still = [view.k, view.cx, view.cy, walkerRef.current.x, walkerRef.current.y, nearId, canvas.width, canvas.height].join();
+      // Under reduced motion nothing moves on its own, so an unchanged frame is not redrawn.
+      const skip = state.covered || (state.reduced && still === drawn);
+      if (!skip) {
+        drawn = still;
         const origin = viewOrigin(viewRef.current, screenRef.current);
-        const nearId = state.near ? (state.near.kind === "jetty" ? "jetty" : state.near.place.id) : null;
         drawIsland(g, plan, landing, art, {
           k: viewRef.current.k * dpr,
           camX: origin.x,
@@ -137,7 +160,11 @@ export function IslandScene({ landing, plan, active, covered, canvasRef, onLeave
           walker: walkerRef.current,
           near: nearId,
         });
-        drawVignette(g, canvas.width, canvas.height);
+        const at = paperOffset(origin.x, origin.y, viewRef.current.k * dpr, dpr);
+        if (paper && at !== paperAt) {
+          paper.style.backgroundPosition = at;
+          paperAt = at;
+        }
       }
       frame = requestAnimationFrame(tick);
     };
@@ -194,9 +221,11 @@ export function IslandScene({ landing, plan, active, covered, canvasRef, onLeave
 
   const card = getLandingCard(landing.id);
   const prompt = active ? promptFor(near) : null;
+  const announcement = prompt ? `${prompt}: press E.` : "";
 
   return (
     <div className="chart-island" ref={stageRef}>
+      <div aria-hidden="true" className="chart-paper" ref={paperRef} />
       <canvas
         aria-label={`A harbour plan of ${landing.name}. Walk to a door and press E.`}
         className="chart-sea"
@@ -214,6 +243,7 @@ export function IslandScene({ landing, plan, active, covered, canvasRef, onLeave
         role="img"
         tabIndex={0}
       />
+      <div aria-hidden="true" className="chart-vignette" />
       <div className="chart-hud chart-island__title">
         <p className="chart-eyebrow">Inset · {card.eyebrow}</p>
         <h2>{landing.name}</h2>
@@ -229,22 +259,27 @@ export function IslandScene({ landing, plan, active, covered, canvasRef, onLeave
           Skip to index &rarr;
         </Link>
       </div>
-      <p className="chart-hud chart-hint">
-        <span className="chart-hint__keys">
-          WASD or arrow keys to walk, or hold the mouse on the ground. E at a door goes in. Esc returns to the boat.
-        </span>
-        <span className="chart-hint__touch">Hold a finger on the ground to walk toward it.</span>
+      <p aria-live="polite" className="chart-sr">
+        {announcement}
       </p>
-      {prompt ? (
-        <button className="chart-hud chart-btn chart-btn--primary chart-prompt" onClick={() => {
-          const current = live.current.near;
-          if (current?.kind === "place") live.current.onEnter(current.place);
-          else if (current?.kind === "jetty") live.current.onLeave();
-        }} type="button">
-          {prompt}
-          <kbd>E</kbd>
-        </button>
-      ) : null}
+      <div className="chart-hud chart-dock">
+        {prompt ? (
+          <button className="chart-btn chart-btn--primary chart-prompt" onClick={() => {
+            const current = live.current.near;
+            if (current?.kind === "place") live.current.onEnter(current.place);
+            else if (current?.kind === "jetty") live.current.onLeave();
+          }} type="button">
+            {prompt}
+            <kbd>E</kbd>
+          </button>
+        ) : null}
+        <p className="chart-hint">
+          <span className="chart-hint__keys">
+            WASD or arrow keys to walk, or hold the mouse on the ground. E at a door goes in. Esc returns to the boat.
+          </span>
+          <span className="chart-hint__touch">Hold a finger on the ground to walk toward it.</span>
+        </p>
+      </div>
     </div>
   );
 }

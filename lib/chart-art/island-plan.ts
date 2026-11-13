@@ -1,7 +1,7 @@
 import { drawBoat } from "@/lib/chart-art/boat";
 import { BLUE, dot, ink, INK, label, LAND, line, PAPER_LIT, pathFromLoops, poly, rect, RED, SEPIA, shade, type Pen } from "@/lib/chart-art/ink";
 import { drawFigure } from "@/lib/chart-art/figure";
-import { createPaperTile, drawPaper } from "@/lib/chart-art/sheet";
+import { createPaperTile } from "@/lib/chart-art/sheet";
 import { islandContours, plantIsland, type IslandContour, type IslandGround, type Walker } from "@/lib/game/chart/island-walk";
 import type { IslandPlan, Landing, Place, Vec } from "@/types/chart";
 
@@ -57,12 +57,10 @@ export interface IslandFrame {
   readonly near: string | null;
 }
 
-const patterns = new WeakMap<CanvasRenderingContext2D, CanvasPattern | null>();
-
 export function drawIsland(g: Pen, plan: IslandPlan, landing: Landing, art: IslandArt, f: IslandFrame) {
   g.setTransform(1, 0, 0, 1, 0, 0);
-  if (!patterns.has(g)) patterns.set(g, g.createPattern(art.paper, "repeat"));
-  drawPaper(g, patterns.get(g) ?? null, f.camX, f.camY, f.k, f.width, f.height);
+  // Paper is a CSS layer behind the canvas.
+  g.clearRect(0, 0, f.width, f.height);
   g.setTransform(f.k, 0, 0, f.k, -f.camX * f.k, -f.camY * f.k);
 
   // A light graticule, so the plan reads as surveyed.

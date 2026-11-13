@@ -59,6 +59,7 @@ test.describe("chart overworld", () => {
     await setSail(page);
     await page.keyboard.press("m");
     await page.getByRole("dialog", { name: "Landings" }).getByRole("listitem").filter({ hasText: "The Shipyard" }).getByRole("button").click();
+    await expect(page.getByRole("button", { name: /Drop anchor at The Shipyard/ })).toBeVisible();
     await page.keyboard.press("e");
     await expect(page.locator(".chart-island")).toBeVisible();
 
@@ -79,6 +80,7 @@ test.describe("chart overworld", () => {
     await setSail(page);
     await page.keyboard.press("m");
     await page.getByRole("dialog", { name: "Landings" }).getByRole("listitem").filter({ hasText: "SportsGang Courts" }).getByRole("button").click();
+    await expect(page.getByRole("button", { name: /Drop anchor at SportsGang Courts/ })).toBeVisible();
     await page.keyboard.press("e");
     await expect(page.locator(".chart-island")).toBeVisible();
 
