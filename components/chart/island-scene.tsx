@@ -160,6 +160,9 @@ export function IslandScene({ landing, plan, active, covered, canvasRef, onLeave
       if (MOVE[key]) {
         keys.current.add(key);
         event.preventDefault();
+      } else if (event.repeat) {
+        // A held E would go ashore and straight back: act once per press.
+        return;
       } else if (key === "escape") {
         event.preventDefault();
         live.current.onLeave();

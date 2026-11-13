@@ -75,6 +75,51 @@ test.describe("chart overworld", () => {
     await expect(page.locator(".chart-island")).toBeVisible();
   });
 
+  test("a project's place opens its existing interior, and Escape comes back to its door", async ({ page }) => {
+    await setSail(page);
+    await page.keyboard.press("m");
+    await page.getByRole("dialog", { name: "Landings" }).getByRole("listitem").filter({ hasText: "SportsGang Courts" }).getByRole("button").click();
+    await page.keyboard.press("e");
+    await expect(page.locator(".chart-island")).toBeVisible();
+
+    // Inland from the jetty, then along the footpath past the clubhouse's door. Edward walks
+    // through the door's reach rather than stopping at a wall, so watch for it every frame.
+    await page.keyboard.down("ArrowLeft");
+    await page.waitForTimeout(350);
+    await page.keyboard.up("ArrowLeft");
+    await page.keyboard.down("ArrowDown");
+    await page.waitForTimeout(330);
+    await page.keyboard.up("ArrowDown");
+    await page.keyboard.down("ArrowLeft");
+    await page.waitForFunction(
+      () => document.querySelector(".chart-island .chart-prompt")?.textContent?.includes("Enter Clubhouse"),
+      null,
+      { polling: "raf", timeout: 6_000 },
+    );
+    await page.keyboard.up("ArrowLeft");
+    await page.keyboard.press("e");
+
+    const interior = page.locator(".loc-experience");
+    await expect(interior).toBeVisible();
+    await expect(page.locator(".chart-skip")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(interior).toBeHidden();
+    await expect(page.getByRole("button", { name: /Enter Clubhouse/ })).toBeVisible();
+  });
+
+  test("holding E at an anchorage goes ashore once, not ashore and back", async ({ page }) => {
+    await setSail(page);
+    await expect(page.getByRole("button", { name: /Drop anchor at Incheon Port/ })).toBeVisible();
+    // A second keyboard.down on a held key is sent with `repeat: true`, as auto-repeat is.
+    await page.keyboard.down("e");
+    await expect(page.locator(".chart-island")).toBeVisible();
+    // Unguarded, this one repeat would take Edward straight back to the boat.
+    await page.keyboard.down("e");
+    await page.keyboard.up("e");
+    await page.waitForTimeout(200);
+    await expect(page.locator(".chart-island")).toBeVisible();
+  });
+
   test("Escape closes the log, and M or Escape closes the Landings panel", async ({ page }) => {
     await page.goto("/chart");
     // Focus on "Set sail" means the log's key handling is live (hydrated).

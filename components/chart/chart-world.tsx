@@ -372,6 +372,8 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
         event.preventDefault();
         return;
       }
+      // Held keys repeat; dropping anchor and the panel act once per press.
+      if (event.repeat) return;
       if (key === "m") {
         event.preventDefault();
         dispatch({ type: "OPEN_LANDINGS" });
