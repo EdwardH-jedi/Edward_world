@@ -74,8 +74,9 @@ than in place of it: every "Skip to index" is a same-route link, the voyage
 machine's `OPEN_INDEX` settles whatever was open (the log is done with, a
 place or the Landings panel closes, the boat and the island stay), and closing
 the index writes `?view=world` and leaves the visitor where they were. The
-chart records the visitor's join the first time it is theirs to sail. Music
-stays off on the chart until Edward decides (brief, open question 5).
+chart records the visitor's join and starts the town's track the first time it
+is theirs to sail, and steps the music back inside a room exactly as the town
+does (see [Ducking](#ducking)).
 
 `/town` keeps the side-view town and its own flow:
 
@@ -600,7 +601,8 @@ unlocked it.
   `AudioContext` while that gesture is still on the stack. They stay attached
   after the first unlock, because an interrupted context may need a fresh
   gesture to resume; on a running context they are a no-op. They do not start
-  the music — that waits for the world.
+  the music — that waits for the world: on `/`, the chart under way; on
+  `/town`, the town's world.
 - **Entry.** The world reveal gets 500 ms of its own before a 2 s fade in.
 - **Interruption.** A `visibilitychange` listener resumes a context the OS or
   browser suspended while the tab was hidden.
@@ -714,10 +716,13 @@ unconfigured. The counter lives under one key, `edwards-world:joins`.
 
 ### Counting one visitor once
 
-`recordJoinOnce()` is called from `components/portfolio-experience.tsx` the
-first time the visitor actually holds the world, whichever of the three doors
-they came through: the title's camera pan landing, SKIP INTRO (or `Escape`)
-during that pan, or VIEW PROJECTS, since the index view is the world view too.
+`recordJoinOnce()` is called from `components/chart/chart-experience.tsx` the
+first time the chart is the visitor's to sail: Set sail, Skip to index, or
+arriving with a `?view=`. The town at `/town` still calls it from
+`components/portfolio-experience.tsx` the first time the visitor holds its
+world, whichever of the three doors they came through: the title's camera pan
+landing, SKIP INTRO (or `Escape`) during that pan, or VIEW PROJECTS, since the
+index view is the world view too.
 Two latches keep it to one:
 
 - A **module-scope flag** covers a single page load — React re-mounts freely

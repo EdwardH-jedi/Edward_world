@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChartWorld } from "@/components/chart/chart-world";
 import { PortfolioIndex } from "@/components/index/portfolio-index";
+import { startBgm } from "@/lib/audio/bgm-engine";
 import type { ChartFonts } from "@/lib/chart-art/ink";
 import { getPortfolioEntryView } from "@/lib/game/portfolio-entry";
 import { recordJoinOnce } from "@/lib/joins/client";
@@ -33,12 +34,16 @@ export function ChartExperience({ fonts }: { fonts: ChartFonts }) {
   const indexOpen = entry === "index";
   const [underWay, setUnderWay] = useState(false);
 
-  // One join per visitor, counted the first time the chart is theirs to sail —
-  // by Set sail, by Skip to index, or by arriving with a `?view=`.
-  // `recordJoinOnce` is latched at module scope, so re-running costs nothing.
+  // The chart is the visitor's to sail — by Set sail, by Skip to index, or by
+  // arriving with a `?view=`. That is when their join is counted and when the
+  // music begins, as the town's did when its world did. Both are latched at
+  // module scope, so re-running costs nothing and never starts a second copy
+  // of the song. Without a gesture yet, `startBgm` only arms the music; the
+  // first click or key starts it.
   useEffect(() => {
     if (!underWay) return;
     recordJoinOnce();
+    startBgm("world");
     if (entry === "intro") setView("world");
   }, [underWay, entry]);
 

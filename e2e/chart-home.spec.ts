@@ -109,6 +109,33 @@ test.describe("the chart at /", () => {
     await expect(door).toBeVisible();
   });
 
+  test("the music starts when the voyage does and steps back inside a room", async ({ page }) => {
+    const music = page.locator("body > .music-control");
+    await goAshoreAtSydney(page);
+    await expect(music).toHaveAttribute("data-state", "playing");
+
+    await page.keyboard.down("ArrowRight");
+    await expect(page.getByRole("button", { name: /Enter Edward's House/ })).toBeVisible({ timeout: 8_000 });
+    await page.keyboard.up("ArrowRight");
+    await page.keyboard.press("e");
+    await expect(page.locator(".hs-house")).toBeVisible();
+    await expect(music).toHaveAttribute("data-state", "ducked");
+
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".hs-house")).toBeHidden();
+    await expect(music).toHaveAttribute("data-state", "playing");
+  });
+
+  test("arriving at the index arms the music, and the first key starts it", async ({ page }) => {
+    const music = page.locator("body > .music-control");
+    await page.goto("/?view=index");
+    await expect(index(page)).toBeVisible();
+    // No gesture yet: browsers allow no sound, so nothing has started.
+    await expect(music).toHaveAttribute("data-state", "locked");
+    await page.keyboard.press("Escape");
+    await expect(music).toHaveAttribute("data-state", "playing");
+  });
+
   test("a document's way back opens the index over the chart", async ({ page }) => {
     await page.goto("/resume");
     await page.getByRole("link", { name: "Back to portfolio" }).click();

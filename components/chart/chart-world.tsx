@@ -10,6 +10,8 @@ import { LandingsPanel } from "@/components/chart/landings-panel";
 import { PlaceCard } from "@/components/chart/place-card";
 import { EXPERIENCE_PROJECTS, HouseExperience, ProjectExperience } from "@/components/experience-scenes";
 import { SceneDissolve } from "@/components/world/scene-dissolve";
+import type { BgmSurface } from "@/lib/audio/bgm";
+import { setBgmSurface } from "@/lib/audio/bgm-engine";
 import { ISLAND_PLANS } from "@/data/islands";
 import { getProjectById } from "@/data/projects";
 import {
@@ -570,6 +572,16 @@ export function ChartWorld({ fonts, entry, indexOpen, onUnderWay }: ChartWorldPr
   const plan = ashore ? ISLAND_PLANS[ashore.id] : null;
   const place = state.mode === "PLACE" && plan ? (plan.places.find((p) => p.id === state.place) ?? null) : null;
   const interior = place ? interiorFor(place) : null;
+
+  // The music steps back inside a room, as it does in the town: further for a
+  // project than for Edward's House. A card is read on the island, so it stays.
+  // Set here, before the parent starts the track, so a visitor back from a
+  // document hears the chart's level rather than the document's.
+  const surface: BgmSurface =
+    interior?.kind === "scene" ? (interior.locationId ? "house" : "project") : "world";
+  useEffect(() => {
+    setBgmSurface(surface);
+  }, [surface]);
 
   return (
     <div className="chart-stage" ref={stageRef}>
