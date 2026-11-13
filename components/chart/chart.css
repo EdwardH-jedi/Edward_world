@@ -204,7 +204,7 @@
   width: min(430px, calc(100% - 32px));
 }
 
-.chart-toast p {
+.chart-toast__text {
   color: #3b4756;
   font-family: var(--hand);
   font-size: 24px;

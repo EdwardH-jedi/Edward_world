@@ -456,7 +456,7 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
         {toast ? (
           <>
             <p className="chart-eyebrow">{toast.eyebrow}</p>
-            <p>{toast.text}</p>
+            <p className="chart-toast__text">{toast.text}</p>
           </>
         ) : null}
       </div>

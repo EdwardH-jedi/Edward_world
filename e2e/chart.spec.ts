@@ -40,6 +40,8 @@ test.describe("chart overworld", () => {
 
   test("Escape closes the log, and M or Escape closes the Landings panel", async ({ page }) => {
     await page.goto("/chart");
+    // Focus on "Set sail" means the log's key handling is live (hydrated).
+    await expect(page.getByRole("button", { name: /Set sail/ })).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog", { name: "It is a long story." })).toBeHidden();
 
@@ -72,9 +74,26 @@ test.describe("chart overworld", () => {
     await expect(panel.getByRole("button", { name: "Sail to Arcade Pier" })).toBeAttached();
   });
 
+  test("sailing through a bottle unfolds its message and counts it", async ({ page }) => {
+    await setSail(page);
+    await page.getByRole("button", { name: /^Landings/ }).click();
+    const panel = page.getByRole("dialog", { name: "Landings" });
+    await panel.getByRole("listitem").filter({ hasText: "AFL Oval" }).getByRole("button").click();
+    await expect(panel).toBeHidden();
+
+    // The paper-trading bottle floats a little west of AFL Oval's anchorage.
+    await page.keyboard.down("a");
+    await expect(page.locator(".chart-progress")).toContainText("Bottles 1/8", { timeout: 4_000 });
+    await page.keyboard.up("a");
+    await expect(page.locator(".chart-toast")).toBeVisible();
+    await expect(page.locator(".chart-toast__text")).toContainText("Paper-trading research");
+    await expect(page.locator(".chart-toast .chart-eyebrow")).toHaveText("Message in a bottle · 1/8");
+  });
+
   test("keeps Skip to index on screen in every state", async ({ page }) => {
     await page.goto("/chart");
     await expect(page.getByRole("link", { name: /Skip to index/ }).first()).toHaveAttribute("href", "/?view=index");
+    await expect(page.getByRole("button", { name: /Set sail/ })).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(page.getByRole("link", { name: /Skip to index/ })).toBeVisible();
   });
