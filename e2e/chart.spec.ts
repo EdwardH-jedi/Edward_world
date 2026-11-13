@@ -12,9 +12,9 @@ async function setSail(page: Page) {
 }
 
 test.describe("chart overworld", () => {
-  test("log → set sail → Landings → Sydney Harbour → E → card → Esc → back at the anchorage", async ({ page }) => {
+  test("log → set sail → Landings → Sydney → E → walk to Edward's House → enter → Esc, Esc → back at Sydney's anchorage", async ({ page }) => {
     await setSail(page);
-    await expect(page.locator(".chart-sea")).toBeFocused();
+    await expect(page.locator(".chart-stage > .chart-sea")).toBeFocused();
 
     await page.getByRole("button", { name: /^Landings/ }).click();
     const panel = page.getByRole("dialog", { name: "Landings" });
@@ -22,20 +22,57 @@ test.describe("chart overworld", () => {
     await panel.getByRole("listitem").filter({ hasText: "Sydney Harbour" }).getByRole("button").click();
     await expect(panel).toBeHidden();
 
-    const prompt = page.getByRole("button", { name: /Drop anchor at Sydney Harbour/ });
-    await expect(prompt).toBeVisible();
+    const anchor = page.getByRole("button", { name: /Drop anchor at Sydney Harbour/ });
+    await expect(anchor).toBeVisible();
     await page.keyboard.press("e");
 
-    const card = page.getByRole("dialog", { name: "Sydney Harbour" });
-    await expect(card).toBeVisible();
-    await expect(card.getByRole("button", { name: /Back to the boat/ })).toBeFocused();
-    await expect(card.getByRole("link", { name: /Résumé/ })).toHaveAttribute("href", "/resume");
+    const island = page.locator(".chart-island");
+    await expect(island).toBeVisible();
+    await expect(island.getByRole("heading", { name: "Sydney Harbour" })).toBeVisible();
+    await expect(island.getByRole("link", { name: /Skip to index/ })).toBeVisible();
+
+    // One straight footpath runs east from the jetty to Edward's House, whose door faces it.
+    await page.keyboard.down("ArrowRight");
+    const door = page.getByRole("button", { name: /Enter Edward's House/ });
+    await expect(door).toBeVisible({ timeout: 8_000 });
+    await page.keyboard.up("ArrowRight");
+    await page.keyboard.press("e");
+
+    const house = page.locator(".hs-house");
+    await expect(house).toBeVisible();
+    await expect(page.locator(".chart-skip")).toBeVisible();
+
+    // The house leaves on Escape while none of its own cards is open.
+    await page.keyboard.press("Escape");
+    await expect(house).toBeHidden();
+    await expect(island).toBeVisible();
+    await expect(door).toBeVisible();
 
     await page.keyboard.press("Escape");
-    await expect(card).toBeHidden();
-    await expect(prompt).toBeVisible();
+    await expect(island).toBeHidden();
+    await expect(anchor).toBeVisible();
     await expect(page.locator(".chart-progress")).toContainText("Charted 1/8");
-    await expect(page.locator(".chart-sea")).toBeFocused();
+    await expect(page.locator(".chart-stage > .chart-sea")).toBeFocused();
+  });
+
+  test("a place's card opens from its door and closes back onto the island", async ({ page }) => {
+    await setSail(page);
+    await page.keyboard.press("m");
+    await page.getByRole("dialog", { name: "Landings" }).getByRole("listitem").filter({ hasText: "The Shipyard" }).getByRole("button").click();
+    await page.keyboard.press("e");
+    await expect(page.locator(".chart-island")).toBeVisible();
+
+    // The slipway's door faces the jetty.
+    await page.keyboard.down("ArrowRight");
+    await expect(page.getByRole("button", { name: /Read Slipway/ })).toBeVisible({ timeout: 6_000 });
+    await page.keyboard.up("ArrowRight");
+    await page.keyboard.press("e");
+    const card = page.getByRole("dialog", { name: "Slipway" });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText("Reserved for the next project.");
+    await page.keyboard.press("Escape");
+    await expect(card).toBeHidden();
+    await expect(page.locator(".chart-island")).toBeVisible();
   });
 
   test("Escape closes the log, and M or Escape closes the Landings panel", async ({ page }) => {

@@ -8,6 +8,9 @@ import { expect, test, type Page } from "@playwright/test";
  *
  *   CHART_REVIEW=1 npx playwright test e2e/chart-review.spec.ts
  *
+ * CHART_REVIEW_PHASE names the folder; CHART_REVIEW_ISLANDS=1 also shoots each
+ * island's harbour plan after going ashore.
+ *
  * Reduced motion keeps the frames still: no zoom, bobbing, pulse or ripples.
  */
 
@@ -67,6 +70,15 @@ for (const size of SIZES) {
         await expect(page.getByRole("button", { name: new RegExp(`Drop anchor at ${name}`) })).toBeVisible();
         await settle(page);
         await page.screenshot({ path: `${OUT}/landing-${i + 1}-${slug(name)}-${size.name}.png` });
+
+        if (process.env.CHART_REVIEW_ISLANDS) {
+          await page.keyboard.press("e");
+          await expect(page.locator(".chart-island")).toBeVisible();
+          await settle(page);
+          await page.screenshot({ path: `${OUT}/island-${i + 1}-${slug(name)}-${size.name}.png` });
+          await page.keyboard.press("Escape");
+          await expect(page.locator(".chart-island")).toBeHidden();
+        }
       }
     });
   });

@@ -140,7 +140,13 @@ export type PlaceKind = "project" | "chapter" | "idea" | "placeholder";
 export type PlaceAction =
   | { readonly type: "OPEN_PROJECT"; readonly projectId: PortfolioProjectId }
   | { readonly type: "OPEN_LOCATION"; readonly locationId: WorldLocationId }
-  | { readonly type: "OPEN_CARD"; readonly heading: string; readonly body: readonly string[] }
+  | {
+      readonly type: "OPEN_CARD";
+      readonly heading: string;
+      readonly body: readonly string[];
+      /** Beyond the brief's shape: a signpost's card carries the link it points to. */
+      readonly links?: readonly CardLink[];
+    }
   | { readonly type: "NONE" };
 
 /** A building or spot on an island plan. */
