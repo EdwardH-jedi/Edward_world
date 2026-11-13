@@ -21,7 +21,7 @@ for (const viewport of [
     page,
   }) => {
     await page.setViewportSize(viewport);
-    await page.goto("/");
+    await page.goto("/town");
     await page.locator(".title-enter").waitFor();
     // PRESS ENTER blinks (opacity only); its box is there regardless.
     const boxes = await page.evaluate((selectors) => {

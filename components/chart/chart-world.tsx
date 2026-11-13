@@ -50,7 +50,8 @@ import {
   type Ripple,
 } from "@/lib/game/chart/sailing";
 import { buildChartScene, type ChartScene } from "@/lib/game/chart/scene";
-import { INITIAL_VOYAGE, isAshore, voyageReducer } from "@/lib/game/chart/voyage-machine";
+import { isAshore, startVoyage, voyageReducer, type VoyageEvent } from "@/lib/game/chart/voyage-machine";
+import type { PortfolioEntryView } from "@/lib/game/portfolio-entry";
 import { setChartFonts, type ChartFonts } from "@/lib/chart-art/ink";
 import { createChartArt, drawChart, type ChartArt } from "@/lib/chart-art/render";
 import { paperLayer, paperOffset } from "@/lib/chart-art/sheet";
@@ -149,9 +150,26 @@ function interiorFor(place: Place): Interior | null {
   return null;
 }
 
-export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
-  const [state, dispatch] = useReducer(voyageReducer, INITIAL_VOYAGE);
+const OPEN_INDEX: VoyageEvent = { type: "OPEN_INDEX" };
+
+interface ChartWorldProps {
+  fonts: ChartFonts;
+  /** How the visit arrived. Only a cold visit opens on the captain's log. */
+  entry: PortfolioEntryView;
+  /** The index is open over the chart: nothing here listens, and nothing that holds focus mounts. */
+  indexOpen: boolean;
+  /** The log is behind the visitor, by whichever door. */
+  onUnderWay: () => void;
+}
+
+export function ChartWorld({ fonts, entry, indexOpen, onUnderWay }: ChartWorldProps) {
+  const [current, dispatch] = useReducer(voyageReducer, entry, startVoyage);
+  // While the index is open the voyage shows as the index leaves it (the effect
+  // below makes that stick), so the log, a panel or a place never mounts beneath
+  // the index for a commit and pulls focus out of it as it unmounts.
+  const state = indexOpen ? voyageReducer(current, OPEN_INDEX) : current;
   const reduced = useReducedMotion();
+  const { display, caps, hand } = fonts;
   const [near, setNear] = useState<LandingId | null>(null);
   const [found, setFound] = useState(0);
   const [toast, setToast] = useState<Toast | null>(null);
@@ -166,6 +184,7 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
   const voyageRef = useRef<Voyage | null>(null);
   const stateRef = useRef(state);
   const reducedRef = useRef(reduced);
+  const indexOpenRef = useRef(indexOpen);
 
   const charted = useMemo(() => new Set(state.charted), [state.charted]);
   const chartedRef = useRef(charted);
@@ -175,21 +194,34 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
     stateRef.current = state;
     chartedRef.current = charted;
     reducedRef.current = reduced;
-  }, [state, charted, reduced]);
+    indexOpenRef.current = indexOpen;
+  }, [state, charted, reduced, indexOpen]);
 
-  // Any change of mode lets go of the helm, as the prototype did. Back at the
-  // boat from an island there is no dialog to hand focus back, so the chart takes it.
+  // The index settles the voyage: the log is done with, a place or the panel closes.
+  useEffect(() => {
+    if (indexOpen) dispatch(OPEN_INDEX);
+  }, [indexOpen]);
+
+  const underWay = state.mode !== "LOG";
+  useEffect(() => {
+    if (underWay) onUnderWay();
+  }, [underWay, onUnderWay]);
+
+  // Any change of mode, and the index opening, lets go of the helm, as the
+  // prototype did. Back at the boat from an island, or from an index opened
+  // on arrival, there is no dialog to hand focus back, so the chart takes it.
   useEffect(() => {
     const voyage = voyageRef.current;
     if (voyage) {
       voyage.keys.clear();
       voyage.steer = null;
     }
+    if (indexOpen) return;
     const focused = document.activeElement;
-    if (state.mode === "CHART" && (!focused || focused === document.body)) {
+    if (state.mode === "CHART" && (!focused || focused === document.body || !focused.isConnected)) {
       canvasRef.current?.focus({ preventScroll: true });
     }
-  }, [state.mode]);
+  }, [state.mode, indexOpen]);
 
   // Build the chart once, on the client, and run the frame loop.
   useEffect(() => {
@@ -198,7 +230,7 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
     const g = canvas?.getContext("2d");
     if (!stage || !canvas || !g) return;
 
-    setChartFonts(fonts);
+    setChartFonts({ display, caps, hand });
     const scene = buildChartScene(LANDINGS, BOTTLES, SHEET, {
       seas: SEA_NAMES,
       rose: ROSE,
@@ -395,13 +427,16 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
       }
       voyageRef.current = null;
     };
-  }, [fonts]);
+    // Keyed on the three family names, not the object: opening the index is a
+    // navigation that hands this component a fresh `fonts`, and rebuilding here
+    // would put the boat back in its home port.
+  }, [display, caps, hand]);
 
   // Keyboard: the helm while sailing, Enter on the log, M for the Landings panel.
   // Escape inside a dialog is handled once, by the dialog.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      if (indexOpenRef.current || event.metaKey || event.ctrlKey || event.altKey) return;
       const key = event.key.toLowerCase();
       const mode = stateRef.current.mode;
       const voyage = voyageRef.current;
@@ -592,7 +627,7 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
       {state.mode === "LOG" ? <CaptainsLog onSetSail={setSail} returnFocusRef={canvasRef} /> : null}
       {ashore && plan ? (
         <IslandScene
-          active={state.mode === "ISLAND"}
+          active={state.mode === "ISLAND" && !indexOpen}
           canvasRef={islandCanvasRef}
           covered={interior?.kind === "scene"}
           key={ashore.id}

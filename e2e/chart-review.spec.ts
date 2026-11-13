@@ -50,7 +50,7 @@ for (const size of SIZES) {
       test.setTimeout(90_000);
       mkdirSync(OUT, { recursive: true });
       await page.emulateMedia({ reducedMotion: "reduce" });
-      await page.goto("/chart");
+      await page.goto("/");
       await expect(page.getByRole("dialog", { name: "It is a long story." })).toBeVisible();
       await settle(page);
       await page.screenshot({ path: `${OUT}/captains-log-${size.name}.png` });

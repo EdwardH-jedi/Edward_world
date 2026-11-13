@@ -37,13 +37,14 @@ no CSS framework and no component library; the runtime dependency list is
 
 | Route | Rendering |
 | --- | --- |
-| `/` | Static. The whole world — a single client entry point below the layout |
+| `/` | Static. The chart overworld — a single client entry point below the layout; `?view=` is read on the client |
+| `/town` | Static, `noindex`. The side-view town `/` used to be, unlisted until Edward decides whether it retires (brief, open question 2) |
 | `/resume` | Static |
-| `/chart` | Static. The chart overworld while it is built (`noindex`); phase 5 of `docs/chart-overworld/BRIEF.md` makes it `/` |
 | `/case-studies/[slug]` | SSG, one page per project via `generateStaticParams` |
 | `/api/joins` | Dynamic (`force-dynamic`). `GET` reads, `POST` increments |
 | `/api/sportsgang/golf-board` | Dynamic (`force-dynamic`). `GET` reads the public golf board, `POST` submits a completed run |
 | `/manifest.webmanifest`, `/robots.txt`, `/_not-found` | Static |
+| `/chart` | A temporary (307) redirect to `/` in `next.config.ts`; the chart was built there |
 
 `/resume` and `/case-studies/*` are real routes, not overlays, so the component
 tree under them is torn down and rebuilt on every visit. That constraint is why
@@ -55,6 +56,28 @@ without being imported by the Next.js application. The generated
 `design/support.js` runtime is local-only and ignored.
 
 ## Runtime flow
+
+`/` is the chart (see [Chart overworld](#chart-overworld)):
+
+```text
+LOG -> (Set sail) -> CHART -> (E) -> ISLAND -> (E at a door) -> PLACE
+                       ^-----Esc------+  ^---------Esc-----------+
+LOG on a cold visit only: ?view=world and ?view=index start at CHART.
+INDEX opens over every one of these.
+```
+
+`components/chart/chart-experience.tsx` keeps the contract `/` had under the
+town. A cold visit opens on the captain's log; setting sail writes
+`?view=world` into the history entry, so a refresh or a return from a document
+does not replay it. `?view=index` opens `PortfolioIndex` over the voyage rather
+than in place of it: every "Skip to index" is a same-route link, the voyage
+machine's `OPEN_INDEX` settles whatever was open (the log is done with, a
+place or the Landings panel closes, the boat and the island stay), and closing
+the index writes `?view=world` and leaves the visitor where they were. The
+chart records the visitor's join the first time it is theirs to sail. Music
+stays off on the chart until Edward decides (brief, open question 5).
+
+`/town` keeps the side-view town and its own flow:
 
 ```text
 TITLE -> (Enter) -> PAN (800 ms) -> WORLD
@@ -96,7 +119,7 @@ visitor never sees it; where storage is blocked it shows every visit.
 
 ## Chart overworld
 
-`/chart` is the sea chart that will replace the side-view town
+`/` is the sea chart that replaced the side-view town in phase 5
 (`docs/chart-overworld/BRIEF.md`; `prototype.html` beside it is the visual
 reference). It keeps the same layering as the rest of the repo:
 
@@ -107,8 +130,8 @@ reference). It keeps the same layering as the rest of the repo:
   drives collision, coastlines, waterlines and soundings; `sailing.ts`,
   `docking.ts` and `camera.ts` step the boat and the view; `scene.ts` assembles
   everything static once; `voyage-machine.ts` is the LOG → CHART → ISLAND →
-  PLACE state machine, with LANDINGS from the chart or an island, driven by
-  input only.
+  PLACE state machine, with LANDINGS from the chart or an island and
+  `OPEN_INDEX` from anywhere, driven by input only.
 - `lib/chart-art/` — drawing only. `Path2D` objects are built once from the
   scene's loops; each frame fills them, culling islands and bottles outside the
   view. One landmark routine per file under `landmarks/`, so a drawing can be
@@ -120,7 +143,8 @@ reference). It keeps the same layering as the rest of the repo:
   and that anchorages and island sizes stay within the brief.
 - `components/chart/` — the canvas and its frame loop (`chart-world.tsx`), the
   island scene, and the log, place card and Landings panel, which reuse
-  `useDialogFocus`.
+  `useDialogFocus`. `chart-experience.tsx` puts the chart at `/` and the index
+  over it; `e2e/chart-home.spec.ts` covers that contract.
 
 Ashore, `voyage-machine.ts` adds ISLAND and PLACE: `E` at an anchorage goes
 ashore, `E` at a door opens the place, and Escape steps back one level from

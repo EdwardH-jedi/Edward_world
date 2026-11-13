@@ -39,7 +39,7 @@ for (const profile of PROFILES) {
     test(`holds ${profile.target} fps sailing and walking`, async ({ page }) => {
       const cdp = await page.context().newCDPSession(page);
       await cdp.send("Emulation.setCPUThrottlingRate", { rate: profile.throttle });
-      await page.goto("/chart");
+      await page.goto("/");
       await page.getByRole("button", { name: /Set sail/ }).click();
       await page.waitForTimeout(1_200);
 

@@ -1,3 +1,4 @@
+import type { PortfolioEntryView } from "@/lib/game/portfolio-entry";
 import type { LandingId } from "@/types/chart";
 
 /**
@@ -8,9 +9,12 @@ import type { LandingId } from "@/types/chart";
  *            |  +--Esc---+  <------Esc------+
  *            +-> LANDINGS (from the chart or an island; Esc goes back)
  *
- * INDEX is a link, reachable from every state. Timers and input drive this
- * machine; animation never does. The camera's zoom follows the mode, it does
- * not decide it.
+ * INDEX is a link, reachable from every state. It opens over the voyage
+ * rather than replacing it, and OPEN_INDEX settles whatever was open first, as
+ * the town's index does: the log is done with, a place or the Landings panel
+ * closes, the boat and the island stay where they are. Timers and input drive
+ * this machine; animation never does. The camera's zoom follows the mode, it
+ * does not decide it.
  */
 
 export type VoyageMode = "LOG" | "CHART" | "LANDINGS" | "ISLAND" | "PLACE";
@@ -44,7 +48,9 @@ export type VoyageEvent =
   | { readonly type: "TOGGLE_LANDINGS" }
   /** A landing picked in the panel. The caller moves the boat. */
   | { readonly type: "SAIL_TO"; readonly landing: LandingId }
-  | { readonly type: "ESCAPE" };
+  | { readonly type: "ESCAPE" }
+  /** The index opened over the voyage. */
+  | { readonly type: "OPEN_INDEX" };
 
 export const INITIAL_VOYAGE: VoyageState = {
   mode: "LOG",
@@ -55,6 +61,15 @@ export const INITIAL_VOYAGE: VoyageState = {
 };
 
 const toChart = (state: VoyageState): VoyageState => ({ ...state, mode: "CHART", landing: null, place: null });
+
+/**
+ * Where a visit begins. Only a cold visit opens on the captain's log: an
+ * explicit `?view=` — coming back from a document, a refresh after setting
+ * sail, the index — starts under way, the rule `/` has always had.
+ */
+export function startVoyage(entry: PortfolioEntryView): VoyageState {
+  return entry === "intro" ? INITIAL_VOYAGE : toChart(INITIAL_VOYAGE);
+}
 const toIsland = (state: VoyageState): VoyageState => ({ ...state, mode: "ISLAND", place: null });
 const toLandings = (state: VoyageState, from: "CHART" | "ISLAND"): VoyageState => ({
   ...state,
@@ -67,7 +82,7 @@ const toLandings = (state: VoyageState, from: "CHART" | "ISLAND"): VoyageState =
 export function voyageReducer(state: VoyageState, event: VoyageEvent): VoyageState {
   switch (state.mode) {
     case "LOG":
-      return event.type === "SET_SAIL" || event.type === "ESCAPE" ? toChart(state) : state;
+      return event.type === "SET_SAIL" || event.type === "ESCAPE" || event.type === "OPEN_INDEX" ? toChart(state) : state;
 
     case "CHART":
       if (event.type === "DROP_ANCHOR") {
@@ -84,7 +99,7 @@ export function voyageReducer(state: VoyageState, event: VoyageEvent): VoyageSta
 
     case "LANDINGS":
       if (event.type === "SAIL_TO") return toChart(state);
-      if (event.type === "ESCAPE" || event.type === "TOGGLE_LANDINGS") {
+      if (event.type === "ESCAPE" || event.type === "TOGGLE_LANDINGS" || event.type === "OPEN_INDEX") {
         return state.returnTo === "ISLAND" && state.landing ? toIsland(state) : toChart(state);
       }
       return state;
@@ -96,7 +111,7 @@ export function voyageReducer(state: VoyageState, event: VoyageEvent): VoyageSta
       return state;
 
     case "PLACE":
-      return event.type === "ESCAPE" || event.type === "LEAVE_PLACE" ? toIsland(state) : state;
+      return event.type === "ESCAPE" || event.type === "LEAVE_PLACE" || event.type === "OPEN_INDEX" ? toIsland(state) : state;
   }
 }
 

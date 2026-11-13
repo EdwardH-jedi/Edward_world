@@ -49,14 +49,14 @@ for (const viewport of VIEWPORTS) {
     test.use({ viewport });
 
     test("settled world rects sit on the unit grid", async ({ page }) => {
-      await page.goto("/?view=world");
+      await page.goto("/town?view=world");
       await page.locator(".world-track").waitFor();
       await page.waitForTimeout(800);
       expect(await offGridRects(page)).toEqual([]);
     });
 
     test("world-arrive frames stay on the unit grid", async ({ page }) => {
-      await page.goto("/?view=world");
+      await page.goto("/town?view=world");
       await page.locator(".world-track").waitFor();
       for (const ms of [0, 40, 100]) {
         await freezeAt(page, ".world-screen", ms);
@@ -65,7 +65,7 @@ for (const viewport of VIEWPORTS) {
     });
 
     test("every prompt-pop frame stays on the unit grid", async ({ page }) => {
-      await page.goto("/?view=world");
+      await page.goto("/town?view=world");
       await page.locator(".world-track").waitFor();
       await page.keyboard.down("d");
       await page.locator(".world-object__prompt").waitFor({ timeout: 20_000 });
@@ -85,7 +85,7 @@ test.describe("390×844 nearby House", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test("chip and prompt are on screen and on the unit grid", async ({ page }) => {
-    await page.goto("/?view=world");
+    await page.goto("/town?view=world");
     await page.locator(".world-track").waitFor();
     const house = page.locator('[data-object-id="edwards-house"][data-nearby]');
     if (!(await house.count())) {
