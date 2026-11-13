@@ -31,15 +31,15 @@ export function drawShipyard(g: Pen) {
   line(g, 22, -6, 27, -6);
   for (let y = 10; y > -14; y -= 2.6) line(g, -26, y, -24, y);
   ink(g, 0.8, RED);
-  line(g, 31, 12, 31, -20);
-  line(g, 22, -20, 42, -21.6);
-  line(g, 31, -25, 22, -20);
-  line(g, 31, -25, 42, -21.6);
+  line(g, 30, 12, 30, -17);
+  line(g, 22, -17, 38, -18.4);
+  line(g, 30, -21, 22, -17);
+  line(g, 30, -21, 38, -18.4);
   ink(g, 0.4, RED);
-  line(g, 39, -21, 39, -11);
-  g.strokeRect(37.6, -11, 2.8, 2.4);
-  for (let k = 0; k < 10; k++) {
+  line(g, 36, -18, 36, -9);
+  g.strokeRect(34.6, -9, 2.8, 2.4);
+  for (let k = 0; k < 8; k++) {
     g.fillStyle = k % 2 ? INK : RED;
-    g.fillRect(-20 + k * 4, 16, 4, 1.6);
+    g.fillRect(-16 + k * 4, 15, 4, 1.4);
   }
 }

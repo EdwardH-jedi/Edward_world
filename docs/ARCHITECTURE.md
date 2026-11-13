@@ -109,7 +109,12 @@ reference). It keeps the same layering as the rest of the repo:
 - `lib/chart-art/` — drawing only. `Path2D` objects are built once from the
   scene's loops; each frame fills them, culling islands and bottles outside the
   view. One landmark routine per file under `landmarks/`, so a drawing can be
-  swapped for Edward's own art in one place.
+  swapped for Edward's own art in one place. Each landing's `landmark` entry in
+  `data/chart.ts` places and scales its drawing (1.6–2×); tree clearings are in
+  the drawing's units and move with it. `tests/chart-landmarks.test.ts` records
+  every drawing through a stand-in canvas and checks it stays ashore, gives its
+  main landmark at least 45% of the island, and keeps clear of the name plates,
+  and that anchorages and island sizes stay within the brief.
 - `components/chart/` — the canvas and its frame loop (`chart-world.tsx`), and
   the log, landing card and Landings panel, which reuse `useDialogFocus`.
 

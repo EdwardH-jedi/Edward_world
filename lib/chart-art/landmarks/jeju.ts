@@ -21,12 +21,13 @@ export function drawJeju(g: Pen) {
   }
   label(g, "Hallasan  1,947 m", 0, 15, { italic: true, size: 5.4, haloWidth: 1.6, haloColour: LAND });
   ink(g);
-  house(g, 50, 6, 30, 13, "rgba(169,72,44,.5)");
+  house(g, 50, 6, 26, 13, "rgba(169,72,44,.5)");
   ink(g, 0.35);
-  for (const wx of [54, 59, 70, 75]) g.strokeRect(wx, -3, 2.2, 3);
+  for (const wx of [53, 57.5, 66.5, 71]) g.strokeRect(wx, -3, 2.2, 3);
+  // The school flag, between the mountain's foot and the academy.
   ink(g, 0.5);
-  line(g, 84, 6, 84, -20);
-  poly(g, [84, -20, 91, -18, 84, -16], RED);
+  line(g, 47.5, 6, 47.5, -20);
+  poly(g, [47.5, -20, 54, -18, 47.5, -16], RED);
   // Dol hareubang.
   ink(g, 0.5);
   g.fillStyle = PAPER_LIT;
@@ -45,16 +46,16 @@ export function drawJeju(g: Pen) {
   dot(g, -57, 12.4, 0.4);
   dot(g, -55, 12.4, 0.4);
   line(g, -58, 19, -56, 20.4, -54, 19);
-  // Basalt walls.
+  // Basalt walls, kept short so the scaled drawing stays ashore.
   ink(g, 0.35);
-  for (let i = 0; i < 26; i++) {
+  for (let i = 0; i < 12; i++) {
     g.beginPath();
-    g.arc(-98 + i * 2.5, 36 + Math.sin(i * 0.5) * 2.6, 0.95, 0, 6.3);
+    g.arc(-70 + i * 2.5, 30 + Math.sin(i * 0.5) * 2.6, 0.95, 0, 6.3);
     g.stroke();
   }
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 11; i++) {
     g.beginPath();
-    g.arc(30 + i * 2.5, 42 + Math.cos(i * 0.55) * 2, 0.95, 0, 6.3);
+    g.arc(26 + i * 2.5, 24 + Math.cos(i * 0.55) * 2, 0.95, 0, 6.3);
     g.stroke();
   }
 }

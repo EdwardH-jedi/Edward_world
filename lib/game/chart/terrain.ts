@@ -241,9 +241,13 @@ export function plantWoodland(terrain: Terrain, landing: Landing, jetty: Vec): T
       if (distanceAt(terrain, x, y) > -10) continue;
       const rx = x - centre.x;
       const ry = y - centre.y;
-      const inClearing = woodland.clearings.some(
-        (c) => rx > c.x - 3 && rx < c.x + c.w + 3 && ry > c.y - 1 && ry < c.y + c.h + 7,
-      );
+      // Clearings are in the landmark's units: move and scale them with it.
+      const { scale: k, offset } = landing.landmark;
+      const inClearing = woodland.clearings.some((c) => {
+        const cx = offset.x + c.x * k;
+        const cy = offset.y + c.y * k;
+        return rx > cx - 3 && rx < cx + c.w * k + 3 && ry > cy - 1 && ry < cy + c.h * k + 7;
+      });
       if (inClearing) continue;
       if (Math.hypot(x - jetty.x, y - jetty.y) < 14) continue;
       trees.push({ x, y, r: 1.7 + hash(gx, gy) * 0.7, fruit: Boolean(woodland.fruit) && rx < -40 });

@@ -156,6 +156,15 @@ export function anchor(g: Pen, x: number, y: number, scale: number, colour: stri
   g.restore();
 }
 
+/** Draws `draw` with its origin at (x, y), scaled by `k`. */
+export function group(g: Pen, x: number, y: number, k: number, draw: () => void) {
+  g.save();
+  g.translate(x, y);
+  g.scale(k, k);
+  draw();
+  g.restore();
+}
+
 /** One `Path2D` from a set of closed loops. Call once and keep it. */
 export function pathFromLoops(loops: readonly Loop[]): Path2D {
   const path = new Path2D();

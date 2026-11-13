@@ -112,11 +112,13 @@ export function drawChart(g: Pen, scene: ChartScene, art: ChartArt, f: ChartFram
     if (!visible(landing.centre.x, landing.centre.y, landing.radii.x * 1.3 + 60)) return;
     drawWoodland(g, art.woodland[landing.id]);
     const anchorage = scene.anchorages[i];
-    drawJetty(g, anchorage.coast);
+    drawJetty(g, anchorage);
     const pulse = f.charted.has(landing.id) || f.reduced ? 0 : (f.t * 0.7) % 1;
     drawAnchorageMark(g, anchorage.point, pulse);
+    const { scale, offset } = landing.landmark;
     g.save();
-    g.translate(landing.centre.x, landing.centre.y);
+    g.translate(landing.centre.x + offset.x, landing.centre.y + offset.y);
+    g.scale(scale, scale);
     LANDMARKS[landing.id](g, t);
     g.restore();
   });
