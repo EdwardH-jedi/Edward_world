@@ -45,7 +45,7 @@ The application is deployed on Vercel. Both server-backed features are optional;
 - **Canvas 2D** for procedural pixel art, with DOM controls and text around it
 - **anime.js 4** for visual choreography and **Web Audio API** for background music
 - **Vitest** for Node-environment tests
-- Browser storage for local preferences and saved looks; optional Redis-compatible REST storage for shared features
+- Browser storage for local preferences; optional Redis-compatible REST storage for shared features
 
 The runtime npm dependencies are `next`, `react`, `react-dom`, and `animejs`. React Native, FastAPI, Three.js, and the other stacks described on project pages belong to the linked projects, not this application's runtime.
 
