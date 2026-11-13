@@ -173,7 +173,7 @@ function aflOval(draw: Raster) {
 }
 
 /**
- * The town cluster between Wardrobe and SportsGang: lamps with a sagging cable,
+ * The town cluster west of SportsGang: lamps with a sagging cable,
  * a notice board, a bench and a small fountain. This stretch carries no
  * interaction — it exists so the walk between projects feels inhabited.
  */

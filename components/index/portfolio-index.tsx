@@ -15,7 +15,6 @@ interface PortfolioIndexProps {
 const ROLE: Readonly<Record<string, string>> = {
   sportsgang: "PEER SPORTS COMPETITION",
   "afl-predict": "FORECASTING RESEARCH",
-  wardrobe: "LOCAL-FIRST ARCHIVE",
   soonpermario: "PLAYABLE EXPERIMENT",
 };
 
@@ -36,7 +35,7 @@ export function PortfolioIndex({ onClose }: PortfolioIndexProps) {
       headerActions={<MusicToggle inline />}
     >
       <p className="index-lede">
-        {contact.name} — {contact.location}. Four projects, the code behind each
+        {contact.name} — {contact.location}. Three projects, the code behind each
         of them, and their engineering details. The interactive world is optional.
       </p>
 

@@ -30,9 +30,9 @@ export type InteractionAction =
    * Finish the visit.
    *
    * Its own action rather than an `OPEN_*`: nothing is being opened, no
-   * project is involved, and the tests that pin the world's four project
+   * project is involved, and the tests that pin the world's project
    * entrances and its one location would have to be loosened to admit a fake
-   * fifth. It closes nothing and locks nothing — see `data/world.ts`.
+   * one. It closes nothing and locks nothing — see `data/world.ts`.
    */
   | { type: "LEAVE_WORLD" };
 

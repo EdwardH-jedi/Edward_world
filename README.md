@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/EdwardH-jedi/Edward_world/actions/workflows/ci.yml/badge.svg)](https://github.com/EdwardH-jedi/Edward_world/actions/workflows/ci.yml)
 
-An interactive developer portfolio built as a side-scrolling pixel town. Explore four project demos and a personal room, or choose **VIEW PROJECTS** on the title screen to go straight to the reading view.
+An interactive developer portfolio built as a side-scrolling pixel town. Explore three project demos and a personal room, or choose **VIEW PROJECTS** on the title screen to go straight to the reading view.
 
 **[Explore the world](https://edwards-world.vercel.app)** · **[Read the project index](https://edwards-world.vercel.app/?view=index)** · [Background and contact](https://edwards-world.vercel.app/resume)
 
@@ -12,9 +12,8 @@ An interactive developer portfolio built as a side-scrolling pixel town. Explore
 | --- | --- | --- |
 | **SportsGang / Protin** | A simulated matchmaking flow followed by golf, tennis, basketball, or running. Game results come from player input. | [SportsGang](https://github.com/EdwardH-jedi/Sportsgang), a React Native / Expo sports-partner app with a FastAPI backend |
 | **AFL Predict** | An interactive lab that walks a seeded fictional fixture through a computed prediction pipeline. | [AFL Predict](https://github.com/EdwardH-jedi/AFL_predict), an AFL prediction and paper-trading research system |
-| **Wardrobe** | Archive garments, compose a look, and save it in your browser. | [Wardrobe](https://github.com/EdwardH-jedi/wardrobe), a local-first fashion archive with an experimental proxy-3D track |
 | **Soonpermario arcade** | A short playable segment of Edward's Career Quest. | [Career Quest](https://github.com/EdwardH-jedi/career-quest), a standalone HTML5 Canvas résumé platformer |
-| **Edward's House** | An interactive personal room with objects about Edward's interests and background. | Personal content, separate from the four projects |
+| **Edward's House** | An interactive personal room with objects about Edward's interests and background. | Personal content, separate from the three projects |
 
 The experiences are scoped recreations inside this portfolio. The SportsGang flow does not connect to the mobile product's matchmaking service; the AFL lab uses demonstration data, not live fixtures or betting recommendations. Follow the source and case-study links for each original project's implementation and limitations.
 
@@ -57,12 +56,12 @@ The central design rule is: **pure simulations own game rules, timers advance sc
 | `app/` | Pages, metadata, styles, and API routes |
 | `components/portfolio-experience.tsx` | Top-level world, index, and experience selection |
 | `components/` | React views, controls, dialogs, and individual project experiences |
-| `data/` and `types/` | Portfolio content, world geometry, garments, and shared domain types |
+| `data/` and `types/` | Portfolio content, world geometry, and shared domain types |
 | `lib/game/` | Movement, interactions, state machines, and pure mini-game simulations |
 | `lib/pixel/` | Procedural art routines, raster helpers, and palette |
 | `lib/motion/` | Animation, game-loop hooks, and motion preferences |
 | `lib/audio/` | Music engine and playback policy |
-| `lib/storage/` | Guarded browser persistence for the wardrobe demo |
+| `lib/storage/` | Guarded browser persistence for the first-visit EXPLORE hint |
 | `lib/joins/` | Visitor counter and storage bindings |
 | `lib/sportsgang-board/` | Golf-board validation, ranking, identity, client, and storage |
 | `tests/` | Simulation, state, storage, API, input, and rendering-geometry tests |
@@ -113,7 +112,7 @@ Without a configured store:
 
 The golf board is **casual and client-reported**. The server validates submissions and computes ranks, but does not replay or independently verify gameplay. A completed game is only published after the visitor confirms submission; the display name and score become public. The anonymous ID is not included in public rows, but is sent in board request URLs after submission so the visitor's row can be identified.
 
-Saved wardrobe looks and audio preferences stay in browser storage. The golf board's explicit submission path is a separate data flow. See the [storage reference](docs/sportsgang-polish/STORAGE.md) for modes, retention, and configuration details.
+The EXPLORE hint and audio preferences stay in browser storage. The golf board's explicit submission path is a separate data flow. See the [storage reference](docs/sportsgang-polish/STORAGE.md) for modes, retention, and configuration details.
 
 **Recorded deployment limitation:** the [10 September 2026 deployment report](docs/predeploy/FINAL_PRODUCTION_DEPLOY.md#leaderboard) records the production golf board as `BLOCKED_CONFIG`. That is a dated deployment record, not a live service-status check.
 

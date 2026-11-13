@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { BIRD_PERIOD, drawBird, drawClouds } from "@/lib/pixel/ambient";
 import { drawBackdrop } from "@/lib/pixel/backdrop";
-import { buildingArt, signpostArt } from "@/lib/pixel/buildings";
+import { signpostArt } from "@/lib/pixel/buildings";
 import { edwardPoses } from "@/lib/pixel/characters";
 import { palette } from "@/lib/pixel/palette";
 import { lamp, smoke, tree, type ArtRoutine, type Raster } from "@/lib/pixel/raster";
@@ -82,10 +82,6 @@ describe("lamp flicker", () => {
 });
 
 describe("hanging signs", () => {
-  it("bob a pixel on every other frame: wardrobe", () => {
-    expectLoop(buildingArt.wardrobe.draw, 2);
-  });
-
   it("bob a pixel on every other frame: directions", () => {
     expectLoop(signpostArt.draw, 2);
     const board = (frame: number) => record(signpostArt.draw, frame)[1];

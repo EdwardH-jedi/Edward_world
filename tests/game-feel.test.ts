@@ -111,7 +111,7 @@ describe("open doors", () => {
   });
 
   it("gives every enterable building a door", () => {
-    for (const id of ["edwards-house", "wardrobe", "sportsgang", "afl-lab", "arcade"] as const) {
+    for (const id of ["edwards-house", "sportsgang", "afl-lab", "arcade"] as const) {
       expect(buildingArt[id].openDoor).toBeDefined();
     }
   });

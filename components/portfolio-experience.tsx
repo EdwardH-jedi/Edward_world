@@ -41,9 +41,6 @@ const SportsgangExperience = lazyScene(() =>
     (m) => m.SportsgangExperience,
   ),
 );
-const WardrobeExperience = lazyScene(() =>
-  import("@/components/wardrobe/wardrobe-experience").then((m) => m.WardrobeExperience),
-);
 
 /**
  * Projects that open a full location experience instead of a summary dialog.
@@ -52,7 +49,6 @@ const WardrobeExperience = lazyScene(() =>
  */
 const EXPERIENCE_PROJECTS = new Set<PortfolioProjectId>([
   "sportsgang",
-  "wardrobe",
   "afl-predict",
   "soonpermario",
 ]);
@@ -187,9 +183,6 @@ export function PortfolioExperience() {
       )}
       {activeProjectExperience === "sportsgang" ? (
         <SportsgangExperience onExit={closeProjectExperience} />
-      ) : null}
-      {activeProjectExperience === "wardrobe" ? (
-        <WardrobeExperience onExit={closeProjectExperience} />
       ) : null}
       {activeProjectExperience === "afl-predict" ? (
         <AflExperience onExit={closeProjectExperience} />

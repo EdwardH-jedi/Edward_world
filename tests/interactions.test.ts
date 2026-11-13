@@ -19,7 +19,7 @@ describe("interaction discovery", () => {
 
 describe("interaction prompts", () => {
   it("maps every action family to a context prompt", () => {
-    expect(getInteractionPrompt({ type: "OPEN_PROJECT", projectId: "wardrobe" })).toBe(
+    expect(getInteractionPrompt({ type: "OPEN_PROJECT", projectId: "sportsgang" })).toBe(
       "E TO ENTER",
     );
     expect(

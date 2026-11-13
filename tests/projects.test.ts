@@ -2,14 +2,13 @@ import { describe, expect, it } from "vitest";
 import { projects } from "@/data/projects";
 
 describe("canonical project data", () => {
-  it("contains the four approved flagship entries and no excluded projects", () => {
+  it("contains the three approved flagship entries and no excluded projects", () => {
     expect(projects.map(({ id }) => id)).toEqual([
       "sportsgang",
       "afl-predict",
-      "wardrobe",
       "soonpermario",
     ]);
-    expect(JSON.stringify(projects)).not.toMatch(/PanSegAI|TOMODACHI/i);
+    expect(JSON.stringify(projects)).not.toMatch(/PanSegAI|TOMODACHI|wardrobe/i);
   });
 
   it("carries a verified stack and reachable links for every project", () => {

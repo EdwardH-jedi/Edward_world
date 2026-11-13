@@ -230,13 +230,6 @@
   margin: var(--unit) 0 0;
 }
 
-.hs-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--u2);
-  margin-top: var(--unit);
-}
-
 .hs-card__actions {
   display: flex;
   flex-wrap: wrap;

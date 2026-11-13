@@ -1,7 +1,6 @@
 export type PortfolioProjectId =
   | "sportsgang"
   | "afl-predict"
-  | "wardrobe"
   | "soonpermario";
 
 export type PortfolioCategory =
@@ -11,7 +10,6 @@ export type PortfolioCategory =
 
 export type WorldBuildingId =
   | "edwards-house"
-  | "wardrobe"
   | "sportsgang"
   | "afl-lab"
   | "arcade"

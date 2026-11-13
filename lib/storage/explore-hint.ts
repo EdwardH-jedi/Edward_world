@@ -1,6 +1,6 @@
 /**
  * The EXPLORE hint is for a first arrival in the world, so it is remembered in
- * the browser, on this device, like the saved look. Storage that is missing,
+ * the browser, on this device. Storage that is missing,
  * blocked or full must never take the world down: the hint then simply shows
  * on every visit, which is the harmless way to fail.
  */

@@ -123,69 +123,6 @@ const edwardsHouse: ArtRoutine = (draw, frame) => {
   draw(30, 44, 3, 2, palette.green3);
 };
 
-/** LOCAL ARCHIVE — restrained charcoal signage, rack and mannequin behind glass. */
-const wardrobe: ArtRoutine = (draw, frame) => {
-  const groundY = 44;
-  plinth(draw, 1, 74, groundY);
-
-  draw(2, 8, 72, 36, palette.brown3);
-  draw(3, 9, 70, 34, palette.paper);
-  draw(3, 9, 70, 1, palette.stone);
-
-  // The hanging sign band drops a pixel on every other frame.
-  const bob = signBob(frame);
-  draw(2, 1 + bob, 72, 7, palette.char);
-  dashes(draw, 8, 4 + bob, 48, palette.cream);
-  draw(64, 3 + bob, 4, 4, palette.cream);
-  draw(65, 4 + bob, 2, 2, palette.char);
-
-  for (let index = 0; index < 14; index += 1) {
-    draw(5 + index * 5, 14, 4, 3, index % 2 ? palette.stone : palette.cream);
-  }
-  draw(5, 17, 68, 1, "#B5AB92");
-
-  windowPane(draw, 7, 21, 40, 21, "#DED7C2");
-  draw(10, 26, 30, 1, palette.brown3);
-  const garments = [
-    [12, palette.orange],
-    [20, palette.blue2],
-    [28, palette.green3],
-    [36, palette.cream],
-  ] as const;
-  for (const [x, colour] of garments) {
-    draw(x, 27, 5, 7, colour);
-    draw(x + 2, 26, 1, 1, palette.brown3);
-    if (colour === palette.cream) {
-      draw(x, 27, 5, 1, palette.stone2);
-      draw(x, 33, 5, 1, palette.stone2);
-    }
-  }
-
-  glowEdge(draw, 7, 21, 40);
-
-  draw(42, 23, 3, 3, palette.cream);
-  draw(41, 26, 5, 9, palette.cream);
-  draw(43, 35, 1, 6, palette.brown3);
-  draw(41, 41, 5, 1, palette.brown3);
-
-  doorFrame(draw, 53, 22, 10, 22);
-  draw(53, 22, 10, 22, palette.char);
-  draw(54, 23, 8, 8, "#4A4438");
-  draw(61, 35, 1, 1, palette.orange);
-
-  // Archive boxes stacked at the door.
-  const boxes = [
-    [66, 38, 8, 4],
-    [67, 33, 7, 4],
-    [68, 29, 6, 3],
-  ] as const;
-  for (const [x, y, width, height] of boxes) {
-    draw(x, y, width, height, palette.brown);
-    draw(x, y, width, 1, palette.brown2);
-    draw(x + 2, y + 1, 3, 1, palette.paper);
-  }
-};
-
 /** PEER COMPETITION — an open community court, caught mid-match at 3–2. */
 const sportsgang: ArtRoutine = (draw, frame) => {
   draw(4, 40, 84, 4, "#A97F52");
@@ -407,11 +344,6 @@ export const buildingArt: Readonly<Record<WorldBuildingId, BuildingArt>> = {
     size: { width: 68, height: 50 },
     draw: edwardsHouse,
     openDoor: doorway(34, 32, 9, 18),
-  },
-  wardrobe: {
-    size: { width: 76, height: 44 },
-    draw: wardrobe,
-    openDoor: doorway(53, 22, 10, 22),
   },
   // The court has no door; its gate in the fence opens instead.
   sportsgang: {
