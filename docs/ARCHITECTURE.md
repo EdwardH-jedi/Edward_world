@@ -166,8 +166,8 @@ it, so no frame repaints a full screen of either. Islands, landmarks and
 bottles outside the view are skipped, and every `Path2D` is built once. Under
 reduced motion an unchanged frame is not redrawn at all. An island's distance
 field, contours and trees are cached per landing and prepared ahead of going
-ashore: all of them while the captain's log is open, then the one the boat is
-waiting at. `e2e/chart-perf.spec.ts` (`CHART_PERF=1`) measures frame rates
+ashore: all of them while the captain's log or the index is open (the chart
+stands still under both), then the one the boat is waiting at. `e2e/chart-perf.spec.ts` (`CHART_PERF=1`) measures frame rates
 against the brief's targets, including a phone profile with the CPU slowed
 fourfold.
 

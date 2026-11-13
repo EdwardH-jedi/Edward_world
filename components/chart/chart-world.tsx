@@ -185,6 +185,8 @@ export function ChartWorld({ fonts, entry, indexOpen, onUnderWay }: ChartWorldPr
   const stateRef = useRef(state);
   const reducedRef = useRef(reduced);
   const indexOpenRef = useRef(indexOpen);
+  /** Restarts the island-preparing queue; set by the frame-loop effect. */
+  const prepareRef = useRef<(() => void) | null>(null);
 
   const charted = useMemo(() => new Set(state.charted), [state.charted]);
   const chartedRef = useRef(charted);
@@ -197,9 +199,12 @@ export function ChartWorld({ fonts, entry, indexOpen, onUnderWay }: ChartWorldPr
     indexOpenRef.current = indexOpen;
   }, [state, charted, reduced, indexOpen]);
 
-  // The index settles the voyage: the log is done with, a place or the panel closes.
+  // The index settles the voyage: the log is done with, a place or the panel
+  // closes. The chart stands still under it, so islands are prepared meanwhile.
   useEffect(() => {
-    if (indexOpen) dispatch(OPEN_INDEX);
+    if (!indexOpen) return;
+    dispatch(OPEN_INDEX);
+    prepareRef.current?.();
   }, [indexOpen]);
 
   const underWay = state.mode !== "LOG";
@@ -285,13 +290,14 @@ export function ChartWorld({ fonts, entry, indexOpen, onUnderWay }: ChartWorldPr
       idleHandles.push(hasIdle ? window.requestIdleCallback(work, { timeout: 1_000 }) : window.setTimeout(work, 50));
     };
 
-    // While the captain's log is open the chart stands still, so that is when the
-    // islands are prepared: home port first, one per idle slot. Once under way the
-    // queue stops, so it never costs a sailing frame; arriving at an anchorage
-    // still prepares that island before E is pressed.
+    // While the captain's log or the index is open the chart stands still, so
+    // that is when the islands are prepared: home port first, one per idle slot.
+    // A visit that starts past the log (`?view=`) gets its turn under the index.
+    // Once under way the queue stops, so it never costs a sailing frame;
+    // arriving at an anchorage still prepares that island before E is pressed.
     const queue = [HOME_LANDING, ...LANDINGS.map((l) => l.id).filter((id) => id !== HOME_LANDING)];
     const prepareNext = () => {
-      if (stateRef.current.mode !== "LOG") return;
+      if (stateRef.current.mode !== "LOG" && !indexOpenRef.current) return;
       const id = queue.find((candidate) => !prepared.has(candidate));
       if (!id) return;
       prepared.add(id);
@@ -299,6 +305,7 @@ export function ChartWorld({ fonts, entry, indexOpen, onUnderWay }: ChartWorldPr
       whenIdle(prepareNext);
     };
     whenIdle(prepareNext);
+    prepareRef.current = () => whenIdle(prepareNext);
 
     const sail = (dt: number) => {
       const pointer = voyage.steer
@@ -426,6 +433,7 @@ export function ChartWorld({ fonts, entry, indexOpen, onUnderWay }: ChartWorldPr
         else window.clearTimeout(handle);
       }
       voyageRef.current = null;
+      prepareRef.current = null;
     };
     // Keyed on the three family names, not the object: opening the index is a
     // navigation that hands this component a fresh `fonts`, and rebuilding here
