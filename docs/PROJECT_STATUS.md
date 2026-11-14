@@ -5,6 +5,13 @@ verified source facts, see [`IMPLEMENTATION_ROADMAP.md`](./IMPLEMENTATION_ROADMA
 
 **Last updated:** 2026-09-05 · release-presentation pass — public README, case study, architecture refresh
 
+> **Since this record (2026-11-13):** the chart overworld replaced the side-view
+> town as the way in at `/` (pull requests #19 to #24). The town below is kept,
+> unlisted, at `/town`. Wardrobe was removed from the portfolio, code included.
+> The phases and locations listed here describe the town as it was built; the
+> chart's scope and decisions are in
+> [`chart-overworld/BRIEF.md`](./chart-overworld/BRIEF.md).
+
 ---
 
 ## Where the project is

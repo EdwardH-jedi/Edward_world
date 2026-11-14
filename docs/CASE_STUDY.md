@@ -2,6 +2,11 @@
 
 How a portfolio became a place, and what building it taught me.
 
+> **Note (2026-11-13):** this case study describes the side-view pixel town,
+> which is now kept at `/town`. The way into the site is a sea chart
+> ([brief](./chart-overworld/BRIEF.md)), and Wardrobe is no longer part of the
+> portfolio.
+
 ---
 
 ## 1. The problem
