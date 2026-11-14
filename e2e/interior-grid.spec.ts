@@ -9,7 +9,6 @@ const VIEWPORTS = [
 
 const INTERIORS = [
   { label: "Edward's House", unitVar: "--room-unit" },
-  { label: "Wardrobe", unitVar: "--unit" },
   { label: "SportsGang", unitVar: "--sg-court-unit" },
   { label: "AFL Lab", unitVar: "--unit" },
   { label: "Arcade", unitVar: "--ar-screen-unit" },

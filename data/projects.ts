@@ -105,61 +105,6 @@ export const projects = [
     },
   },
   {
-    id: "wardrobe",
-    slug: "wardrobe",
-    displayName: "Wardrobe",
-    shortDescriptor: "A local-first digital wardrobe and outfit experience.",
-    category: "Full-stack product",
-    githubUrl: "https://github.com/EdwardH-jedi/wardrobe",
-    caseStudyUrl: "/case-studies/wardrobe",
-    worldBuildingId: "wardrobe",
-    techStack: [
-      "React",
-      "TypeScript",
-      "Vite",
-      "IndexedDB",
-      "Three.js (experimental)",
-      "FastAPI (experimental)",
-    ],
-    // Trimmed at the sentence boundary: the repository description ends by
-    // restating the stack, and the stack is canonical in `techStack` above.
-    repositorySummary:
-      "Local-first digital wardrobe — browser-persisted garment archive, " +
-      "outfit composition, and a scoped proxy-3D experiment.",
-    // Evidence: wadrobe/src/app/providers/archiveReducer.ts,
-    // src/lib/storage/archiveStorage.ts and docs/PORTFOLIO_FACTS.md.
-    // World boundary: data/wardrobe.ts and components/wardrobe/.
-    details: {
-      problem:
-        "A useful wardrobe archive needs both a record of individual garments " +
-        "and a way to see them together. The original project, The Archive, " +
-        "keeps that catalogue and outfit workflow in the browser.",
-      implementation: [
-        "The React / TypeScript application supports garment image capture and " +
-          "import, cropping, drafted metadata with confirmation, category filtering " +
-          "and layered outfit composition on a mannequin.",
-        "A pure reducer manages archive and outfit changes. IDs and timestamps " +
-          "arrive through action payloads, letting the domain logic be tested " +
-          "independently of browser storage and clocks.",
-      ],
-      decision:
-        "The storage facade probes IndexedDB, then localStorage, then memory. " +
-        "Keeping the core workflow local avoids an account requirement; the " +
-        "tradeoff is no automatic cross-device sync, and no persistence when " +
-        "only the memory fallback is available.",
-      currentState:
-        "The repository implements the archive and outfit loop, backup transfer " +
-        "and automated tests. Optional network integrations and proxy-3D work " +
-        "are separate from that core; the mannequin is a composition preview, " +
-        "not a garment-fit simulation.",
-      worldRepresentation:
-        "Edward’s World uses a curated preset rail to demonstrate capture, " +
-        "archiving, layering and saving a look on this browser when storage is " +
-        "available. It does not upload a visitor’s clothing photos or run the " +
-        "original image-processing or experimental 3D services.",
-    },
-  },
-  {
     id: "soonpermario",
     slug: "soonpermario",
     displayName: "Soonpermario",

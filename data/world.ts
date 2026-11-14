@@ -51,15 +51,6 @@ export const buildings: readonly Building[] = [
   },
   {
     kind: "building",
-    id: "wardrobe",
-    label: "Wardrobe",
-    position: { x: 1_000, y: TOWN_GROUND_Y - 176 },
-    size: { width: 304, height: 176 },
-    interactionRange: 72,
-    interaction: { type: "OPEN_PROJECT", projectId: "wardrobe" },
-  },
-  {
-    kind: "building",
     id: "sportsgang",
     label: "SportsGang",
     position: { x: 1_640, y: TOWN_GROUND_Y - 176 },
@@ -115,8 +106,8 @@ export const signs: readonly Sign[] = [
      *
      * A `sign` rather than a `building`: buildings are the project entrances
      * and Edward's House, they are keyed by `WorldBuildingId`, and a gate is
-     * neither. It is also emphatically **not** a project — the index must keep
-     * listing exactly four — so it carries its own `LEAVE_WORLD` action.
+     * neither. It is also emphatically **not** a project — the index lists
+     * only the projects — so it carries its own `LEAVE_WORLD` action.
      *
      * Placed past the scaffolding, which ends at 3696, and inside the world's
      * 3840. The player clamps at 3792, so the gateway is walkable-to rather

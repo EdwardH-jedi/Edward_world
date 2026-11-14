@@ -131,12 +131,12 @@ describe("accent usage", () => {
   });
 
   it("marks every enterable building and leaves the scaffolding plain", () => {
-    const enterable = ["edwards-house", "wardrobe", "sportsgang", "afl-lab", "arcade"] as const;
+    const enterable = ["edwards-house", "sportsgang", "afl-lab", "arcade"] as const;
     for (const id of enterable) {
       const seen = colours(buildingArt[id].draw);
       expect(seen.has(palette.signAccent), `${id} sign`).toBe(true);
     }
-    for (const id of ["edwards-house", "wardrobe", "afl-lab", "arcade"] as const) {
+    for (const id of ["edwards-house", "afl-lab", "arcade"] as const) {
       expect(colours(buildingArt[id].draw).has(palette.warmGlow), `${id} window`).toBe(true);
     }
     const scaffold = colours(buildingArt["construction-area"].draw);

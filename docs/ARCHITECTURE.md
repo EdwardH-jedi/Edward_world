@@ -22,14 +22,14 @@ no CSS framework and no component library; the runtime dependency list is
 | Path | What lives there |
 | --- | --- |
 | `app/` | Routes, the root layout and metadata, and `app/globals.css` |
-| `components/` | React surfaces, grouped by the place they render. Each interior's stylesheet (`house.css`, `wardrobe.css`, `sportsgang.css`, `afl.css`, `arcade.css`, plus the shared `locations/location.css`) is imported by its lazily loaded component, so it ships with that chunk, not the first paint |
+| `components/` | React surfaces, grouped by the place they render. Each interior's stylesheet (`house.css`, `sportsgang.css`, `afl.css`, `arcade.css`, plus the shared `locations/location.css`) is imported by its lazily loaded component, so it ships with that chunk, not the first paint |
 | `lib/game/` | Pure rules and state machines. No React, no DOM |
 | `lib/pixel/` | Procedural art: art-pixel drawing routines and the palette |
 | `lib/motion/` | anime.js choreography, the shared rAF loop, motion preferences |
 | `lib/audio/` | The background-music engine and its pure policy module |
 | `lib/joins/` | The visitor counter: store bindings, route response, client latch |
-| `lib/storage/` | Guarded `localStorage` access for the saved wardrobe look |
-| `data/` | Canonical content: projects, world geometry, biography, garments |
+| `lib/storage/` | Guarded `localStorage` access for the first-visit EXPLORE hint |
+| `data/` | Canonical content: projects, world geometry, biography |
 | `types/` | Shared domain types |
 | `tests/` | Vitest suites, all Node-environment |
 
@@ -88,13 +88,13 @@ persisted. `Escape` closes the gate and stays in the house.
 The first arrival in the world shows the EXPLORE hint for 1.8 seconds
 (`EXPLORE_HINT_MS`, its own timer so it also expires under reduced motion), then
 hides it. `lib/storage/explore-hint.ts` remembers
-that it was shown in `localStorage`, guarded like the saved look, so a returning
+that it was shown in `localStorage`, guarded against missing or blocked storage, so a returning
 visitor never sees it; where storage is blocked it shows every visit.
 
 ## Project content
 
 `data/projects.ts` is **canonical**, and it is the only place a project fact is
-written down. The world's dialogs, the INDEX grid, the four case-study routes
+written down. The world's dialogs, the INDEX grid, the case-study routes
 and their page metadata all resolve their copy from it instead of restating it,
 so a project cannot say one thing in one surface and something else in another.
 
@@ -133,7 +133,7 @@ The invariant distinguishes three kinds of state:
 
 | Kind | Examples | Who may write it |
 | --- | --- | --- |
-| **Rule and stage state** | Which intro, shrine, SportsGang or AFL stage is showing; reducer state such as the wardrobe archive or the name gate | Timers (`setTimeout`) and input handlers only. Never an animation callback, so a throttled background tab cannot stall a stage |
+| **Rule and stage state** | Which intro, shrine, SportsGang or AFL stage is showing; reducer state such as the name gate | Timers (`setTimeout`) and input handlers only. Never an animation callback, so a throttled background tab cannot stall a stage |
 | **Presentation values** | A camera offset, how many letters have lifted, a revealed probability | anime.js may tween these into React state through `driveValue` (`lib/motion/intro-choreography.ts`). They change what is drawn, never which stage is current |
 | **Live simulation** | The walking player's position and pose | A `requestAnimationFrame` loop, because the player is driving in real time |
 
@@ -147,10 +147,6 @@ The existing presentation and live-simulation writers are:
   calibrated probability counting up in `RESULT`.
 - `components/world/main-world.tsx:174` — the world's rAF loop sets
   `moving`, `settled` and `player` as the visitor walks.
-
-The wardrobe's garment flight also finishes in an animation callback
-(`lib/motion/wardrobe-choreography.ts`), but it only removes the flying ghost and
-settles the figure; the archive reducer has already run before it takes off.
 
 ## Data and domain boundaries
 
@@ -343,29 +339,6 @@ Two rules make the sequence robust:
 2. **End states are pinned, not tweened into.** `settleCourtExpansion` sets the
    post-transition state explicitly when the stage leaves, so a timeline still
    mid-flight cannot strand the phone half-faded.
-
-## Wardrobe
-
-An archive rather than a game, so it needs no timed machinery:
-
-- `types/wardrobe.ts` + `data/wardrobe.ts` — the five steps and the garments.
-  Garment metadata is structural only: name, layer, colour, fabric, season.
-  Nothing is inferred, scored or claimed about recognition.
-- `lib/game/wardrobe-archive.ts` — the rules as a pure reducer. A garment
-  cannot be worn before it is archived, a layer takes only its own kind, and a
-  look needs enough on it to be a look.
-- `lib/storage/saved-look.ts` — the product's philosophy made literal. The look
-  is written to `localStorage` on this device and read back on the next visit;
-  nothing is sent anywhere. Every read and write is guarded, and a stored value
-  the catalogue does not recognise is discarded rather than trusted.
-- `lib/storage/use-saved-look.ts` — reads that store through
-  `useSyncExternalStore`. The snapshot is the raw string, not a parsed object,
-  because React compares snapshots by identity and a fresh parse every read
-  would never settle.
-
-The interior is DOM and CSS rather than canvas: every garment is a real control
-that can be clicked, tabbed to and read out, and there is no cover-fitted
-backdrop to align against.
 
 ## AFL Lab
 
@@ -560,10 +533,9 @@ and every mute transition take 220 ms.
 
 ### Muting
 
-The preference is stored per device under `edwards-world:bgm:muted`, guarded the
-same way the wardrobe's saved look is: tolerant of storage being missing,
-blocked, or holding something it did not write. An unreadable preference is
-**not** muted — silence is never the safer guess to make on a visitor's behalf
+The preference is stored per device under `edwards-world:bgm:muted`, guarded so
+it is tolerant of storage being missing, blocked, or holding something it did
+not write. An unreadable preference is **not** muted — silence is never the safer guess to make on a visitor's behalf
 when they have not asked for it. A custom event notifies subscribers in the same
 tab after a write.
 
@@ -749,7 +721,7 @@ A standard Next.js 16 application. `npm run build` produces a production build
 and `npm start` serves it; any Node-compatible host that can run a Next.js
 application will run this one. Node 24.x, per `engines` in `package.json`.
 
-The application is **static apart from two routes**. `/`, `/resume`, the four
+The application is **static apart from two routes**. `/`, `/resume`, the three
 `/case-studies/*` pages, the manifest and `robots.txt` are all prerendered; only
 `/api/joins` and `/api/sportsgang/golf-board` are dynamic, and both are marked
 `force-dynamic` so a total or a board is never baked into a static response.

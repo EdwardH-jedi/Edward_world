@@ -1062,37 +1062,12 @@ body:has(.world-screen, .title-screen, .intro-screen) > .music-control[aria-pres
    widths, and an unbanded `3n` rule would go on hiding panel 3's connector
    where 3 -> 4 is a real left-to-right neighbour. */
 
-/* ── Wardrobe location ───────────────────────────────────────────────────────
-   A small studio, built from blocks so every garment is a real control the
-   visitor can click, tab to and read, with the pixel art carrying the clothes
-   themselves. Read left to right the room *is* the product's loop: rail, work
-   table, archive, mannequin, and the frame on the wall a look is kept in. */
-
-/* ── The room itself ─────────────────────────────────────────────────────── */
-
-/* ── Studio layout ───────────────────────────────────────────────────────── */
-
-/* ── The rail ────────────────────────────────────────────────────────────── */
-
-/* ── The work table ──────────────────────────────────────────────────────── */
-
-/* ── The archive ─────────────────────────────────────────────────────────── */
-
-/* ── The mannequin ───────────────────────────────────────────────────────── */
-
-/* ── The frame on the wall ───────────────────────────────────────────────── */
-
-/* ── The ending ──────────────────────────────────────────────────────────── */
-
 /* ── Shared bits ─────────────────────────────────────────────────────────── */
 
 .loc-button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
-
-/* Only the ending becomes a flowing composition. Its scroll viewport starts
-   below the utilities, keeping the frame and summary clear even while scrolling. */
 
 /* ── Sport furniture ─────────────────────────────────────────────────────── */
 

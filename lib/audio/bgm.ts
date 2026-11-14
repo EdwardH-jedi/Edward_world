@@ -131,10 +131,10 @@ export const BGM_MUTE_EVENT = "edwards-world:bgm:mute-changed";
 /**
  * The stored mute preference.
  *
- * Kept where the Wardrobe keeps its look: on this device, tolerant of storage
- * being missing, blocked, or holding something it did not write. An unreadable
- * preference is not muted — silence is never the safer guess to make on the
- * visitor's behalf when they have not asked for it.
+ * Kept on this device, tolerant of storage being missing, blocked, or holding
+ * something it did not write. An unreadable preference is not muted — silence
+ * is never the safer guess to make on the visitor's behalf when they have not
+ * asked for it.
  */
 export function readMutePreference(): boolean {
   if (typeof window === "undefined") return false;

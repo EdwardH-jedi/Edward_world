@@ -79,7 +79,6 @@ describe("the exit gate", () => {
       "afl-predict",
       "soonpermario",
       "sportsgang",
-      "wardrobe",
     ]);
     const actions = worldObjects.flatMap((object) =>
       object.interaction ? [object.interaction] : [],
@@ -90,7 +89,7 @@ describe("the exit gate", () => {
         .filter((action) => action.type === "OPEN_PROJECT")
         .map((action) => action.projectId)
         .sort(),
-    ).toEqual(["afl-predict", "soonpermario", "sportsgang", "wardrobe"]);
+    ).toEqual(["afl-predict", "soonpermario", "sportsgang"]);
   });
 
   it("says what pressing E will do", () => {

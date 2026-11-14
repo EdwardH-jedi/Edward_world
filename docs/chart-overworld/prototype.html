@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Edward's World Chart Draft</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Spectral:ital,wght@0,400;0,600;1,400&family=Nanum+Pen+Script&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Layout: one sheet of chart paper fills the screen; everything you read sits on smaller slips of the same paper.
+     Single theme by choice: ink, sea blue and one vermilion on aged paper. */
+  --paper: #EFE7D3;
+  --paper-lit: #F6F0E0;
+  --ink: #2B2823;
+  --muted: #6B6557;
+  --sea: #54707C;
+  --red: #A9482C;
+  --rule: #A29A83;
+  --display: "IM Fell English", Georgia, "Times New Roman", serif;
+  --caps: "IM Fell English SC", "IM Fell English", Georgia, serif;
+  --body: "Spectral", Georgia, "Times New Roman", serif;
+  --hand: "Nanum Pen Script", "Bradley Hand", cursive;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--body); font-size: 15px; line-height: 1.5;
+  overflow: hidden; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+}
+button, a { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; }
+
+#stage { position: relative; height: 100%; overflow: hidden; background: var(--paper); }
+#sea { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+
+.hud { position: absolute; z-index: 3; }
+#progress {
+  left: 16px; top: 14px; padding: 4px 10px 5px;
+  font-family: var(--caps); font-size: 14px; letter-spacing: .04em; font-variant-numeric: tabular-nums;
+  background: var(--paper-lit); border: 1px solid var(--ink); box-shadow: 2px 2px 0 rgba(43, 40, 35, .25);
+  pointer-events: none;
+}
+#progress i { font-style: normal; color: var(--red); }
+#hud-actions { right: 16px; top: 14px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.btn {
+  font-family: var(--caps); font-size: 14px; letter-spacing: .05em;
+  border: 1px solid var(--ink); background: var(--paper-lit); color: var(--ink);
+  padding: 5px 12px 6px; box-shadow: 2px 2px 0 rgba(43, 40, 35, .3); text-decoration: none; display: inline-block;
+}
+.btn:hover { background: #fffaf0; }
+.btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 rgba(43, 40, 35, .3); }
+.btn.primary { background: var(--red); color: var(--paper-lit); border-color: #7d331f; }
+.btn.primary:hover { background: #b9502f; }
+.btn kbd { font-family: var(--body); font-size: 12px; font-style: italic; opacity: .7; margin-left: 7px; }
+
+#hint {
+  left: 16px; bottom: 14px; font-style: italic; font-size: 13.5px; color: var(--ink);
+  background: rgba(246, 240, 224, .86); border: 1px solid var(--rule); padding: 4px 10px;
+  max-width: min(560px, calc(100% - 32px));
+}
+#hint .touch { display: none; }
+@media (pointer: coarse) { #hint .keys { display: none; } #hint .touch { display: inline; } }
+
+#prompt { left: 50%; bottom: 66px; transform: translateX(-50%); display: none; white-space: nowrap; }
+#prompt.on { display: block; }
+
+#pointer {
+  display: none; align-items: center; gap: 7px; transform: translate(-50%, -50%);
+  font-style: italic; font-size: 13.5px; pointer-events: none; white-space: nowrap;
+  background: rgba(246, 240, 224, .9); border: 1px solid var(--rule); padding: 2px 9px 3px 7px;
+}
+#pointer.on { display: flex; }
+#pointer .arr { width: 0; height: 0; border-top: 5px solid transparent; border-bottom: 5px solid transparent; border-left: 10px solid var(--red); }
+
+#toast {
+  left: 50%; top: 62px; transform: translateX(-50%) rotate(-.6deg);
+  width: min(430px, calc(100% - 32px)); display: none;
+  background: var(--paper-lit); border: 1px solid var(--ink); box-shadow: 3px 4px 0 rgba(43, 40, 35, .28);
+  padding: 10px 16px 12px;
+}
+#toast.on { display: block; }
+#toast p { margin: 2px 0 0; font-family: var(--hand); font-size: 24px; line-height: 1.15; color: #3B4756; -webkit-user-select: text; user-select: text; }
+
+.eyebrow { font-family: var(--caps); font-size: 13px; letter-spacing: .1em; color: var(--red); }
+
+.overlay {
+  position: absolute; inset: 0; z-index: 5; display: none;
+  align-items: center; justify-content: center; padding: 18px;
+  background: rgba(43, 40, 35, .22); overflow: auto;
+}
+.overlay.on { display: flex; }
+.card {
+  width: min(540px, 100%); max-height: 100%; overflow: auto;
+  background: var(--paper-lit); border: 1px solid var(--ink);
+  box-shadow: 0 0 0 4px var(--paper-lit), 0 0 0 5px var(--ink), 6px 9px 0 5px rgba(43, 40, 35, .22);
+  padding: 22px 26px 20px; display: grid; gap: 12px;
+  -webkit-user-select: text; user-select: text;
+}
+.card h1, .card h2 { margin: 0; font-family: var(--display); font-weight: 400; line-height: 1.1; text-wrap: balance; }
+.card h1 { font-size: 38px; }
+.card h2 { font-size: 32px; }
+.card p { margin: 0; max-width: 58ch; }
+.card ul { margin: 0; padding: 0 0 0 2px; list-style: none; display: grid; gap: 5px; }
+.card li { padding-left: 18px; position: relative; }
+.card li::before { content: "\2014"; position: absolute; left: 0; color: var(--red); }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.note { border-top: 1px solid var(--rule); padding-top: 10px; color: var(--muted); font-size: 13.5px; font-style: italic; }
+.note b { color: var(--ink); font-weight: 600; font-style: normal; }
+.stack { display: flex; flex-wrap: wrap; gap: 6px; }
+.stack span { border: 1px solid var(--rule); padding: 0 8px 1px; font-size: 13px; background: var(--paper); }
+
+#log .lede { font-family: var(--display); font-style: italic; font-size: 22px; }
+#log .line { animation: rise .5s both; animation-delay: calc(var(--i) * .3s); }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+#chart .card { width: min(900px, 100%); }
+.chart-body { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(210px, 1fr); gap: 18px; align-items: start; }
+.chart-map { position: relative; border: 1px solid var(--ink); line-height: 0; background: var(--paper); }
+.chart-map canvas { width: 100%; height: auto; }
+.pin {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 24px; height: 24px; padding: 0; border-radius: 50%; line-height: 20px; text-align: center;
+  font-family: var(--caps); font-size: 13px;
+  border: 1px solid var(--ink); background: var(--paper-lit); color: var(--ink);
+}
+.pin[data-seen="1"] { background: var(--red); border-color: #7d331f; color: var(--paper-lit); }
+.pin:hover { background: var(--ink); color: var(--paper-lit); }
+.dest { display: grid; }
+.dest button {
+  display: grid; grid-template-columns: 22px 1fr; column-gap: 8px; align-items: baseline; text-align: left;
+  border: 0; border-bottom: 1px solid var(--rule); background: transparent; padding: 5px 2px 6px;
+}
+.dest button:hover { background: var(--paper); }
+.dest .n { font-family: var(--caps); color: var(--red); }
+.dest .nm { font-family: var(--display); font-size: 17px; }
+.dest .t { grid-column: 2; font-size: 12.5px; font-style: italic; color: var(--muted); font-variant-numeric: tabular-nums; }
+.dest button[data-seen="1"] .nm::after { content: " \2713"; color: var(--red); }
+@media (max-width: 640px) {
+  .chart-body { grid-template-columns: 1fr; }
+  .card { padding: 18px 18px 16px; }
+  .card h1 { font-size: 30px; } .card h2 { font-size: 26px; }
+  #hud-actions .btn kbd { display: none; }
+  #progress { top: 56px; }
+}
+@media (prefers-reduced-motion: reduce) { #log .line { animation: none; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="sea" tabindex="0" aria-label="A nautical chart of Edward's World. Sail the boat between its eight landings."></canvas>
+
+  <div class="hud" id="progress">Charted <i id="p-isl">0</i>/8 · Bottles <i id="p-bot">0</i>/8</div>
+  <div class="hud" id="hud-actions">
+    <button class="btn" id="btn-chart" type="button">Landings<kbd>M</kbd></button>
+    <a class="btn" href="https://edwards-world.vercel.app/?view=index">Skip to index &rarr;</a>
+  </div>
+  <div class="hud" id="hint">
+    <span class="keys">WASD or arrow keys to sail, or hold the mouse on the water. E drops anchor. M lists the landings.</span>
+    <span class="touch">Hold a finger on the water to sail toward it.</span>
+  </div>
+  <button class="hud btn primary" id="prompt" type="button"></button>
+  <div class="hud" id="pointer"><span class="arr" id="arr"></span><span id="ptxt"></span></div>
+  <div class="hud" id="toast" role="status" aria-live="polite">
+    <div class="eyebrow" id="toast-eyebrow">Message in a bottle</div>
+    <p id="toast-text"></p>
+  </div>
+
+  <div class="overlay on" id="log">
+    <div class="card" role="dialog" aria-labelledby="log-h">
+      <div class="eyebrow line" style="--i:0">Captain's log · Entry 1</div>
+      <h1 id="log-h" class="line" style="--i:1">It is a long story.</h1>
+      <p class="lede line" style="--i:2">Here is the short version.</p>
+      <p class="line" style="--i:3">2002. Incheon. Soon Hyun Hwang is born beside a port.</p>
+      <p class="line" style="--i:4">He has been crossing water ever since. Jeju first, then Sydney.</p>
+      <p class="line" style="--i:5">The rest is on this chart. Take the boat.</p>
+      <div class="row line" style="--i:6">
+        <button class="btn primary" id="btn-sail" type="button">Set sail<kbd>Enter</kbd></button>
+        <a class="btn" href="https://edwards-world.vercel.app/?view=index">Skip to index &rarr;</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="landing">
+    <div class="card" role="dialog" aria-labelledby="land-h">
+      <div class="eyebrow" id="land-eyebrow"></div>
+      <h2 id="land-h"></h2>
+      <p id="land-lede"></p>
+      <ul id="land-lines"></ul>
+      <div class="stack" id="land-stack"></div>
+      <div class="row" id="land-links"></div>
+      <p class="note"><b>In the full build:</b> <span id="land-build"></span></p>
+      <div class="row"><button class="btn primary" id="btn-leave" type="button">Back to the boat<kbd>Esc</kbd></button></div>
+    </div>
+  </div>
+
+  <div class="overlay" id="chart">
+    <div class="card" role="dialog" aria-labelledby="chart-h">
+      <div class="row" style="justify-content:space-between">
+        <h2 id="chart-h">Landings</h2>
+        <button class="btn" id="btn-chart-close" type="button">Close<kbd>Esc</kbd></button>
+      </div>
+      <p>Pick a landing to sail straight there. Nothing is locked.</p>
+      <div class="chart-body">
+        <div class="chart-map" id="chart-map"><canvas id="chart-canvas" width="900" height="600"></canvas></div>
+        <div class="dest" id="dest"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+const INK = "#2B2823", BLUE = "#54707C", RED = "#A9482C", PAPER = "#EFE7D3", PAPERL = "#F6F0E0", LAND = "#E6D8B0", SEPIA = "#7C6450", NAVY = "#3B4756";
+const F = '"IM Fell English", Georgia, serif', F_SC = '"IM Fell English SC", "IM Fell English", Georgia, serif', F_HAND = '"Nanum Pen Script", "Bradley Hand", cursive';
+
+/* World units. One unit is roughly two CSS pixels on a laptop. */
+const W = 1440, H = 960;
+const MAX_SPEED = 118, DOCK_RANGE = 30;
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const SITE = "https://edwards-world.vercel.app";
+
+const ISLANDS = [
+  { id: "incheon", name: "Incheon Port", tag: "2002", coord: "37°27′N 126°42′E", cx: 260, cy: 190, rx: 95, ry: 70, seed: 11, dock: 0.55, trees: .30,
+    clear: [[-44, -50, 62, 52], [14, -18, 62, 36]],
+    lede: "Home port.",
+    lines: ["Born here in 2002.", "Every chapter after this one starts with a crossing."],
+    build: "A new landing. A short side-view strip drawn in the existing engine." },
+  { id: "jeju", name: "Jeju Island", tag: "2017 – 2022", coord: "33°30′N 126°32′E", cx: 330, cy: 520, rx: 120, ry: 78, seed: 23, dock: -0.75, trees: .42, fruit: true,
+    clear: [[-48, -36, 96, 46], [44, -20, 46, 30], [-62, 8, 14, 18]],
+    lede: "Five years on an island.",
+    lines: ["St Johnsbury Academy Jeju.", "Capstone: an Arduino contactless coffee machine.", "Samsung Enterprise Competition — Grand Prize."],
+    build: "A new landing. The chapter text comes straight from data/personal.ts." },
+  { id: "field", name: "Field Station", tag: "Hungary · 2025 – 2026", cx: 760, cy: 150, rx: 62, ry: 46, seed: 37, dock: 2.2, trees: .22,
+    clear: [[-44, -34, 88, 46]],
+    lede: "Hungary has no coast. The chart takes liberties.",
+    lines: ["Sensorway — Ecopro.", "Computer Vision & Field Deployment internship.", "Around 750 sensors, Docker, data pipelines, live rollout."],
+    build: "A new landing. A fence line of sensors you can walk." },
+  { id: "shipyard", name: "The Shipyard", tag: "Under construction", cx: 700, cy: 430, rx: 58, ry: 44, seed: 41, dock: Math.PI, trees: .18,
+    clear: [[-30, -24, 64, 44]],
+    lede: "Something is on the slipway.",
+    lines: ["Reserved for the next project."],
+    build: "Replaces the scaffolding lot at the end of the town. Placeholder for the Agent Office pipeline." },
+  { id: "sydney", name: "Sydney Harbour", tag: "2026 · Final-year undergraduate", coord: "33°52′S 151°13′E", cx: 1060, cy: 620, rx: 170, ry: 115, seed: 53, dock: 3.45, trees: .34,
+    carve: [{ x: 1090, y: 512, rx: 46, ry: 40 }], labelDx: -86,
+    clear: [[-90, -66, 78, 62], [44, -2, 38, 34], [-30, 38, 72, 24], [78, -104, 42, 32], [-36, -124, 26, 32], [66, -124, 28, 32]],
+    lede: "Where the boat is moored now.",
+    lines: ["University of Sydney.", "Bachelor of Advanced Computing (Computer Science).", "Edward's House, the résumé and the index are ashore here."],
+    links: [["Résumé", SITE + "/resume"], ["Index", SITE + "/?view=index"]],
+    build: "Lands in the existing pixel town, unchanged. The chart is the map screen; ashore is the world you already built." },
+  { id: "sportsgang", name: "SportsGang Courts", tag: "Full-stack product", cx: 760, cy: 800, rx: 66, ry: 48, seed: 67, dock: -0.55, trees: .20,
+    clear: [[-42, -24, 76, 52]],
+    lede: "SportsGang / Protin. A mobile sports matchmaking and community product.",
+    stack: ["React Native / Expo", "FastAPI", "PostgreSQL", "Redis", "Docker"],
+    links: [["Case study", SITE + "/case-studies/sportsgang"], ["GitHub", "https://github.com/EdwardH-jedi/Sportsgang"]],
+    build: "Opens the existing SportsGang interior: golf, tennis, basketball and running." },
+  { id: "afl", name: "AFL Oval", tag: "Data science", cx: 1250, cy: 330, rx: 78, ry: 56, seed: 71, dock: 2.3, trees: .20,
+    clear: [[-56, -34, 116, 66]],
+    lede: "AFL Predict. An evidence-led AFL forecasting and evaluation system.",
+    lines: ["Paper-trading research. Not a live betting or tipping service."],
+    stack: ["Python", "FastAPI", "TypeScript"],
+    links: [["Case study", SITE + "/case-studies/afl-predict"], ["GitHub", "https://github.com/EdwardH-jedi/AFL_predict"]],
+    build: "Opens the existing AFL Lab and its seeded fixture pipeline." },
+  { id: "arcade", name: "Arcade Pier", tag: "Interactive experience", cx: 1300, cy: 850, rx: 52, ry: 40, seed: 83, dock: 3.6, trees: .16,
+    clear: [[-22, -26, 44, 40]],
+    lede: "Soonpermario. An interactive browser experiment in playful movement.",
+    lines: ["Coins are commits; lives are coffee."],
+    stack: ["JavaScript", "HTML5 Canvas", "No build step"],
+    links: [["Case study", SITE + "/case-studies/soonpermario"], ["GitHub", "https://github.com/EdwardH-jedi/career-quest"]],
+    build: "Opens the existing arcade and its playable platformer segment." },
+];
+
+const BOTTLES = [
+  { x: 402, y: 118, note: "SNU research intern, 2021", text: "2021, Seoul. Research internship at Seoul National University, Materials Science & Engineering." },
+  { x: 478, y: 566, note: "Arduino coffee machine", text: "The Jeju capstone was an Arduino contactless coffee machine." },
+  { x: 196, y: 648, note: "Samsung Grand Prize", text: "Samsung Enterprise Competition — Grand Prize." },
+  { x: 884, y: 236, note: "~750 sensors, live rollout", text: "Sensorway: around 750 sensors, Docker, data pipelines, live rollout." },
+  { x: 628, y: 700, note: "Expo · FastAPI · Postgres", text: "SportsGang runs on React Native / Expo, FastAPI, PostgreSQL, Redis and Docker." },
+  { x: 1118, y: 404, note: "paper trading only", text: "AFL Predict is paper-trading research. Not a live betting or tipping service." },
+  { x: 1196, y: 792, note: "coins = commits", text: "In Soonpermario, coins are commits and lives are coffee." },
+  { x: 1090, y: 540, note: "no game engine here", text: "This world is Next.js, React and Canvas 2D. No game engine. You found the one under the bridge." },
+];
+
+const SEAS = [
+  { t: "Yellow Sea", x: 118, y: 345, rot: -.22, size: 15 },
+  { t: "Jeju Strait", x: 520, y: 392, rot: .12, size: 13 },
+  { t: "Tasman Sea", x: 1338, y: 610, rot: -1.36, size: 15 },
+  { t: "Port Jackson", x: 1090, y: 476, rot: 0, size: 7 },
+  { t: "Sea of Side Projects", x: 1016, y: 786, rot: -.06, size: 13 },
+  { t: "the Danube, allegedly", x: 812, y: 232, rot: .05, size: 7.5 },
+];
+const ROSE = { x: 975, y: 300, r: 52 }, CART = { x: 450, y: 836, w: 250, h: 96 }, SERPENT = { x: 1040, y: 872 };
+
+/* ------------------------------------------------------------------- noise */
+function hash(x, y) {
+  let n = (Math.imul(x | 0, 374761393) + Math.imul(y | 0, 668265263)) | 0;
+  n = Math.imul(n ^ (n >>> 13), 1274126177); n ^= n >>> 16;
+  return (n >>> 0) / 4294967296;
+}
+function vnoise(x, y) {
+  const xi = Math.floor(x), yi = Math.floor(y), fx = x - xi, fy = y - yi;
+  const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
+  const a = hash(xi, yi), b = hash(xi + 1, yi), c = hash(xi, yi + 1), d = hash(xi + 1, yi + 1);
+  return a + (b - a) * sx + (c - a) * sy + (a - b - c + d) * sx * sy;
+}
+
+/* ----------------------------------------------------------------- terrain
+   Signed distance to the nearest coast in world units; negative is land.
+   The same field drives collision, the coastline, the waterlines and the soundings. */
+const sdf = new Float32Array(W * H).fill(999);
+function ellipseR(dx, dy, rx, ry) { const th = Math.atan2(dy, dx); return { th, r: 1 / Math.hypot(Math.cos(th) / rx, Math.sin(th) / ry) }; }
+for (const is of ISLANDS) {
+  const p = [hash(is.seed, 1) * 6.283, hash(is.seed, 2) * 6.283, hash(is.seed, 3) * 6.283];
+  is.edge = (th) => 1 + .09 * Math.sin(3 * th + p[0]) + .055 * Math.sin(5 * th + p[1]) + .03 * Math.sin(9 * th + p[2]);
+  const ex = Math.ceil(is.rx * 1.2 + 46), ey = Math.ceil(is.ry * 1.2 + 46);
+  for (let y = Math.max(0, is.cy - ey); y < Math.min(H, is.cy + ey); y++) for (let x = Math.max(0, is.cx - ex); x < Math.min(W, is.cx + ex); x++) {
+    const dx = x - is.cx, dy = y - is.cy, e = ellipseR(dx, dy, is.rx, is.ry);
+    let s = Math.hypot(dx, dy) - is.edge(e.th) * e.r;
+    if (is.carve) for (const c of is.carve) { const cx = x - c.x, cy = y - c.y; s = Math.max(s, ellipseR(cx, cy, c.rx, c.ry).r - Math.hypot(cx, cy)); }
+    const i = y * W + x; if (s < sdf[i]) sdf[i] = s;
+  }
+}
+const sdfAt = (x, y) => { x = Math.round(x); y = Math.round(y); return x < 0 || y < 0 || x >= W || y >= H ? 999 : sdf[y * W + x]; };
+
+/** Marching squares over the distance field: closed loops at one level. */
+function contours(level, wobble) {
+  const g = 2, nx = Math.floor((W - 1) / g), ny = Math.floor((H - 1) / g), stride = nx + 2;
+  const v = (ix, iy) => sdf[iy * g * W + ix * g] - level;
+  const pts = new Map(), adj = new Map();
+  const P = (ix, iy, d) => {
+    const k = (iy * stride + ix) * 2 + d;
+    if (!pts.has(k)) { const a = v(ix, iy), b = d ? v(ix, iy + 1) : v(ix + 1, iy), t = a / (a - b); pts.set(k, d ? [ix * g, (iy + t) * g] : [(ix + t) * g, iy * g]); }
+    return k;
+  };
+  const link = (a, b) => { (adj.get(a) || adj.set(a, []).get(a)).push(b); (adj.get(b) || adj.set(b, []).get(b)).push(a); };
+  for (let iy = 0; iy < ny; iy++) for (let ix = 0; ix < nx; ix++) {
+    const a = v(ix, iy) < 0, b = v(ix + 1, iy) < 0, c = v(ix + 1, iy + 1) < 0, d = v(ix, iy + 1) < 0;
+    if (a === b && b === c && c === d) continue;
+    const e = [];
+    if (a !== b) e.push(P(ix, iy, 0)); if (b !== c) e.push(P(ix + 1, iy, 1)); if (c !== d) e.push(P(ix, iy + 1, 0)); if (d !== a) e.push(P(ix, iy, 1));
+    if (e.length === 2) link(e[0], e[1]); else if (e.length === 4) { link(e[0], e[1]); link(e[2], e[3]); }
+  }
+  const loops = [], done = new Set();
+  for (const start of adj.keys()) {
+    if (done.has(start)) continue;
+    let loop = [], prev = -1, cur = start;
+    while (cur !== undefined && !done.has(cur)) { done.add(cur); loop.push(pts.get(cur)); const n = adj.get(cur); const nxt = n[0] !== prev ? n[0] : n[1]; prev = cur; cur = nxt; }
+    if (loop.length < 8) continue;
+    if (wobble) loop = loop.map(([x, y]) => [x + (vnoise(x / 8, y / 8) - .5) * wobble, y + (vnoise(x / 8 + 40, y / 8) - .5) * wobble]);
+    const sm = [];
+    for (let i = 0; i < loop.length; i++) { const p = loop[i], q = loop[(i + 1) % loop.length]; sm.push([.75 * p[0] + .25 * q[0], .75 * p[1] + .25 * q[1]], [.25 * p[0] + .75 * q[0], .25 * p[1] + .75 * q[1]]); }
+    loops.push(sm);
+  }
+  const path = new Path2D();
+  for (const l of loops) { path.moveTo(l[0][0], l[0][1]); for (let i = 1; i < l.length; i++) path.lineTo(l[i][0], l[i][1]); path.closePath(); }
+  return path;
+}
+const C = { coast: contours(0, 1.1), inner: contours(-3.2, 1.6), w1: contours(4, .8), w2: contours(9, 1), shoal: contours(15, 1.2), deep: contours(32, 0) };
+
+function coastAlong(is, th) {
+  const ux = Math.cos(th), uy = Math.sin(th); let t = 4;
+  while (t < 400 && sdfAt(is.cx + ux * t, is.cy + uy * t) < 0) t++;
+  return { x: is.cx + ux * t, y: is.cy + uy * t, ux, uy };
+}
+for (const is of ISLANDS) {
+  const c = is.coast = coastAlong(is, is.dock);
+  is.dockPt = { x: Math.round(c.x + c.ux * 26), y: Math.round(c.y + c.uy * 26) };
+  is.label = { x: is.cx + (is.labelDx || 0), y: is.cy - is.ry - (is.coord ? 20 : 14) };
+  // Woodland: one path for the wash, one for the ink, built once.
+  is.treeWash = new Path2D(); is.treeInk = new Path2D(); is.fruitDots = new Path2D();
+  const ex = Math.ceil(is.rx * 1.2), ey = Math.ceil(is.ry * 1.2);
+  for (let gy = is.cy - ey; gy < is.cy + ey; gy += 7) for (let gx = is.cx - ex; gx < is.cx + ex; gx += 7) {
+    if (hash(gx + is.seed, gy) > is.trees) continue;
+    const x = gx + hash(gx, gy + 3) * 5, y = gy + hash(gx + 5, gy) * 5;
+    if (sdfAt(x, y) > -10) continue;
+    const rx = x - is.cx, ry = y - is.cy;
+    if (is.clear.some(([cx, cy, cw, ch]) => rx > cx - 3 && rx < cx + cw + 3 && ry > cy - 1 && ry < cy + ch + 7)) continue;
+    if (Math.hypot(x - c.x, y - c.y) < 14) continue;
+    const r = 1.7 + hash(gx, gy) * .7;
+    is.treeWash.moveTo(x + r, y - 3.2); is.treeWash.arc(x, y - 3.2, r, 0, 6.3);
+    is.treeInk.moveTo(x + r, y - 3.2); is.treeInk.arc(x, y - 3.2, r, 0, 6.3);
+    is.treeInk.moveTo(x - r * .5, y - 3.5); is.treeInk.arc(x - r * .1, y - 3.5, r * .45, Math.PI, Math.PI * 1.6);
+    is.treeInk.moveTo(x, y - 3.2 + r); is.treeInk.lineTo(x, y - .2); is.treeInk.moveTo(x - 1.2, y - .2); is.treeInk.lineTo(x + 2.2, y - .2);
+    if (is.fruit && rx < -40) { is.fruitDots.moveTo(x - .2, y - 3.6); is.fruitDots.arc(x - .7, y - 3.6, .5, 0, 6.3); is.fruitDots.moveTo(x + 1.2, y - 2.6); is.fruitDots.arc(x + .7, y - 2.6, .5, 0, 6.3); }
+  }
+}
+
+// Soundings: depths read off the same distance field, kept clear of the lettering.
+const SOUNDINGS = [];
+{
+  const keepOut = [
+    [CART.x - CART.w / 2 - 8, CART.y - CART.h / 2 - 8, CART.w + 16, CART.h + 16],
+    [ROSE.x - ROSE.r - 12, ROSE.y - ROSE.r - 12, ROSE.r * 2 + 24, ROSE.r * 2 + 24],
+    [SERPENT.x - 50, SERPENT.y - 22, 100, 40],
+    ...SEAS.map((s) => Math.abs(s.rot) > 1 ? [s.x - 14, s.y - 70, 28, 140] : [s.x - s.t.length * s.size * .34, s.y - s.size, s.t.length * s.size * .68, s.size * 1.8]),
+    ...ISLANDS.map((is) => [is.label.x - 62, is.label.y - 14, 124, 30]),
+  ];
+  for (let gy = 30; gy < H - 16; gy += 58) for (let gx = 30; gx < W - 16; gx += 62) {
+    const x = gx + Math.floor(hash(gx, gy) * 26) - 13, y = gy + Math.floor(hash(gy, gx) * 22) - 11, s = sdfAt(x, y);
+    if (s < 18 || keepOut.some(([kx, ky, kw, kh]) => x > kx && x < kx + kw && y > ky && y < ky + kh)) continue;
+    SOUNDINGS.push({ x, y, n: Math.round(s > 900 ? 62 + hash(x, y) * 34 : s / 2.1 + hash(x, y) * 5) });
+  }
+}
+
+/* --------------------------------------------------------------- ink tools */
+function S(g, w = .55, c = INK) { g.strokeStyle = c; g.lineWidth = w; g.lineJoin = "round"; g.lineCap = "round"; }
+function line(g, ...p) { g.beginPath(); g.moveTo(p[0], p[1]); for (let i = 2; i < p.length; i += 2) g.lineTo(p[i], p[i + 1]); g.stroke(); }
+function rect(g, x, y, w, h, fill = PAPERL) { g.fillStyle = fill; g.fillRect(x, y, w, h); g.strokeRect(x, y, w, h); }
+function poly(g, pts, fill) { g.beginPath(); g.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) g.lineTo(pts[i], pts[i + 1]); g.closePath(); if (fill) { g.fillStyle = fill; g.fill(); } g.stroke(); }
+function shade(g, x, y, w, h) { g.fillStyle = "rgba(43,40,35,.14)"; g.fillRect(x, y, w, h); }
+function dot(g, x, y, r, c = INK) { g.fillStyle = c; g.beginPath(); g.arc(x, y, r, 0, 6.3); g.fill(); }
+/** A small gabled house standing on baseline y. */
+function house(g, x, y, w, h, roof = PAPERL) {
+  rect(g, x, y - h, w, h); shade(g, x + w * .7, y - h, w * .3, h);
+  poly(g, [x - 1, y - h, x + w / 2, y - h - w * .4, x + w + 1, y - h], roof);
+  g.fillStyle = INK; g.fillRect(x + w / 2 - 1, y - 3.6, 2, 3.6);
+}
+function label(g, str, x, y, o = {}) {
+  g.save(); g.translate(x, y); if (o.rot) g.rotate(o.rot);
+  g.font = `${o.italic ? "italic " : ""}${o.size || 10}px ${o.font || F}`;
+  g.textAlign = o.align || "center"; g.textBaseline = "alphabetic";
+  if ("letterSpacing" in g) g.letterSpacing = (o.ls || 0) + "px";
+  if (o.halo !== false) { g.strokeStyle = o.haloColor || PAPER; g.lineWidth = o.haloW || 2.6; g.lineJoin = "round"; g.strokeText(str, 0, 0); }
+  g.fillStyle = o.color || INK; g.fillText(str, 0, 0);
+  if ("letterSpacing" in g) g.letterSpacing = "0px";
+  g.restore();
+}
+function anchor(g, x, y, s, c) {
+  g.save(); g.translate(x, y); g.scale(s, s); S(g, .6, c);
+  g.beginPath(); g.arc(0, -3.2, .9, 0, 6.3); g.stroke();
+  line(g, 0, -2.3, 0, 3.1); line(g, -1.9, -1.1, 1.9, -1.1);
+  g.beginPath(); g.arc(0, .2, 2.9, .45, Math.PI - .45); g.stroke();
+  line(g, 2.6, 1.5, 3.2, .3); line(g, -2.6, 1.5, -3.2, .3);
+  g.restore();
+}
+
+/* Landmarks: small engraved vignettes, drawn relative to each island's centre. */
+const LANDMARKS = {
+  incheon(g) {
+    S(g);
+    for (const [x, y, w, h] of [[-40, -6, 13, 34], [-25, -8, 13, 44], [-10, -4, 13, 30]]) {
+      rect(g, x, y - h, w, h); shade(g, x + w - 3.6, y - h, 3.6, h); rect(g, x + 3, y - h - 2.2, 5, 2.2);
+      S(g, .3); for (let wy = y - h + 4; wy < y - 2; wy += 3.6) line(g, x + 2, wy, x + w - 5.2, wy); S(g);
+    }
+    line(g, 16, 12, 70, 12); S(g, .3); for (let x = 18; x < 70; x += 2.6) line(g, x, 12, x - 1.6, 14.4); S(g, .45);
+    const fills = [PAPERL, "rgba(169,72,44,.55)", "rgba(84,112,124,.5)", PAPERL, "rgba(43,40,35,.35)"];
+    for (let r = 0; r < 3; r++) for (let k = 0; k < 4 - (r > 1); k++) rect(g, 20 + k * 6.6 + r * 1.2, 8 - r * 3.8, 6, 3.6, fills[(k + r * 2) % 5]);
+    S(g, .8, RED);
+    for (const x of [50, 61]) { line(g, x - 2.4, 12, x - .6, -12); line(g, x + 2.4, 12, x + .6, -12); line(g, x - 9, -12, x + 11, -13.4); line(g, x - 9, -12, x, -17, x + 11, -13.4); S(g, .4, RED); line(g, x + 9, -13, x + 9, -5); g.strokeRect(x + 7.8, -5, 2.4, 2); S(g, .8, RED); }
+  },
+  jeju(g) {
+    S(g, .7);
+    g.beginPath(); g.moveTo(-46, 6); g.quadraticCurveTo(-22, -3, -9, -30); g.lineTo(-4, -26.5); g.lineTo(3, -26.5); g.lineTo(8, -30); g.quadraticCurveTo(22, -3, 46, 6);
+    g.fillStyle = PAPERL; g.fill(); g.stroke();
+    S(g, .3);
+    for (let i = -7; i <= 7; i++) { const a = i / 7; line(g, i * 1.5 + a * 3, -22 + Math.abs(a) * 2, i * 5.6, 1 + Math.abs(a) * 3.4); if (i % 2) line(g, i * 2.4, -12, i * 4.2, -3); }
+    label(g, "Hallasan  1,947 m", 0, 15, { italic: true, size: 5.4, haloW: 1.6, haloColor: LAND });
+    S(g); house(g, 50, 6, 30, 13, "rgba(169,72,44,.5)");
+    S(g, .35); for (const wx of [54, 59, 70, 75]) g.strokeRect(wx, -3, 2.2, 3);
+    S(g, .5); line(g, 84, 6, 84, -20); poly(g, [84, -20, 91, -18, 84, -16], RED);
+    // Dol hareubang.
+    S(g, .5); g.fillStyle = PAPERL; g.beginPath(); g.ellipse(-56, 19, 3, 5.4, 0, 0, 6.3); g.fill(); g.stroke();
+    g.beginPath(); g.arc(-56, 12, 2.8, 0, 6.3); g.fill(); g.stroke();
+    g.fillStyle = INK; g.beginPath(); g.arc(-56, 10.6, 3.2, Math.PI, 0); g.fill();
+    dot(g, -57, 12.4, .4); dot(g, -55, 12.4, .4); line(g, -58, 19, -56, 20.4, -54, 19);
+    S(g, .35); for (let i = 0; i < 26; i++) { g.beginPath(); g.arc(-98 + i * 2.5, 36 + Math.sin(i * .5) * 2.6, .95, 0, 6.3); g.stroke(); }
+    for (let i = 0; i < 18; i++) { g.beginPath(); g.arc(30 + i * 2.5, 42 + Math.cos(i * .55) * 2, .95, 0, 6.3); g.stroke(); }
+  },
+  field(g) {
+    S(g, .5); let prev = null;
+    for (let k = 0; k <= 14; k++) {
+      const a = -2.75 + k * .17, x = Math.cos(a) * 40, y = Math.sin(a) * 26;
+      if (prev) { S(g, .3); g.beginPath(); g.moveTo(prev.x, prev.y - 4.6); g.quadraticCurveTo((prev.x + x) / 2, (prev.y + y) / 2 - 3.6, x, y - 4.6); g.stroke(); g.beginPath(); g.moveTo(prev.x, prev.y - 2.6); g.quadraticCurveTo((prev.x + x) / 2, (prev.y + y) / 2 - 1.6, x, y - 2.6); g.stroke(); S(g, .5); }
+      line(g, x, y, x, y - 5.4);
+      if (k % 3 === 1) { g.fillStyle = RED; g.fillRect(x - 1, y - 7.4, 2, 2); S(g, .3, RED); g.beginPath(); g.arc(x, y - 6.4, 2.6, -2.2, -.9); g.stroke(); g.beginPath(); g.arc(x, y - 6.4, 4, -2.2, -.9); g.stroke(); S(g, .5); }
+      prev = { x, y };
+    }
+    rect(g, -11, 0, 20, 11); shade(g, 3, 0, 6, 11); line(g, -12.5, 0, 10.5, 0); g.fillStyle = INK; g.fillRect(-3, 6.6, 2.4, 4.4);
+    S(g, .35); g.strokeRect(-8.5, 3, 3, 3);
+    S(g, .5); line(g, 16, 11, 16, -14); line(g, 13, 11, 16, 2, 19, 11);
+    S(g, .3); for (const r of [3, 5.4, 7.8]) { g.beginPath(); g.arc(16, -14, r, -1.1, .5); g.stroke(); }
+    S(g, .45); rect(g, -18, 7, 4.4, 4);
+  },
+  shipyard(g) {
+    S(g, .5); line(g, -30, 12, 30, 12); S(g, .3); for (let x = -28; x < 30; x += 3) line(g, x, 12, x - 1.8, 14.6);
+    S(g, .65); g.beginPath(); g.moveTo(-21, -3); g.quadraticCurveTo(-17, 8, 0, 8); g.quadraticCurveTo(17, 8, 23, -5); g.stroke();
+    S(g, .4); for (let x = -16; x <= 18; x += 3.4) { const u = x / 20, yb = 8 - u * u * 4.4; g.beginPath(); g.moveTo(x, -3.6 - u * .8); g.quadraticCurveTo(x + .9, (yb - 3) / 2, x, yb); g.stroke(); }
+    line(g, -19, 1.5, 21, .6);
+    S(g, .5); for (const x of [-13, 0, 13]) line(g, x, 8, x + Math.sign(x) * 2.6, 12);
+    S(g, .4); for (const x of [-26, 27]) line(g, x, 12, x, -15); line(g, -26, -15, 27, -15); line(g, -26, -6, -20, -6); line(g, 22, -6, 27, -6);
+    for (let y = 10; y > -14; y -= 2.6) line(g, -26, y, -24, y);
+    S(g, .8, RED); line(g, 31, 12, 31, -20); line(g, 22, -20, 42, -21.6); line(g, 31, -25, 22, -20); line(g, 31, -25, 42, -21.6);
+    S(g, .4, RED); line(g, 39, -21, 39, -11); g.strokeRect(37.6, -11, 2.8, 2.4);
+    for (let k = 0; k < 10; k++) { g.fillStyle = k % 2 ? INK : RED; g.fillRect(-20 + k * 4, 16, 4, 1.6); }
+  },
+  sydney(g) {
+    S(g, .4, SEPIA); g.setLineDash([1.4, 1.6]);
+    line(g, -150, -34, -88, -34, -88, -8, 62, -8, 62, 12); line(g, -8, -8, -8, 44);
+    g.setLineDash([]);
+    // The quadrangle and its clock tower.
+    g.fillStyle = "rgba(117,130,90,.3)"; g.fillRect(-78, -12, 56, 9); S(g, .3); g.strokeRect(-78, -12, 56, 9); line(g, -50, -12, -50, -3);
+    S(g); rect(g, -84, -36, 68, 22); shade(g, -30, -36, 14, 22); line(g, -86, -36, -14, -36);
+    poly(g, [-84, -36, -78, -44, -72, -36], PAPERL); poly(g, [-28, -36, -22, -44, -16, -36], PAPERL);
+    S(g, .35); for (let k = 0; k < 11; k++) { const ax = -81 + k * 6.1; if (Math.abs(ax + 50) < 5) continue; g.beginPath(); g.moveTo(ax - 1.9, -14); g.lineTo(ax - 1.9, -19); g.arc(ax, -19, 1.9, Math.PI, 0); g.lineTo(ax + 1.9, -14); g.stroke(); }
+    for (let k = 0; k < 11; k++) { const ax = -81 + k * 6.1; if (Math.abs(ax + 50) < 5) continue; g.strokeRect(ax - 1, -31, 2, 4.4); }
+    S(g); rect(g, -55.5, -56, 11, 42); shade(g, -48, -56, 3.5, 42); poly(g, [-57, -56, -50, -68, -43, -56], "rgba(43,40,35,.3)"); line(g, -50, -68, -50, -72);
+    g.fillStyle = PAPERL; g.beginPath(); g.arc(-50, -49, 2.6, 0, 6.3); g.fill(); g.stroke(); S(g, .35); line(g, -50, -49, -50, -51); line(g, -50, -49, -48.6, -48.4);
+    g.fillStyle = INK; g.beginPath(); g.moveTo(-52, -14); g.lineTo(-52, -19); g.arc(-50, -19, 2, Math.PI, 0); g.lineTo(-48, -14); g.fill();
+    // Terraces.
+    S(g, .45); for (let k = 0; k < 7; k++) { const x = -26 + k * 9.2; rect(g, x, 50, 8.4, 8); poly(g, [x - .5, 50, x + 4.2, 44.6, x + 8.9, 50], k % 3 === 1 ? "rgba(43,40,35,.3)" : PAPERL); g.fillStyle = INK; g.fillRect(x + 3.2, 54.6, 1.8, 3.4); g.strokeRect(x + 6, 46.4, 1.4, 2.4); }
+    // Edward's House on its rise.
+    S(g, .3); for (let k = -5; k <= 5; k++) line(g, 62 + k * 4, 31 + Math.abs(k) * .5, 62 + k * 5, 35 + Math.abs(k) * .7);
+    S(g); house(g, 52, 30, 21, 13, RED); S(g, .4); g.strokeRect(55, 21, 3, 3); g.strokeRect(67, 21, 3, 3);
+    S(g, .5); rect(g, 67.5, 8.6, 3, 6);
+    S(g, .35); g.beginPath(); g.moveTo(69, 8); g.bezierCurveTo(66, 4, 73, 2, 70, -2); g.bezierCurveTo(68, -5, 73, -6, 72, -9); g.stroke();
+    label(g, "Edward's House", 63, 40, { italic: true, size: 5.2, haloW: 1.6, haloColor: LAND });
+    // Opera shells on the point east of the bay.
+    S(g, .55); rect(g, 82, -79, 36, 3.4); S(g, .3); for (let x = 84; x < 118; x += 2.4) line(g, x, -75.6, x, -73.4); S(g, .55);
+    const shell = (bx, s, flip) => { const d = flip ? -1 : 1; g.beginPath(); g.moveTo(bx, -79); g.quadraticCurveTo(bx + d * s * .2, -79 - s * .98, bx + d * s * 1.05, -79 - s); g.quadraticCurveTo(bx + d * s * .96, -79 - s * .34, bx + d * s * .9, -79); g.closePath(); g.fillStyle = PAPERL; g.fill(); g.stroke(); S(g, .28); g.beginPath(); g.moveTo(bx + d * s * .34, -79); g.quadraticCurveTo(bx + d * s * .5, -79 - s * .6, bx + d * s * 1.02, -79 - s * .96); g.stroke(); S(g, .55); };
+    shell(84, 13); shell(93, 11); shell(101, 8.5); shell(118, 6.5, true);
+  },
+  sportsgang(g) {
+    g.fillStyle = "rgba(117,130,90,.3)"; g.fillRect(-38, -16, 32, 19);
+    S(g, .5); g.strokeRect(-38, -16, 32, 19); S(g, .3); g.strokeRect(-36, -13.6, 28, 14.2); line(g, -29, -6.5, -15, -6.5); line(g, -29, -13.6, -29, .6); line(g, -15, -13.6, -15, .6);
+    S(g, .8); line(g, -22, -17.4, -22, 4.4);
+    S(g, .4); g.strokeRect(2, -14, 22, 16); g.beginPath(); g.arc(13, -14, 6.4, 0, Math.PI); g.stroke(); g.strokeRect(9.6, -14, 6.8, 6);
+    S(g, .6); line(g, 13, -14, 13, -25); rect(g, 9.8, -26, 6.4, 4.4); S(g, .6, RED); g.beginPath(); g.ellipse(13, -20.4, 2.2, .8, 0, 0, 6.3); g.stroke();
+    S(g); house(g, -13, 22, 17, 9.5);
+    g.fillStyle = "rgba(117,130,90,.4)"; g.beginPath(); g.ellipse(24, 18, 7, 3.4, 0, 0, 6.3); g.fill(); S(g, .3); g.stroke();
+    S(g, .45); line(g, 25, 18, 25, 8); poly(g, [25, 8, 30, 9.4, 25, 10.8], RED);
+  },
+  afl(g) {
+    g.fillStyle = "rgba(117,130,90,.3)"; g.beginPath(); g.ellipse(-10, -4, 37, 24, 0, 0, 6.3); g.fill();
+    S(g, .6); g.stroke(); S(g, .3); g.beginPath(); g.ellipse(-10, -4, 34.6, 21.8, 0, 0, 6.3); g.stroke();
+    g.strokeRect(-14, -8, 8, 8); g.beginPath(); g.arc(-10, -4, 1.6, 0, 6.3); g.stroke(); line(g, -10, -25.8, -10, -8); line(g, -10, 0, -10, 17.8);
+    g.beginPath(); g.arc(-44.6, -4, 14, -1.05, 1.05); g.stroke(); g.beginPath(); g.arc(24.6, -4, 14, Math.PI - 1.05, Math.PI + 1.05); g.stroke();
+    for (const gx of [-48.5, 28.5]) for (let k = 0; k < 4; k++) { const tall = k === 1 || k === 2; S(g, tall ? .7 : .5); line(g, gx, -9 + k * 3.4, gx, -9 + k * 3.4 - (tall ? 9 : 5.6)); }
+    S(g); rect(g, 34, 11, 19, 11); shade(g, 47, 11, 6, 11); line(g, 32.6, 11, 54.4, 11); g.fillStyle = RED; g.fillRect(42, 17.6, 2.4, 4.4);
+    S(g, .35); g.strokeRect(36.6, 14, 3, 3); S(g, .5); line(g, 50, 11, 50, -1); line(g, 47.4, 1, 52.6, 1); line(g, 48.4, 3.4, 51.6, 3.4);
+  },
+  arcade(g, t) {
+    S(g, .4); for (const x of [-16, -8, 0, 8, 16]) line(g, x, 9, x, 13);
+    S(g); rect(g, -15, -8, 30, 17); shade(g, 6, -8, 9, 17);
+    g.fillStyle = RED; g.fillRect(-17, -16, 34, 8.4); g.strokeRect(-17, -16, 34, 8.4);
+    label(g, "ARCADE", 0, -9.8, { font: F_SC, size: 5.6, color: PAPERL, halo: false, ls: .8 });
+    for (let k = 0; k < 9; k++) dot(g, -15 + k * 3.75, -6.2, .7, (k + Math.floor(t * 2.2)) % 2 ? PAPERL : INK);
+    g.fillStyle = INK; g.beginPath(); g.moveTo(-2.6, 9); g.lineTo(-2.6, 3); g.arc(0, 3, 2.6, Math.PI, 0); g.lineTo(2.6, 9); g.fill();
+    S(g, .35); g.strokeRect(-11.4, 0, 4.6, 4.6); g.strokeRect(6.8, 0, 4.6, 4.6);
+    S(g, .3); g.beginPath(); g.moveTo(-17, -16); g.quadraticCurveTo(-24, -20, -30, -17); g.stroke(); g.beginPath(); g.moveTo(17, -16); g.quadraticCurveTo(24, -20, 30, -17); g.stroke();
+    for (const [x, y] of [[-21, -18.2], [-26, -18.4], [21, -18.2], [26, -18.4]]) poly(g, [x - 1, y, x + 1, y, x, y + 2.4], RED);
+  },
+};
+
+function drawBridge(g) {
+  const y = 510, x0 = 1040, x1 = 1140, mx = (x0 + x1) / 2;
+  S(g, .7); g.beginPath(); g.moveTo(x0, y - 1); g.quadraticCurveTo(mx, y - 45, x1, y - 1); g.stroke();
+  S(g, .45); g.beginPath(); g.moveTo(x0, y - 1); g.quadraticCurveTo(mx, y - 33, x1, y - 1); g.stroke();
+  S(g, .3);
+  for (let x = x0 + 5; x < x1 - 2; x += 5) {
+    const u = (x - x0) / (x1 - x0), u2 = (x + 5 - x0) / (x1 - x0), top = y - 1 - 4 * u * (1 - u) * 22, low = y - 1 - 4 * u * (1 - u) * 16, low2 = y - 1 - 4 * u2 * (1 - u2) * 16;
+    line(g, x, top, x, y - 1); if (x + 5 < x1 - 2) line(g, x, top, x + 5, low2); void low;
+  }
+  S(g, .55); rect(g, x0 - 16, y - 1.4, x1 - x0 + 32, 2.8);
+  for (const px of [x0 - 8, x1 + 1]) { rect(g, px, y - 14, 7, 18); shade(g, px + 4.6, y - 14, 2.4, 18); line(g, px - 1, y - 14, px + 8, y - 14); S(g, .3); line(g, px + 2, y - 10, px + 2, y - 5); S(g, .55); }
+}
+
+function drawBoat(g, x, y, facing, t, speed) {
+  g.save(); g.translate(x, y + Math.sin(t * 2.4) * .5); g.scale(facing * 1.25, 1.25); g.rotate(Math.sin(t * 1.7) * .045 - Math.min(.08, speed / 1400));
+  S(g, .3, BLUE); g.beginPath(); g.moveTo(-10, 3.4); g.quadraticCurveTo(-7, 2.2, -4, 3.4); g.quadraticCurveTo(-1, 4.6, 2, 3.4); g.quadraticCurveTo(5, 2.2, 9, 3.4); g.stroke();
+  S(g, .55);
+  g.beginPath(); g.moveTo(-7.4, -1.4); g.lineTo(8.4, -1.4); g.quadraticCurveTo(6.6, 2.4, 3.4, 2.6); g.lineTo(-5, 2.6); g.quadraticCurveTo(-7.2, 1.6, -7.4, -1.4); g.closePath();
+  g.fillStyle = PAPERL; g.fill(); g.stroke();
+  S(g, .7, RED); line(g, -6.6, -.1, 7.2, -.1);
+  S(g, .5); line(g, 0, -1.4, 0, -15.4);
+  poly(g, [-.7, -14.4, -.7, -2.6, -7.6, -2.6], PAPERL); poly(g, [.8, -13, .8, -2.6, 7, -2.6], PAPERL);
+  S(g, .25); line(g, -.7, -9, -4.6, -2.6); line(g, .8, -8.4, 4.4, -2.6);
+  const f = Math.sin(t * 6) * .7;
+  S(g, .4, RED); g.fillStyle = RED; g.beginPath(); g.moveTo(0, -15.4); g.lineTo(-3.6, -16.3 + f); g.lineTo(0, -17.2); g.closePath(); g.fill();
+  g.restore();
+}
+
+/* -------------------------------------------------------------------- state */
+const start = ISLANDS[0].dockPt;
+const boat = { x: start.x, y: start.y, vx: 0, vy: 0, facing: 1 };
+const view = { k: 1, cx: W / 2, cy: H / 2 };            // k: CSS px per world unit; cx, cy: centre of the view
+const keys = new Set();
+let pointerSteer = null, mode = "intro", near = null;
+const seen = new Set(), found = new Set();
+const track = [[{ x: boat.x, y: boat.y }]];              // the dashed course line, one run per passage
+const ripples = [];
+let rippleClock = 0;
+for (const b of BOTTLES) { let guard = 0; while (sdfAt(b.x, b.y) < 6 && guard++ < 200) b.y += 2; }
+
+/* ---------------------------------------------------------------------- DOM */
+const $ = (id) => document.getElementById(id);
+const canvas = $("sea"), ctx = canvas.getContext("2d"), stage = $("stage");
+let sw = 1280, sh = 720, dpr = 1, paperPattern = null;
+
+{
+  const p = document.createElement("canvas"); p.width = p.height = 256; const pg = p.getContext("2d");
+  pg.fillStyle = PAPER; pg.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 2600; i++) { const x = hash(i, 1) * 256, y = hash(i, 2) * 256, d = hash(i, 3); pg.fillStyle = d < .5 ? `rgba(87,71,58,${.03 + d * .08})` : `rgba(255,252,240,${.1 + (d - .5) * .3})`; pg.fillRect(x, y, 1 + (d > .9), 1); }
+  pg.strokeStyle = "rgba(87,71,58,.07)"; pg.lineWidth = .6;
+  for (let i = 0; i < 70; i++) { const x = hash(i, 7) * 256, y = hash(i, 8) * 256, a = hash(i, 9) * 6.3, l = 4 + hash(i, 10) * 12; pg.beginPath(); pg.moveTo(x, y); pg.lineTo(x + Math.cos(a) * l, y + Math.sin(a) * l); pg.stroke(); }
+  paperPattern = ctx.createPattern(p, "repeat");
+}
+
+function resize() {
+  sw = stage.clientWidth; sh = stage.clientHeight; dpr = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = Math.round(sw * dpr); canvas.height = Math.round(sh * dpr);
+}
+new ResizeObserver(resize).observe(stage); resize();
+const playScale = () => Math.max(1.25, Math.min(3.4, Math.min(sw / 560, sh / 340)));
+const fitScale = () => { const a = sw / (W + 70), b = sh / (H + 70); return Math.max(Math.min(a, b), Math.max(a, b) * .6); };
+
+function updateProgress() {
+  $("p-isl").textContent = seen.size; $("p-bot").textContent = found.size;
+  for (const is of ISLANDS) document.querySelectorAll(`[data-isl="${is.id}"]`).forEach((n) => { n.dataset.seen = seen.has(is.id) ? "1" : "0"; });
+}
+let toastTimer = 0;
+function toast(eyebrow, text) {
+  $("toast-eyebrow").textContent = eyebrow; $("toast-text").textContent = text; $("toast").classList.add("on");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => $("toast").classList.remove("on"), 6500);
+}
+function setMode(next) {
+  mode = next; keys.clear(); pointerSteer = null;
+  $("log").classList.toggle("on", next === "intro"); $("landing").classList.toggle("on", next === "landing"); $("chart").classList.toggle("on", next === "chart");
+  if (next === "sail") canvas.focus({ preventScroll: true });
+}
+function land(is) {
+  seen.add(is.id); updateProgress();
+  $("land-eyebrow").textContent = is.coord ? `${is.tag} · ${is.coord}` : is.tag;
+  $("land-h").textContent = is.name; $("land-lede").textContent = is.lede;
+  const ul = $("land-lines"); ul.replaceChildren();
+  (is.lines || []).forEach((t) => { const li = document.createElement("li"); li.textContent = t; ul.appendChild(li); });
+  ul.hidden = !(is.lines && is.lines.length);
+  const st = $("land-stack"); st.replaceChildren();
+  (is.stack || []).forEach((t) => { const s = document.createElement("span"); s.textContent = t; st.appendChild(s); });
+  st.hidden = !is.stack;
+  const ln = $("land-links"); ln.replaceChildren();
+  (is.links || []).forEach(([t, href]) => { const a = document.createElement("a"); a.className = "btn"; a.href = href; a.textContent = t + " →"; ln.appendChild(a); });
+  ln.hidden = !is.links;
+  $("land-build").textContent = is.build;
+  setMode("landing"); $("btn-leave").focus({ preventScroll: true });
+}
+function sailTo(is) {
+  boat.x = is.dockPt.x; boat.y = is.dockPt.y; boat.vx = boat.vy = 0;
+  track.push([{ x: boat.x, y: boat.y }]); view.cx = boat.x; view.cy = boat.y; view.k = playScale();
+  setMode("sail");
+}
+function openChart() {
+  const c = $("chart-canvas"), g = c.getContext("2d"), k = c.width / (W + 60);
+  drawChart(g, k, -30, -30, c.width, c.height, 0, { overview: true });
+  setMode("chart"); $("btn-chart-close").focus({ preventScroll: true });
+}
+ISLANDS.forEach((is, i) => {
+  const pin = document.createElement("button");
+  pin.className = "pin"; pin.type = "button"; pin.textContent = i + 1; pin.dataset.isl = is.id; pin.setAttribute("aria-label", "Sail to " + is.name);
+  pin.style.left = ((is.cx + 30) / (W + 60)) * 100 + "%"; pin.style.top = ((is.cy + 30) / (H + 60)) * 100 + "%";
+  pin.addEventListener("click", () => sailTo(is)); $("chart-map").appendChild(pin);
+  const row = document.createElement("button"); row.type = "button"; row.dataset.isl = is.id;
+  row.innerHTML = `<span class="n">${i + 1}</span><span class="nm"></span><span class="t"></span>`;
+  row.querySelector(".nm").textContent = is.name; row.querySelector(".t").textContent = is.tag;
+  row.addEventListener("click", () => sailTo(is)); $("dest").appendChild(row);
+});
+$("btn-sail").addEventListener("click", () => setMode("sail"));
+$("btn-leave").addEventListener("click", () => setMode("sail"));
+$("btn-chart").addEventListener("click", openChart);
+$("btn-chart-close").addEventListener("click", () => setMode("sail"));
+$("prompt").addEventListener("click", () => { if (near && mode === "sail") land(near); });
+
+const MOVE = { arrowleft: [-1, 0], a: [-1, 0], arrowright: [1, 0], d: [1, 0], arrowup: [0, -1], w: [0, -1], arrowdown: [0, 1], s: [0, 1] };
+addEventListener("keydown", (ev) => {
+  if (ev.metaKey || ev.ctrlKey || ev.altKey) return;
+  const k = ev.key.toLowerCase(), onButton = ev.target instanceof HTMLElement && (ev.target.tagName === "BUTTON" || ev.target.tagName === "A");
+  if (mode === "intro") { if (k === "enter" && !onButton) { ev.preventDefault(); setMode("sail"); } return; }
+  if (mode === "landing" || mode === "chart") { if (k === "escape" || (mode === "chart" && k === "m")) { ev.preventDefault(); setMode("sail"); } return; }
+  if (MOVE[k]) { keys.add(k); ev.preventDefault(); return; }
+  if (k === "m") { ev.preventDefault(); openChart(); return; }
+  if ((k === "e" || ((k === "enter" || k === " ") && !onButton)) && near) { ev.preventDefault(); land(near); }
+});
+addEventListener("keyup", (ev) => keys.delete(ev.key.toLowerCase()));
+addEventListener("blur", () => { keys.clear(); pointerSteer = null; });
+canvas.addEventListener("pointerdown", (ev) => { if (mode !== "sail") return; canvas.setPointerCapture(ev.pointerId); pointerSteer = { x: ev.offsetX, y: ev.offsetY }; });
+canvas.addEventListener("pointermove", (ev) => { if (pointerSteer) pointerSteer = { x: ev.offsetX, y: ev.offsetY }; });
+const release = () => { pointerSteer = null; };
+canvas.addEventListener("pointerup", release); canvas.addEventListener("pointercancel", release);
+
+/* --------------------------------------------------------------- simulation */
+function blocked(x, y) {
+  if (x < 8 || y < 8 || x > W - 8 || y > H - 8) return true;
+  for (const [ox, oy] of [[0, 0], [-4, 0], [4, 0], [0, -3], [0, 3]]) if (sdfAt(x + ox, y + oy) < 1.5) return true;
+  return false;
+}
+function readInput() {
+  let ix = 0, iy = 0;
+  for (const k of keys) { ix += MOVE[k][0]; iy += MOVE[k][1]; }
+  if (!ix && !iy && pointerSteer) {
+    const dx = view.cx + (pointerSteer.x - sw / 2) / view.k - boat.x, dy = view.cy + (pointerSteer.y - sh / 2) / view.k - boat.y;
+    if (Math.hypot(dx, dy) > 7) { ix = dx; iy = dy; }
+  }
+  const len = Math.hypot(ix, iy); return len ? [ix / len, iy / len] : [0, 0];
+}
+function step(dt) {
+  if (mode === "sail") {
+    const [ix, iy] = readInput(), k = Math.min(1, dt * (ix || iy ? 2.6 : 1.5));
+    boat.vx += (ix * MAX_SPEED - boat.vx) * k; boat.vy += (iy * MAX_SPEED - boat.vy) * k;
+    if (Math.abs(ix) > .2) boat.facing = Math.sign(ix);
+    const nx = boat.x + boat.vx * dt, ny = boat.y + boat.vy * dt;
+    if (!blocked(nx, boat.y)) boat.x = nx; else boat.vx = 0;
+    if (!blocked(boat.x, ny)) boat.y = ny; else boat.vy = 0;
+    const run = track[track.length - 1], last = run[run.length - 1];
+    if (Math.hypot(boat.x - last.x, boat.y - last.y) > 5) { run.push({ x: boat.x, y: boat.y }); if (run.length > 1600) run.shift(); }
+    const speed = Math.hypot(boat.vx, boat.vy);
+    rippleClock += dt;
+    if (!REDUCED && speed > 30 && rippleClock > .22) { rippleClock = 0; ripples.push({ x: boat.x - (boat.vx / speed) * 7, y: boat.y + 2 - (boat.vy / speed) * 7, life: 1 }); }
+    near = null; let best = DOCK_RANGE;
+    for (const is of ISLANDS) { const d = Math.hypot(is.dockPt.x - boat.x, is.dockPt.y - boat.y); if (d < best) { best = d; near = is; } }
+    BOTTLES.forEach((b, i) => {
+      if (found.has(i) || Math.hypot(b.x - boat.x, b.y - boat.y) > 11) return;
+      found.add(i); updateProgress(); toast(`Message in a bottle · ${found.size}/${BOTTLES.length}`, b.text);
+    });
+  }
+  for (let i = ripples.length - 1; i >= 0; i--) { ripples[i].life -= dt * .9; if (ripples[i].life <= 0) ripples.splice(i, 1); }
+
+  // The view: the whole sheet while the log is open, then down to the boat.
+  const intro = mode === "intro", kt = intro ? fitScale() : playScale();
+  let tx = intro ? W / 2 : boat.x + boat.vx * .25, ty = intro ? H / 2 : boat.y + boat.vy * .25;
+  const hw = sw / kt / 2, hh = sh / kt / 2, m = 34;
+  tx = hw * 2 >= W + m * 2 ? W / 2 : Math.max(hw - m, Math.min(W + m - hw, tx));
+  ty = hh * 2 >= H + m * 2 ? H / 2 : Math.max(hh - m, Math.min(H + m - hh, ty));
+  const a = REDUCED ? 1 : Math.min(1, dt * 3.2), b = REDUCED ? 1 : Math.min(1, dt * 5);
+  view.k += (kt - view.k) * a; view.cx += (tx - view.cx) * b; view.cy += (ty - view.cy) * b;
+}
+
+/* ------------------------------------------------------------------- render
+   One function draws the sheet at any scale: the live view and the Landings overview. */
+function drawChart(g, k, camX, camY, pw, ph, t, o = {}) {
+  const vw = pw / k, vh = ph / k, x1 = camX + vw, y1 = camY + vh;
+  const vis = (x, y, r) => x + r > camX && x - r < x1 && y + r > camY && y - r < y1;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.save(); g.translate(-((camX * k) % 256) - 256, -((camY * k) % 256) - 256); g.fillStyle = paperPattern; g.fillRect(0, 0, pw + 768, ph + 768); g.restore();
+  g.setTransform(k, 0, 0, k, -camX * k, -camY * k);
+
+  // Rhumb lines from the rose, and the graticule.
+  S(g, .22, "rgba(124,100,80,.34)");
+  for (let i = 0; i < 16; i++) { const a = (i / 16) * 6.2832; line(g, ROSE.x + Math.cos(a) * ROSE.r, ROSE.y + Math.sin(a) * ROSE.r, ROSE.x + Math.cos(a) * 2200, ROSE.y + Math.sin(a) * 2200); }
+  S(g, .2, "rgba(84,112,124,.3)");
+  for (let x = 120; x < W; x += 120) line(g, x, 0, x, H);
+  for (let y = 120; y < H; y += 120) line(g, 0, y, W, y);
+
+  // Water: two washes, then waterlines following the coast.
+  g.fillStyle = "rgba(111,136,146,.11)"; g.fill(C.deep);
+  g.fillStyle = "rgba(111,136,146,.2)"; g.fill(C.shoal);
+  S(g, .3, "rgba(84,112,124,.5)"); g.setLineDash([.6, 2.4]); g.stroke(C.deep); g.setLineDash([]);
+  S(g, .28, "rgba(84,112,124,.38)"); g.stroke(C.shoal);
+  S(g, .32, "rgba(84,112,124,.55)"); g.stroke(C.w2);
+  S(g, .4, "rgba(84,112,124,.8)"); g.stroke(C.w1);
+
+  // Land.
+  g.fillStyle = LAND; g.fill(C.coast);
+  S(g, .32, "rgba(124,100,80,.55)"); g.stroke(C.inner);
+  S(g, .95, INK); g.stroke(C.coast);
+
+  if (!o.overview) {
+    g.font = `italic 5px ${F}`; g.textAlign = "center"; g.fillStyle = "rgba(84,112,124,.66)";
+    for (const s of SOUNDINGS) if (vis(s.x, s.y, 8)) g.fillText(s.n, s.x, s.y);
+  }
+
+  for (const is of ISLANDS) {
+    if (!vis(is.cx, is.cy, is.rx * 1.3 + 60)) continue;
+    g.fillStyle = "rgba(117,130,90,.42)"; g.fill(is.treeWash); S(g, .28, "rgba(43,40,35,.82)"); g.stroke(is.treeInk); g.fillStyle = RED; g.fill(is.fruitDots);
+    // Jetty and anchorage.
+    const c = is.coast, nx = -c.uy, ny = c.ux;
+    S(g, .45);
+    line(g, c.x - c.ux * 3 + nx * 1.3, c.y - c.uy * 3 + ny * 1.3, c.x + c.ux * 15 + nx * 1.3, c.y + c.uy * 15 + ny * 1.3);
+    line(g, c.x - c.ux * 3 - nx * 1.3, c.y - c.uy * 3 - ny * 1.3, c.x + c.ux * 15 - nx * 1.3, c.y + c.uy * 15 - ny * 1.3);
+    S(g, .3); for (let d = -2; d <= 15; d += 2.2) line(g, c.x + c.ux * d + nx * 1.3, c.y + c.uy * d + ny * 1.3, c.x + c.ux * d - nx * 1.3, c.y + c.uy * d - ny * 1.3);
+    const done = seen.has(is.id), pulse = done || REDUCED ? 0 : (t * .7) % 1;
+    g.fillStyle = "rgba(246,240,224,.9)"; g.beginPath(); g.arc(is.dockPt.x, is.dockPt.y, 6, 0, 6.3); g.fill();
+    S(g, .5, RED); g.stroke();
+    if (pulse) { g.globalAlpha = 1 - pulse; g.beginPath(); g.arc(is.dockPt.x, is.dockPt.y, 6 + pulse * 7, 0, 6.3); g.stroke(); g.globalAlpha = 1; }
+    anchor(g, is.dockPt.x, is.dockPt.y, 1.05, RED);
+    g.save(); g.translate(is.cx, is.cy); LANDMARKS[is.id](g, t); g.restore();
+  }
+
+  // Lettering.
+  for (const s of SEAS) if (!o.overview || s.size > 9) label(g, s.t, s.x, s.y, { italic: true, size: s.size, rot: s.rot, color: "rgba(84,112,124,.9)", ls: s.size > 9 ? 3.2 : .6, haloW: 2 });
+  for (const is of ISLANDS) {
+    if (o.overview) continue;
+    label(g, is.name, is.label.x, is.label.y, { font: F_SC, size: 11.5, ls: 1.1, haloW: 3.2 });
+    if (is.coord) label(g, is.coord, is.label.x, is.label.y + 7.4, { italic: true, size: 5.6, color: SEPIA, haloW: 2 });
+    if (seen.has(is.id)) {
+      g.save(); g.translate(is.label.x + 62, is.label.y - 14); g.rotate(-.24); g.globalAlpha = .86;
+      g.scale(1.3, 1.3);
+      S(g, .7, RED); g.beginPath(); g.arc(0, 0, 10, 0, 6.3); g.stroke(); S(g, .3, RED); g.beginPath(); g.arc(0, 0, 8.4, 0, 6.3); g.stroke();
+      label(g, "CHARTED", 0, .6, { font: F_SC, size: 4.1, color: RED, halo: false, ls: .4 });
+      S(g, .6, RED); line(g, -2.6, 3.8, -.8, 5.6, 2.8, 2.2);
+      g.restore();
+    }
+  }
+
+  // Compass rose.
+  {
+    const { x, y, r } = ROSE; g.save(); g.translate(x, y);
+    S(g, .5); g.beginPath(); g.arc(0, 0, r, 0, 6.3); g.stroke(); S(g, .25); g.beginPath(); g.arc(0, 0, r - 3.4, 0, 6.3); g.stroke(); g.beginPath(); g.arc(0, 0, r * .46, 0, 6.3); g.stroke();
+    for (let i = 0; i < 64; i++) { const a = (i / 64) * 6.2832, l = i % 8 === 0 ? 5 : i % 2 === 0 ? 3.4 : 1.8; line(g, Math.cos(a) * r, Math.sin(a) * r, Math.cos(a) * (r - l), Math.sin(a) * (r - l)); }
+    const point = (a, len, wid, fillA, fillB) => {
+      const ux = Math.cos(a), uy = Math.sin(a), px = -uy, py = ux;
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(ux * wid + px * wid, uy * wid + py * wid); g.lineTo(ux * len, uy * len); g.closePath(); g.fillStyle = fillA; g.fill(); g.stroke();
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(ux * wid - px * wid, uy * wid - py * wid); g.lineTo(ux * len, uy * len); g.closePath(); g.fillStyle = fillB; g.fill(); g.stroke();
+    };
+    S(g, .3);
+    for (let i = 0; i < 8; i++) point(Math.PI / 8 + (i * Math.PI) / 4, r * .44, 2.2, PAPERL, "rgba(84,112,124,.6)");
+    for (let i = 0; i < 4; i++) point(Math.PI / 4 + (i * Math.PI) / 2, r * .66, 3.6, PAPERL, INK);
+    for (let i = 0; i < 4; i++) point((i * Math.PI) / 2, r * .9, 4.6, PAPERL, i === 3 ? RED : INK);
+    label(g, "N", 0, -r - 3.6, { font: F_SC, size: 9, haloW: 2.4 });
+    g.restore();
+  }
+
+  if (!o.overview) {
+    // Cartouche.
+    const { x, y, w, h } = CART; g.save(); g.translate(x, y);
+    g.fillStyle = "rgba(246,240,224,.94)"; g.fillRect(-w / 2, -h / 2, w, h);
+    S(g, .8); g.strokeRect(-w / 2, -h / 2, w, h); S(g, .3); g.strokeRect(-w / 2 + 2.6, -h / 2 + 2.6, w - 5.2, h - 5.2);
+    for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.beginPath(); g.arc(sx * (w / 2 - 2.6), sy * (h / 2 - 2.6), 6, 0, 6.3); g.fillStyle = "rgba(246,240,224,1)"; g.fill(); g.stroke(); dot(g, sx * (w / 2 - 2.6), sy * (h / 2 - 2.6), 1.1, RED); }
+    label(g, "A Chart of", 0, -26, { italic: true, size: 9, halo: false });
+    label(g, "Edward's World", 0, -6, { font: F_SC, size: 22, ls: 1.4, halo: false });
+    S(g, .3); line(g, -70, 0, -8, 0); line(g, 8, 0, 70, 0); dot(g, 0, 0, 1.2, RED);
+    label(g, "from Incheon to Sydney, surveyed 2002 – 2026", 0, 12, { italic: true, size: 7.6, halo: false });
+    label(g, "Not to be used for navigation.", 0, 22.6, { italic: true, size: 5.8, color: SEPIA, halo: false });
+    S(g, .4); g.strokeRect(-60, 29, 120, 2.6); for (let i = 0; i < 5; i++) if (i % 2 === 0) { g.fillStyle = INK; g.fillRect(-60 + i * 24, 29, 24, 2.6); }
+    label(g, "0", -60, 38.4, { size: 4.6, halo: false }); label(g, "5", 0, 38.4, { size: 4.6, halo: false }); label(g, "10 nm", 62, 38.4, { size: 4.6, halo: false });
+    g.restore();
+
+    // Uncharted waters.
+    g.save(); g.translate(SERPENT.x, SERPENT.y); S(g, .55, SEPIA);
+    for (let i = 0; i < 3; i++) { g.beginPath(); g.arc(-18 + i * 14, 0, 5.4 - i * .5, Math.PI, 0); g.stroke(); S(g, .28, SEPIA); for (let j = 1; j < 5; j++) { const a = Math.PI + j * .63; line(g, -18 + i * 14 + Math.cos(a) * (5.4 - i * .5), Math.sin(a) * (5.4 - i * .5), -18 + i * 14 + Math.cos(a) * 3.2, Math.sin(a) * 3.2); } S(g, .55, SEPIA); }
+    g.beginPath(); g.moveTo(20, 0); g.quadraticCurveTo(22, -12, 29, -10); g.quadraticCurveTo(33, -9, 31, -6); g.lineTo(27, -6.6); g.stroke(); dot(g, 28.6, -8.6, .5, SEPIA);
+    S(g, .28, BLUE); line(g, -30, 1.6, -24, 1.6); line(g, -11, 1.6, -9, 1.6); line(g, 3, 1.6, 5, 1.6); line(g, 16, 1.6, 26, 1.6);
+    label(g, "here be bugs", 0, 12, { italic: true, size: 7, color: SEPIA, haloW: 2 });
+    g.restore();
+
+    // A coffee ring. Lives are coffee.
+    g.save(); g.translate(606, 596); g.rotate(.4); g.strokeStyle = "rgba(124,100,80,.16)"; g.lineWidth = 3.2; g.beginPath(); g.ellipse(0, 0, 33, 31.6, 0, .3, 5.9); g.stroke(); g.strokeStyle = "rgba(124,100,80,.22)"; g.lineWidth = .7; g.beginPath(); g.ellipse(0, 0, 34.8, 33.2, 0, .2, 6); g.stroke(); g.restore();
+
+    // Bottles still afloat, and notes where one was fished out.
+    BOTTLES.forEach((b, i) => {
+      if (!vis(b.x, b.y, 80)) return;
+      if (found.has(i)) {
+        S(g, .5, NAVY); line(g, b.x - 1.8, b.y - 1.8, b.x + 1.8, b.y + 1.8); line(g, b.x + 1.8, b.y - 1.8, b.x - 1.8, b.y + 1.8);
+        label(g, b.note, b.x + 5, b.y - 3, { font: F_HAND, size: 10.5, color: NAVY, align: "left", rot: -.07, haloW: 2.2 });
+        return;
+      }
+      g.save(); g.translate(b.x, b.y + (REDUCED ? 0 : Math.sin(t * 2 + i) * .8)); g.rotate(-.5 + (REDUCED ? 0 : Math.sin(t * 1.3 + i) * .08)); g.scale(1.5, 1.5);
+      S(g, .45); g.fillStyle = PAPERL; g.beginPath(); g.moveTo(-1.8, 3.6); g.lineTo(-1.8, -1.4); g.quadraticCurveTo(-1.8, -2.8, -.7, -3.2); g.lineTo(-.7, -5.4); g.lineTo(.7, -5.4); g.lineTo(.7, -3.2); g.quadraticCurveTo(1.8, -2.8, 1.8, -1.4); g.lineTo(1.8, 3.6); g.closePath(); g.fill(); g.stroke();
+      g.fillStyle = RED; g.fillRect(-.9, -6.6, 1.8, 1.3); S(g, .3, NAVY); line(g, -.8, -.4, .8, -.4); line(g, -.8, 1, .8, 1);
+      g.restore();
+      S(g, .3, BLUE); line(g, b.x - 6, b.y + 4.6, b.x - 2.4, b.y + 4.6); line(g, b.x + 2, b.y + 5.2, b.x + 6.4, b.y + 5.2);
+    });
+
+    // The course so far, then the boat on top of it.
+    S(g, .6, "rgba(169,72,44,.82)"); g.setLineDash([2.6, 2.4]);
+    for (const run of track) { if (run.length < 2) continue; g.beginPath(); g.moveTo(run[0].x, run[0].y); for (let i = 1; i < run.length; i++) g.lineTo(run[i].x, run[i].y); g.stroke(); }
+    g.setLineDash([]);
+    for (const r of ripples) { S(g, .32, `rgba(84,112,124,${r.life * .8})`); const w = 3 + (1 - r.life) * 6; g.beginPath(); g.arc(r.x, r.y + 3, w, Math.PI * 1.15, Math.PI * 1.85); g.stroke(); }
+    drawBoat(g, boat.x, boat.y, boat.facing, REDUCED ? 0 : t, Math.hypot(boat.vx, boat.vy));
+  } else {
+    dot(g, boat.x, boat.y, 9, PAPERL); S(g, 2.4, RED); g.beginPath(); g.arc(boat.x, boat.y, 9, 0, 6.3); g.stroke(); dot(g, boat.x, boat.y, 3.4, RED);
+  }
+  drawBridge(g);
+
+  // Folds, then the neatline round the sheet.
+  for (const fx of [480, 960]) { S(g, .5, "rgba(43,40,35,.07)"); line(g, fx, -30, fx, H + 30); S(g, .6, "rgba(255,252,240,.5)"); line(g, fx + .7, -30, fx + .7, H + 30); }
+  S(g, .5, "rgba(43,40,35,.07)"); line(g, -30, 480, W + 30, 480); S(g, .6, "rgba(255,252,240,.5)"); line(g, -30, 480.7, W + 30, 480.7);
+  S(g, 1.1, INK); g.strokeRect(-12, -12, W + 24, H + 24); S(g, .35); g.strokeRect(-6, -6, W + 12, H + 12);
+  g.fillStyle = INK;
+  for (let i = 0; i * 60 < W; i += 2) { g.fillRect(i * 60, -10.6, 60, 3.2); g.fillRect(i * 60 + 60, H + 7.4, Math.min(60, W - i * 60 - 60), 3.2); }
+  for (let i = 0; i * 60 < H; i += 2) { g.fillRect(-10.6, i * 60, 3.2, 60); g.fillRect(W + 7.4, i * 60 + 60, 3.2, Math.min(60, H - i * 60 - 60)); }
+  if (!o.overview) {
+    for (let i = 0; i < 12; i++) label(g, String.fromCharCode(65 + i), i * 120 + 60, -15.6, { font: F_SC, size: 6.4, halo: false, color: SEPIA });
+    for (let i = 0; i < 8; i++) label(g, String(i + 1), -18.6, i * 120 + 62, { font: F_SC, size: 6.4, halo: false, color: SEPIA });
+  }
+  g.setTransform(1, 0, 0, 1, 0, 0);
+}
+
+function render(now) {
+  const t = now / 1000, k = view.k * dpr, camX = view.cx - sw / view.k / 2, camY = view.cy - sh / view.k / 2;
+  drawChart(ctx, k, camX, camY, canvas.width, canvas.height, t);
+  const vg = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, Math.min(canvas.width, canvas.height) * .45, canvas.width / 2, canvas.height / 2, Math.hypot(canvas.width, canvas.height) * .6);
+  vg.addColorStop(0, "rgba(87,71,58,0)"); vg.addColorStop(1, "rgba(87,71,58,.2)");
+  ctx.fillStyle = vg; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const prompt = $("prompt"), showPrompt = mode === "sail" && near;
+  if (showPrompt && prompt.dataset.id !== near.id) { prompt.dataset.id = near.id; prompt.textContent = "Drop anchor at " + near.name; const kb = document.createElement("kbd"); kb.textContent = "E"; prompt.appendChild(kb); }
+  prompt.classList.toggle("on", !!showPrompt);
+
+  // Bearing to the nearest landing not yet charted.
+  let goal = null, gd = Infinity;
+  for (const is of ISLANDS) { if (seen.has(is.id)) continue; const d = Math.hypot(is.dockPt.x - boat.x, is.dockPt.y - boat.y); if (d < gd) { gd = d; goal = is; } }
+  const ptr = $("pointer"); let showPtr = false;
+  if (goal && mode === "sail") {
+    const tx = (goal.dockPt.x - camX) * view.k, ty = (goal.dockPt.y - camY) * view.k, mx = Math.min(150, sw * .3), my = 112;
+    if (tx < mx || tx > sw - mx || ty < my || ty > sh - my) {
+      const ox = sw / 2, oy = sh / 2, dx = tx - ox, dy = ty - oy, sc = Math.min((ox - mx) / Math.abs(dx || 1e-6), (oy - my) / Math.abs(dy || 1e-6));
+      ptr.style.left = ox + dx * sc + "px"; ptr.style.top = oy + dy * sc + "px";
+      $("arr").style.transform = `rotate(${Math.atan2(dy, dx)}rad)`; $("ptxt").textContent = `${goal.name}, ${Math.max(1, Math.round(gd / 12))} nm`;
+      showPtr = true;
+    }
+  }
+  ptr.classList.toggle("on", showPtr);
+}
+
+view.k = fitScale();
+let last = performance.now();
+function frame(now) { const dt = Math.min(.05, (now - last) / 1000); last = now; step(dt); render(now); requestAnimationFrame(frame); }
+updateProgress();
+requestAnimationFrame(frame);
+$("btn-sail").focus({ preventScroll: true });
+})();
+</script>
+</body>
+</html>

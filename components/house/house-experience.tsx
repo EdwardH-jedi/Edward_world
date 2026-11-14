@@ -1,12 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMinigameInput } from "@/components/sportsgang/minigames/use-minigame-input";
 import { useDialogFocus } from "@/components/ui/accessible-dialog";
 import { PixelCanvas } from "@/components/world/pixel-canvas";
-import { getProjectById } from "@/data/projects";
 import { movePlayerX } from "@/lib/game/movement";
 import { animateElement, motionPresets } from "@/lib/motion/animate-element";
 import { useAmbientFrame } from "@/lib/motion/use-ambient-frame";
@@ -338,7 +336,6 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
     };
   }, [open]);
 
-  const wardrobe = getProjectById("wardrobe");
   const walkFrame = getWalkFrame(edwardX, 1, walking);
   const roomDraw = useMemo(
     () => (draw: Parameters<typeof drawHouseRoom>[0], frame: number) =>
@@ -497,14 +494,6 @@ export function HouseExperience({ onExit }: HouseExperienceProps) {
                 </div>
               ))}
             </dl>
-          ) : null}
-
-          {open.id === "closet" && wardrobe ? (
-            <div className="hs-links">
-              <Link className="loc-button" href={wardrobe.caseStudyUrl}>
-                WARDROBE
-              </Link>
-            </div>
           ) : null}
 
           <div className="hs-card__actions">

@@ -94,10 +94,10 @@ describe("finished public world", () => {
     }
   });
 
-  it("retains exactly the four current project entrances and Edward's House", () => {
+  it("retains exactly the three current project entrances and Edward's House", () => {
     const actions = worldObjects.flatMap(({ interaction }) => interaction ? [interaction] : []);
     expect(actions.filter((action) => action.type === "OPEN_PROJECT").map((action) => action.projectId).sort()).toEqual([
-      "afl-predict", "soonpermario", "sportsgang", "wardrobe",
+      "afl-predict", "soonpermario", "sportsgang",
     ]);
     expect(actions.filter((action) => action.type === "OPEN_LOCATION")).toEqual([
       { type: "OPEN_LOCATION", locationId: "edwards-house" },
