@@ -3,24 +3,26 @@
 import Link from "next/link";
 import { useRef, type RefObject } from "react";
 import { useDialogFocus } from "@/components/ui/accessible-dialog";
-import type { LandingCard as LandingCardContent } from "@/types/chart";
+import type { LandingCard as CardContent } from "@/types/chart";
 
-interface LandingCardProps {
-  card: LandingCardContent;
+interface PlaceCardProps {
+  card: CardContent;
   onLeave: () => void;
+  /** The way back: "Back to the island". */
+  leaveLabel: string;
   returnFocusRef: RefObject<HTMLElement | null>;
 }
 
-/** What `E` opens at an anchorage. Phase 3 replaces it with going ashore. */
-export function LandingCard({ card, onLeave, returnFocusRef }: LandingCardProps) {
+/** A paper card for a place that opens one: a chapter's lines, a signpost, a reserved slipway. */
+export function PlaceCard({ card, onLeave, leaveLabel, returnFocusRef }: PlaceCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const leaveRef = useRef<HTMLButtonElement>(null);
   useDialogFocus({ containerRef: cardRef, initialFocusRef: leaveRef, onClose: onLeave, returnFocusRef });
 
   return (
-    <div className="chart-overlay chart-landing" role="presentation">
+    <div className="chart-overlay chart-place" role="presentation">
       <div
-        aria-labelledby="chart-landing-heading"
+        aria-labelledby="chart-place-heading"
         aria-modal="true"
         className="chart-card"
         ref={cardRef}
@@ -28,8 +30,8 @@ export function LandingCard({ card, onLeave, returnFocusRef }: LandingCardProps)
         tabIndex={-1}
       >
         <p className="chart-eyebrow">{card.eyebrow}</p>
-        <h2 id="chart-landing-heading">{card.heading}</h2>
-        <p>{card.lede}</p>
+        <h2 id="chart-place-heading">{card.heading}</h2>
+        {card.lede ? <p>{card.lede}</p> : null}
         {card.lines.length > 0 ? (
           <ul>
             {card.lines.map((line) => (
@@ -61,7 +63,7 @@ export function LandingCard({ card, onLeave, returnFocusRef }: LandingCardProps)
         ) : null}
         <div className="chart-row">
           <button className="chart-btn chart-btn--primary" onClick={onLeave} ref={leaveRef} type="button">
-            Back to the boat<kbd>Esc</kbd>
+            {leaveLabel}<kbd>Esc</kbd>
           </button>
         </div>
       </div>

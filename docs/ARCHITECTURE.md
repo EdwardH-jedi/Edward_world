@@ -71,8 +71,10 @@ INDEX is available from every one of these, the title screen included.
 ```
 
 `components/portfolio-experience.tsx` owns only top-level view and overlay
-state, and it is the one place that decides whether an interaction opens a full
-location experience or a summary dialog. The default entry advances through the
+state. Whether a project opens a full location experience or a summary dialog
+is `EXPERIENCE_PROJECTS` in `components/experience-scenes.tsx`, which also holds
+the lazily loaded interiors; the town and the chart overworld both open rooms
+through it. The default entry advances through the
 pure state model in `lib/game/intro-machine.ts`: the stage list is
 `INTRO_STAGES` in `types/intro.ts`, and the only automatic beat is the pan,
 `INTRO_STAGE_TIMINGS.PAN`, held to 900 ms or less (`INTRO_SCRIPTED_MS`).
@@ -104,8 +106,9 @@ reference). It keeps the same layering as the rest of the repo:
 - `lib/game/chart/` — pure. `terrain.ts` builds one signed distance field that
   drives collision, coastlines, waterlines and soundings; `sailing.ts`,
   `docking.ts` and `camera.ts` step the boat and the view; `scene.ts` assembles
-  everything static once; `voyage-machine.ts` is the LOG → CHART → CARD /
-  LANDINGS state machine, driven by input only.
+  everything static once; `voyage-machine.ts` is the LOG → CHART → ISLAND →
+  PLACE state machine, with LANDINGS from the chart or an island, driven by
+  input only.
 - `lib/chart-art/` — drawing only. `Path2D` objects are built once from the
   scene's loops; each frame fills them, culling islands and bottles outside the
   view. One landmark routine per file under `landmarks/`, so a drawing can be
@@ -115,8 +118,23 @@ reference). It keeps the same layering as the rest of the repo:
   every drawing through a stand-in canvas and checks it stays ashore, gives its
   main landmark at least 45% of the island, and keeps clear of the name plates,
   and that anchorages and island sizes stay within the brief.
-- `components/chart/` — the canvas and its frame loop (`chart-world.tsx`), and
-  the log, landing card and Landings panel, which reuse `useDialogFocus`.
+- `components/chart/` — the canvas and its frame loop (`chart-world.tsx`), the
+  island scene, and the log, place card and Landings panel, which reuse
+  `useDialogFocus`.
+
+Ashore, `voyage-machine.ts` adds ISLAND and PLACE: `E` at an anchorage goes
+ashore, `E` at a door opens the place, and Escape steps back one level from
+every state. Each landing has a harbour plan in `data/islands/<id>.ts` — places
+with a footprint, a door and an action, plus footpaths — drawn at four times
+the chart's scale. Its coast is the chart island's own outline, given its own
+distance field by `lib/game/chart/island-walk.ts`, which also walks Edward:
+every footprint is solid and he keeps inside the coast. A place opens a card,
+or an existing interior through `components/experience-scenes.tsx` under
+`SceneDissolve`; reserved plots draw as surveyed plots. While an interior is
+open the island's key handler stands down, because the interiors listen for
+Escape on `window` without stopping it. `tests/chart-islands.test.ts` checks
+every plan: footprints apart and ashore, doors standable, every door reachable
+from the jetty, and that walking never enters a footprint or leaves the coast.
 
 `e2e/chart-review.spec.ts` writes the phase review screenshots to
 `docs/chart-overworld/review/` and only runs with `CHART_REVIEW=1`.

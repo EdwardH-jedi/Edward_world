@@ -449,6 +449,50 @@
   content: " \2713";
 }
 
+/* ── Ashore: an island's harbour plan ───────────────────────────────────────
+   Stacking inside the stage: chart HUD 3 < island 4 < paper dialogs 5 <
+   interiors 10 (their own .loc-experience) < Skip to index over them 12. */
+
+.chart-island {
+  animation: chart-fade 0.25s both;
+  background: var(--paper);
+  inset: 0;
+  position: absolute;
+  z-index: 4;
+}
+
+@keyframes chart-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.chart-island__title {
+  background: var(--paper-lit);
+  border: 1px solid var(--ink);
+  box-shadow: 2px 2px 0 rgb(43 40 35 / 25%);
+  left: 16px;
+  padding: 6px 12px 7px;
+  pointer-events: none;
+  top: 14px;
+}
+
+.chart-island__title h2 {
+  font-family: var(--caps);
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.1;
+  margin: 2px 0 0;
+}
+
+.chart-skip {
+  position: absolute;
+  right: 58px;
+  top: 14px;
+  z-index: 12;
+}
+
 /* The site's music toggle, drawn as one more slip of paper in the corner. */
 body:has(.chart-stage) > .music-control {
   background: #f6f0e0;
@@ -486,10 +530,17 @@ body:has(.chart-stage) > .music-control {
   .chart-progress {
     top: 56px;
   }
+
+  /* Ashore there are three buttons, which take two rows on a phone. */
+  .chart-island__title {
+    max-width: calc(100% - 32px);
+    top: 100px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .chart-log__line {
+  .chart-log__line,
+  .chart-island {
     animation: none;
   }
 }

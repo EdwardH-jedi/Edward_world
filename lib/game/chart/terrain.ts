@@ -72,10 +72,11 @@ export function buildTerrain(
     const edge = coastWobble(landing.seed);
     const ex = Math.ceil(radii.x * 1.2 + 46);
     const ey = Math.ceil(radii.y * 1.2 + 46);
-    const y0 = Math.max(0, centre.y - ey);
-    const y1 = Math.min(height, centre.y + ey);
-    const x0 = Math.max(0, centre.x - ex);
-    const x1 = Math.min(width, centre.x + ex);
+    // Whole cells: a centre between cells must not make the indices fractional.
+    const y0 = Math.max(0, Math.floor(centre.y - ey));
+    const y1 = Math.min(height, Math.ceil(centre.y + ey));
+    const x0 = Math.max(0, Math.floor(centre.x - ex));
+    const x1 = Math.min(width, Math.ceil(centre.x + ex));
 
     for (let y = y0; y < y1; y++) {
       for (let x = x0; x < x1; x++) {

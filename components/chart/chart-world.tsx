@@ -5,13 +5,17 @@ import "./chart.css";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { CaptainsLog } from "@/components/chart/captains-log";
-import { LandingCard } from "@/components/chart/landing-card";
+import { IslandScene } from "@/components/chart/island-scene";
 import { LandingsPanel } from "@/components/chart/landings-panel";
+import { PlaceCard } from "@/components/chart/place-card";
+import { EXPERIENCE_PROJECTS, HouseExperience, ProjectExperience } from "@/components/experience-scenes";
+import { SceneDissolve } from "@/components/world/scene-dissolve";
+import { ISLAND_PLANS } from "@/data/islands";
+import { getProjectById } from "@/data/projects";
 import {
   BOTTLES,
   CARTOUCHE,
   getLanding,
-  getLandingCard,
   HOME_LANDING,
   LANDINGS,
   ROSE,
@@ -45,12 +49,14 @@ import {
   type Ripple,
 } from "@/lib/game/chart/sailing";
 import { buildChartScene, type ChartScene } from "@/lib/game/chart/scene";
-import { INITIAL_VOYAGE, voyageReducer } from "@/lib/game/chart/voyage-machine";
+import { INITIAL_VOYAGE, isAshore, voyageReducer } from "@/lib/game/chart/voyage-machine";
 import { setChartFonts, type ChartFonts } from "@/lib/chart-art/ink";
 import { createChartArt, drawChart, type ChartArt } from "@/lib/chart-art/render";
 import { drawVignette } from "@/lib/chart-art/sheet";
 import { useReducedMotion } from "@/lib/motion/use-reduced-motion";
-import type { LandingId, Vec } from "@/types/chart";
+import type { LandingCard as CardContent, LandingId, Place, Vec } from "@/types/chart";
+import type { PortfolioProjectId } from "@/types/portfolio";
+import type { WorldLocationId } from "@/types/world";
 
 /** Arrow keys and WASD, as a unit step each. */
 const MOVE: Readonly<Record<string, readonly [number, number]>> = {
@@ -105,6 +111,43 @@ function isControl(target: EventTarget | null) {
   return target instanceof HTMLElement && (target.tagName === "BUTTON" || target.tagName === "A");
 }
 
+type Interior =
+  | { readonly kind: "card"; readonly card: CardContent }
+  | { readonly kind: "scene"; readonly projectId?: PortfolioProjectId; readonly locationId?: WorldLocationId };
+
+/**
+ * What a place opens. Project interiors and Edward's House open through the
+ * same lazy scenes the town uses; a project without an interior, and every
+ * OPEN_CARD place, opens a paper card.
+ */
+function interiorFor(place: Place): Interior | null {
+  const { action } = place;
+  if (action.type === "OPEN_LOCATION") return { kind: "scene", locationId: action.locationId };
+  if (action.type === "OPEN_PROJECT") {
+    if (EXPERIENCE_PROJECTS.has(action.projectId)) return { kind: "scene", projectId: action.projectId };
+    const project = getProjectById(action.projectId);
+    if (!project) return null;
+    return {
+      kind: "card",
+      card: {
+        eyebrow: project.category,
+        heading: project.displayName,
+        lede: project.shortDescriptor,
+        lines: project.framingNote ? [project.framingNote] : [],
+        stack: project.techStack ?? [],
+        links: [{ label: "Case study", href: project.caseStudyUrl, external: false }],
+      },
+    };
+  }
+  if (action.type === "OPEN_CARD") {
+    return {
+      kind: "card",
+      card: { eyebrow: "", heading: action.heading, lede: "", lines: action.body, stack: [], links: action.links ?? [] },
+    };
+  }
+  return null;
+}
+
 export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
   const [state, dispatch] = useReducer(voyageReducer, INITIAL_VOYAGE);
   const reduced = useReducedMotion();
@@ -114,6 +157,7 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
 
   const stageRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const islandCanvasRef = useRef<HTMLCanvasElement>(null);
   const pointerRef = useRef<HTMLDivElement>(null);
   const pointerArrowRef = useRef<HTMLSpanElement>(null);
   const pointerTextRef = useRef<HTMLSpanElement>(null);
@@ -131,12 +175,18 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
     reducedRef.current = reduced;
   }, [state, charted, reduced]);
 
-  // Any change of mode lets go of the helm, as the prototype did.
+  // Any change of mode lets go of the helm, as the prototype did. Back at the
+  // boat from an island there is no dialog to hand focus back, so the chart takes it.
   useEffect(() => {
     const voyage = voyageRef.current;
-    if (!voyage) return;
-    voyage.keys.clear();
-    voyage.steer = null;
+    if (voyage) {
+      voyage.keys.clear();
+      voyage.steer = null;
+    }
+    const focused = document.activeElement;
+    if (state.mode === "CHART" && (!focused || focused === document.body)) {
+      canvasRef.current?.focus({ preventScroll: true });
+    }
   }, [state.mode]);
 
   // Build the chart once, on the client, and run the frame loop.
@@ -251,6 +301,11 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
       const dt = Math.min(0.05, (now - last) / 1_000);
       last = now;
       const mode = stateRef.current.mode;
+      // Ashore, the island scene covers the chart and runs its own loop.
+      if (isAshore(stateRef.current)) {
+        frame = requestAnimationFrame(tick);
+        return;
+      }
       if (mode === "CHART") sail(dt);
       if (voyage.ripples.length) voyage.ripples = ageRipples(voyage.ripples, dt);
 
@@ -302,6 +357,7 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
         }
         return;
       }
+      if (mode === "ISLAND" || mode === "PLACE") return;
       if (mode === "LANDINGS") {
         if (key === "m") {
           event.preventDefault();
@@ -316,6 +372,8 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
         event.preventDefault();
         return;
       }
+      // Held keys repeat; dropping anchor and the panel act once per press.
+      if (event.repeat) return;
       if (key === "m") {
         event.preventDefault();
         dispatch({ type: "OPEN_LANDINGS" });
@@ -355,6 +413,9 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
 
   const setSail = useCallback(() => dispatch({ type: "SET_SAIL" }), []);
   const escape = useCallback(() => dispatch({ type: "ESCAPE" }), []);
+  const leaveIsland = useCallback(() => dispatch({ type: "LEAVE_ISLAND" }), []);
+  const leavePlace = useCallback(() => dispatch({ type: "LEAVE_PLACE" }), []);
+  const enterPlace = useCallback((place: Place) => dispatch({ type: "ENTER_PLACE", place: place.id }), []);
   const openLandings = useCallback(() => dispatch({ type: "OPEN_LANDINGS" }), []);
 
   const sailTo = useCallback((landing: LandingId) => {
@@ -406,6 +467,10 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
 
   const sailing = state.mode === "CHART";
   const nearLanding = sailing && near ? getLanding(near) : null;
+  const ashore = isAshore(state) && state.landing ? getLanding(state.landing) : null;
+  const plan = ashore ? ISLAND_PLANS[ashore.id] : null;
+  const place = state.mode === "PLACE" && plan ? (plan.places.find((p) => p.id === state.place) ?? null) : null;
+  const interior = place ? interiorFor(place) : null;
 
   return (
     <div className="chart-stage" ref={stageRef}>
@@ -462,16 +527,44 @@ export function ChartWorld({ fonts }: { fonts: ChartFonts }) {
       </div>
 
       {state.mode === "LOG" ? <CaptainsLog onSetSail={setSail} returnFocusRef={canvasRef} /> : null}
-      {state.mode === "CARD" && state.landing ? (
-        <LandingCard card={getLandingCard(state.landing)} onLeave={escape} returnFocusRef={canvasRef} />
+      {ashore && plan ? (
+        <IslandScene
+          active={state.mode === "ISLAND"}
+          canvasRef={islandCanvasRef}
+          covered={interior?.kind === "scene"}
+          key={ashore.id}
+          landing={ashore}
+          onEnter={enterPlace}
+          onLandings={openLandings}
+          onLeave={leaveIsland}
+          plan={plan}
+        />
       ) : null}
+      {interior?.kind === "card" && ashore ? (
+        <PlaceCard
+          card={{ ...interior.card, eyebrow: interior.card.eyebrow || ashore.name }}
+          leaveLabel="Back to the island"
+          onLeave={leavePlace}
+          returnFocusRef={islandCanvasRef}
+        />
+      ) : null}
+      {interior?.kind === "scene" && interior.projectId ? (
+        <ProjectExperience onExit={leavePlace} projectId={interior.projectId} />
+      ) : null}
+      {interior?.kind === "scene" && interior.locationId === "edwards-house" ? <HouseExperience onExit={leavePlace} /> : null}
+      {interior?.kind === "scene" ? (
+        <Link className="chart-btn chart-skip" href="/?view=index">
+          Skip to index &rarr;
+        </Link>
+      ) : null}
+      <SceneDissolve sceneKey={interior?.kind === "scene" ? `${ashore?.id}/${place?.id}` : "chart"} />
       {state.mode === "LANDINGS" ? (
         <LandingsPanel
           charted={state.charted}
           drawMap={drawMap}
           onClose={escape}
           onSail={sailTo}
-          returnFocusRef={canvasRef}
+          returnFocusRef={state.returnTo === "ISLAND" ? islandCanvasRef : canvasRef}
         />
       ) : null}
     </div>

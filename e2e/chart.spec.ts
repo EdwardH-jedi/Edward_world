@@ -12,9 +12,9 @@ async function setSail(page: Page) {
 }
 
 test.describe("chart overworld", () => {
-  test("log → set sail → Landings → Sydney Harbour → E → card → Esc → back at the anchorage", async ({ page }) => {
+  test("log → set sail → Landings → Sydney → E → walk to Edward's House → enter → Esc, Esc → back at Sydney's anchorage", async ({ page }) => {
     await setSail(page);
-    await expect(page.locator(".chart-sea")).toBeFocused();
+    await expect(page.locator(".chart-stage > .chart-sea")).toBeFocused();
 
     await page.getByRole("button", { name: /^Landings/ }).click();
     const panel = page.getByRole("dialog", { name: "Landings" });
@@ -22,20 +22,102 @@ test.describe("chart overworld", () => {
     await panel.getByRole("listitem").filter({ hasText: "Sydney Harbour" }).getByRole("button").click();
     await expect(panel).toBeHidden();
 
-    const prompt = page.getByRole("button", { name: /Drop anchor at Sydney Harbour/ });
-    await expect(prompt).toBeVisible();
+    const anchor = page.getByRole("button", { name: /Drop anchor at Sydney Harbour/ });
+    await expect(anchor).toBeVisible();
     await page.keyboard.press("e");
 
-    const card = page.getByRole("dialog", { name: "Sydney Harbour" });
-    await expect(card).toBeVisible();
-    await expect(card.getByRole("button", { name: /Back to the boat/ })).toBeFocused();
-    await expect(card.getByRole("link", { name: /Résumé/ })).toHaveAttribute("href", "/resume");
+    const island = page.locator(".chart-island");
+    await expect(island).toBeVisible();
+    await expect(island.getByRole("heading", { name: "Sydney Harbour" })).toBeVisible();
+    await expect(island.getByRole("link", { name: /Skip to index/ })).toBeVisible();
+
+    // One straight footpath runs east from the jetty to Edward's House, whose door faces it.
+    await page.keyboard.down("ArrowRight");
+    const door = page.getByRole("button", { name: /Enter Edward's House/ });
+    await expect(door).toBeVisible({ timeout: 8_000 });
+    await page.keyboard.up("ArrowRight");
+    await page.keyboard.press("e");
+
+    const house = page.locator(".hs-house");
+    await expect(house).toBeVisible();
+    await expect(page.locator(".chart-skip")).toBeVisible();
+
+    // The house leaves on Escape while none of its own cards is open.
+    await page.keyboard.press("Escape");
+    await expect(house).toBeHidden();
+    await expect(island).toBeVisible();
+    await expect(door).toBeVisible();
 
     await page.keyboard.press("Escape");
-    await expect(card).toBeHidden();
-    await expect(prompt).toBeVisible();
+    await expect(island).toBeHidden();
+    await expect(anchor).toBeVisible();
     await expect(page.locator(".chart-progress")).toContainText("Charted 1/8");
-    await expect(page.locator(".chart-sea")).toBeFocused();
+    await expect(page.locator(".chart-stage > .chart-sea")).toBeFocused();
+  });
+
+  test("a place's card opens from its door and closes back onto the island", async ({ page }) => {
+    await setSail(page);
+    await page.keyboard.press("m");
+    await page.getByRole("dialog", { name: "Landings" }).getByRole("listitem").filter({ hasText: "The Shipyard" }).getByRole("button").click();
+    await page.keyboard.press("e");
+    await expect(page.locator(".chart-island")).toBeVisible();
+
+    // The slipway's door faces the jetty.
+    await page.keyboard.down("ArrowRight");
+    await expect(page.getByRole("button", { name: /Read Slipway/ })).toBeVisible({ timeout: 6_000 });
+    await page.keyboard.up("ArrowRight");
+    await page.keyboard.press("e");
+    const card = page.getByRole("dialog", { name: "Slipway" });
+    await expect(card).toBeVisible();
+    await expect(card).toContainText("Reserved for the next project.");
+    await page.keyboard.press("Escape");
+    await expect(card).toBeHidden();
+    await expect(page.locator(".chart-island")).toBeVisible();
+  });
+
+  test("a project's place opens its existing interior, and Escape comes back to its door", async ({ page }) => {
+    await setSail(page);
+    await page.keyboard.press("m");
+    await page.getByRole("dialog", { name: "Landings" }).getByRole("listitem").filter({ hasText: "SportsGang Courts" }).getByRole("button").click();
+    await page.keyboard.press("e");
+    await expect(page.locator(".chart-island")).toBeVisible();
+
+    // Inland from the jetty, then along the footpath past the clubhouse's door. Edward walks
+    // through the door's reach rather than stopping at a wall, so watch for it every frame.
+    await page.keyboard.down("ArrowLeft");
+    await page.waitForTimeout(350);
+    await page.keyboard.up("ArrowLeft");
+    await page.keyboard.down("ArrowDown");
+    await page.waitForTimeout(330);
+    await page.keyboard.up("ArrowDown");
+    await page.keyboard.down("ArrowLeft");
+    await page.waitForFunction(
+      () => document.querySelector(".chart-island .chart-prompt")?.textContent?.includes("Enter Clubhouse"),
+      null,
+      { polling: "raf", timeout: 6_000 },
+    );
+    await page.keyboard.up("ArrowLeft");
+    await page.keyboard.press("e");
+
+    const interior = page.locator(".loc-experience");
+    await expect(interior).toBeVisible();
+    await expect(page.locator(".chart-skip")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(interior).toBeHidden();
+    await expect(page.getByRole("button", { name: /Enter Clubhouse/ })).toBeVisible();
+  });
+
+  test("holding E at an anchorage goes ashore once, not ashore and back", async ({ page }) => {
+    await setSail(page);
+    await expect(page.getByRole("button", { name: /Drop anchor at Incheon Port/ })).toBeVisible();
+    // A second keyboard.down on a held key is sent with `repeat: true`, as auto-repeat is.
+    await page.keyboard.down("e");
+    await expect(page.locator(".chart-island")).toBeVisible();
+    // Unguarded, this one repeat would take Edward straight back to the boat.
+    await page.keyboard.down("e");
+    await page.keyboard.up("e");
+    await page.waitForTimeout(200);
+    await expect(page.locator(".chart-island")).toBeVisible();
   });
 
   test("Escape closes the log, and M or Escape closes the Landings panel", async ({ page }) => {
