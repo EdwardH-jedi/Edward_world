@@ -39,6 +39,7 @@ no CSS framework and no component library; the runtime dependency list is
 | --- | --- |
 | `/` | Static. The whole world — a single client entry point below the layout |
 | `/resume` | Static |
+| `/chart` | Static. The chart overworld while it is built (`noindex`); phase 5 of `docs/chart-overworld/BRIEF.md` makes it `/` |
 | `/case-studies/[slug]` | SSG, one page per project via `generateStaticParams` |
 | `/api/joins` | Dynamic (`force-dynamic`). `GET` reads, `POST` increments |
 | `/api/sportsgang/golf-board` | Dynamic (`force-dynamic`). `GET` reads the public golf board, `POST` submits a completed run |
@@ -90,6 +91,30 @@ The first arrival in the world shows the EXPLORE hint for 1.8 seconds
 hides it. `lib/storage/explore-hint.ts` remembers
 that it was shown in `localStorage`, guarded against missing or blocked storage, so a returning
 visitor never sees it; where storage is blocked it shows every visit.
+
+## Chart overworld
+
+`/chart` is the sea chart that will replace the side-view town
+(`docs/chart-overworld/BRIEF.md`; `prototype.html` beside it is the visual
+reference). It keeps the same layering as the rest of the repo:
+
+- `types/chart.ts`, `data/chart.ts` — landings, bottles and the sheet's
+  furniture. Tags, card lines and bottle texts resolve from `data/personal.ts`
+  and `data/projects.ts`; only the chart's own voice is written there.
+- `lib/game/chart/` — pure. `terrain.ts` builds one signed distance field that
+  drives collision, coastlines, waterlines and soundings; `sailing.ts`,
+  `docking.ts` and `camera.ts` step the boat and the view; `scene.ts` assembles
+  everything static once; `voyage-machine.ts` is the LOG → CHART → CARD /
+  LANDINGS state machine, driven by input only.
+- `lib/chart-art/` — drawing only. `Path2D` objects are built once from the
+  scene's loops; each frame fills them, culling islands and bottles outside the
+  view. One landmark routine per file under `landmarks/`, so a drawing can be
+  swapped for Edward's own art in one place.
+- `components/chart/` — the canvas and its frame loop (`chart-world.tsx`), and
+  the log, landing card and Landings panel, which reuse `useDialogFocus`.
+
+`e2e/chart-review.spec.ts` writes the phase review screenshots to
+`docs/chart-overworld/review/` and only runs with `CHART_REVIEW=1`.
 
 ## Project content
 

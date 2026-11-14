@@ -1,0 +1,495 @@
+/* ── The chart overworld ─────────────────────────────────────────────────────
+   One sheet of chart paper fills the screen; everything you read sits on
+   smaller slips of the same paper. A single theme by choice: ink, sea blue and
+   one vermilion on aged paper. Shipped with the chart's chunk, not the first
+   paint. */
+
+.chart-stage {
+  --paper: #efe7d3;
+  --paper-lit: #f6f0e0;
+  --ink: #2b2823;
+  --muted: #6b6557;
+  --sea: #54707c;
+  --red: #a9482c;
+  --rule: #a29a83;
+  --display: var(--font-fell), Georgia, "Times New Roman", serif;
+  --caps: var(--font-fell-sc), var(--font-fell), Georgia, serif;
+  --body: var(--font-fell), Georgia, "Times New Roman", serif;
+  --hand: var(--font-pen), "Bradley Hand", cursive;
+
+  background: var(--paper);
+  color: var(--ink);
+  color-scheme: light;
+  font-family: var(--body);
+  font-size: 15.5px;
+  inset: 0;
+  line-height: 1.5;
+  overflow: hidden;
+  position: fixed;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.chart-stage *,
+.chart-stage *::before,
+.chart-stage *::after {
+  box-sizing: border-box;
+}
+
+/* Zero specificity, so every component class below still wins. */
+:where(.chart-stage) :where(button, a) {
+  color: inherit;
+  font: inherit;
+}
+
+:where(.chart-stage) button {
+  cursor: pointer;
+}
+
+.chart-stage :focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.chart-sea {
+  display: block;
+  height: 100%;
+  inset: 0;
+  outline: none;
+  position: absolute;
+  touch-action: none;
+  width: 100%;
+}
+
+.chart-hud {
+  position: absolute;
+  z-index: 3;
+}
+
+.chart-progress {
+  background: var(--paper-lit);
+  border: 1px solid var(--ink);
+  box-shadow: 2px 2px 0 rgb(43 40 35 / 25%);
+  font-family: var(--caps);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  left: 16px;
+  letter-spacing: 0.04em;
+  padding: 4px 10px 5px;
+  pointer-events: none;
+  top: 14px;
+}
+
+.chart-progress i {
+  color: var(--red);
+  font-style: normal;
+}
+
+/* Leaves the top-right corner to the site's music toggle, restyled below. */
+.chart-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  right: 58px;
+  top: 14px;
+}
+
+.chart-btn {
+  background: var(--paper-lit);
+  border: 1px solid var(--ink);
+  box-shadow: 2px 2px 0 rgb(43 40 35 / 30%);
+  color: var(--ink);
+  display: inline-block;
+  font-family: var(--caps);
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  padding: 5px 12px 6px;
+  text-decoration: none;
+}
+
+.chart-btn:hover {
+  background: #fffaf0;
+}
+
+.chart-btn:active {
+  box-shadow: 1px 1px 0 rgb(43 40 35 / 30%);
+  transform: translate(1px, 1px);
+}
+
+.chart-btn--primary {
+  background: var(--red);
+  border-color: #7d331f;
+  color: var(--paper-lit);
+}
+
+.chart-btn--primary:hover {
+  background: #b9502f;
+}
+
+.chart-btn kbd {
+  font-family: var(--body);
+  font-size: 12px;
+  font-style: italic;
+  margin-left: 7px;
+  opacity: 0.7;
+}
+
+.chart-hint {
+  background: rgb(246 240 224 / 86%);
+  border: 1px solid var(--rule);
+  bottom: 14px;
+  font-size: 14px;
+  font-style: italic;
+  left: 16px;
+  max-width: min(560px, calc(100% - 32px));
+  padding: 4px 10px;
+}
+
+.chart-hint__touch {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .chart-hint__keys {
+    display: none;
+  }
+
+  .chart-hint__touch {
+    display: inline;
+  }
+}
+
+.chart-prompt {
+  bottom: 66px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.chart-pointer {
+  align-items: center;
+  background: rgb(246 240 224 / 90%);
+  border: 1px solid var(--rule);
+  display: flex;
+  font-size: 14px;
+  font-style: italic;
+  gap: 7px;
+  padding: 2px 9px 3px 7px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+}
+
+.chart-pointer[hidden] {
+  display: none;
+}
+
+.chart-pointer__arrow {
+  border-bottom: 5px solid transparent;
+  border-left: 10px solid var(--red);
+  border-top: 5px solid transparent;
+  height: 0;
+  width: 0;
+}
+
+.chart-toast {
+  background: var(--paper-lit);
+  border: 1px solid var(--ink);
+  box-shadow: 3px 4px 0 rgb(43 40 35 / 28%);
+  left: 50%;
+  padding: 10px 16px 12px;
+  top: 62px;
+  transform: translateX(-50%) rotate(-0.6deg);
+  width: min(430px, calc(100% - 32px));
+}
+
+.chart-toast__text {
+  color: #3b4756;
+  font-family: var(--hand);
+  font-size: 24px;
+  line-height: 1.15;
+  margin: 2px 0 0;
+  user-select: text;
+}
+
+.chart-eyebrow {
+  color: var(--red);
+  font-family: var(--caps);
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+/* ── Slips of paper: the log, a landing's card, the Landings panel ─────────── */
+
+.chart-overlay {
+  align-items: center;
+  background: rgb(43 40 35 / 22%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  overflow: auto;
+  padding: 18px;
+  position: absolute;
+  z-index: 5;
+}
+
+.chart-card {
+  background: var(--paper-lit);
+  border: 1px solid var(--ink);
+  box-shadow:
+    0 0 0 4px var(--paper-lit),
+    0 0 0 5px var(--ink),
+    6px 9px 0 5px rgb(43 40 35 / 22%);
+  display: grid;
+  gap: 12px;
+  max-height: 100%;
+  overflow: auto;
+  padding: 22px 26px 20px;
+  user-select: text;
+  width: min(540px, 100%);
+}
+
+.chart-card:focus {
+  outline: none;
+}
+
+.chart-card h1,
+.chart-card h2 {
+  font-family: var(--display);
+  font-weight: 400;
+  line-height: 1.1;
+  margin: 0;
+  text-wrap: balance;
+}
+
+.chart-card h1 {
+  font-size: 38px;
+}
+
+.chart-card h2 {
+  font-size: 32px;
+}
+
+.chart-card p {
+  margin: 0;
+  max-width: 58ch;
+}
+
+.chart-card ul {
+  display: grid;
+  gap: 5px;
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 2px;
+}
+
+.chart-card li {
+  padding-left: 18px;
+  position: relative;
+}
+
+.chart-card li::before {
+  color: var(--red);
+  content: "\2014";
+  left: 0;
+  position: absolute;
+}
+
+.chart-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chart-row--split {
+  justify-content: space-between;
+}
+
+.chart-stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chart-stack span {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  font-size: 13px;
+  padding: 0 8px 1px;
+}
+
+.chart-log__lede {
+  font-family: var(--display);
+  font-size: 22px;
+  font-style: italic;
+}
+
+.chart-log__line {
+  animation: chart-rise 0.5s both;
+  animation-delay: calc(var(--i) * 0.3s);
+}
+
+@keyframes chart-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.chart-landings .chart-card {
+  width: min(900px, 100%);
+}
+
+.chart-landings__body {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1.55fr) minmax(210px, 1fr);
+}
+
+.chart-landings__map {
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  line-height: 0;
+  position: relative;
+}
+
+.chart-landings__map canvas {
+  height: auto;
+  width: 100%;
+}
+
+.chart-pin {
+  background: var(--paper-lit);
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  color: var(--ink);
+  font-family: var(--caps);
+  font-size: 13px;
+  height: 24px;
+  line-height: 20px;
+  padding: 0;
+  position: absolute;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  width: 24px;
+}
+
+.chart-pin[data-charted="true"] {
+  background: var(--red);
+  border-color: #7d331f;
+  color: var(--paper-lit);
+}
+
+.chart-pin:hover {
+  background: var(--ink);
+  color: var(--paper-lit);
+}
+
+.chart-dest {
+  display: grid;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chart-card .chart-dest li {
+  padding: 0;
+}
+
+.chart-card .chart-dest li::before {
+  content: none;
+}
+
+.chart-dest button {
+  align-items: baseline;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  column-gap: 8px;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  padding: 5px 2px 6px;
+  text-align: left;
+  width: 100%;
+}
+
+.chart-dest button:hover {
+  background: var(--paper);
+}
+
+.chart-dest__n {
+  color: var(--red);
+  font-family: var(--caps);
+}
+
+.chart-dest__name {
+  font-family: var(--display);
+  font-size: 17px;
+}
+
+.chart-dest__tag {
+  color: var(--muted);
+  font-size: 12.5px;
+  font-style: italic;
+  font-variant-numeric: tabular-nums;
+  grid-column: 2;
+}
+
+.chart-dest button[data-charted="true"] .chart-dest__name::after {
+  color: var(--red);
+  content: " \2713";
+}
+
+/* The site's music toggle, drawn as one more slip of paper in the corner. */
+body:has(.chart-stage) > .music-control {
+  background: #f6f0e0;
+  border: 1px solid #2b2823;
+  border-radius: 0;
+  box-shadow: 2px 2px 0 rgb(43 40 35 / 30%);
+  color: #2b2823;
+  height: 32px;
+  right: 16px;
+  top: 14px;
+  width: 32px;
+}
+
+@media (max-width: 640px) {
+  .chart-landings__body {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card {
+    padding: 18px 18px 16px;
+  }
+
+  .chart-card h1 {
+    font-size: 30px;
+  }
+
+  .chart-card h2 {
+    font-size: 26px;
+  }
+
+  .chart-actions .chart-btn kbd {
+    display: none;
+  }
+
+  .chart-progress {
+    top: 56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chart-log__line {
+    animation: none;
+  }
+}
