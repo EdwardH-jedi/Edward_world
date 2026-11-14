@@ -6,7 +6,7 @@ const chartCanvas = (page: Page) => page.locator(".chart-stage > .chart-sea");
 const islandCanvas = (page: Page) => page.locator(".chart-island .chart-sea");
 
 async function setSail(page: Page) {
-  await page.goto("/chart");
+  await page.goto("/");
   await expect(page.getByRole("button", { name: /Set sail/ })).toBeFocused();
   await page.getByRole("button", { name: /Set sail/ }).click();
   await expect(page.getByRole("dialog", { name: "It is a long story." })).toBeHidden();
@@ -64,7 +64,7 @@ test("the E prompts are buttons too: a click goes ashore and back", async ({ pag
 test.describe("reduced motion", () => {
   test("holds the chart and the island perfectly still: no zoom, bobbing, pulse or ripples", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/chart");
+    await page.goto("/");
     await expect(page.locator(".chart-log__line").first()).toHaveCSS("animation-name", "none");
     await page.getByRole("button", { name: /Set sail/ }).click();
     await page.waitForTimeout(150);
@@ -83,7 +83,7 @@ test.describe("reduced motion", () => {
 
   test("without it, the chart is alive: the same two frames differ", async ({ page }) => {
     await page.emulateMedia({ reducedMotion: "no-preference" });
-    await page.goto("/chart");
+    await page.goto("/");
     await page.getByRole("button", { name: /Set sail/ }).click();
     await page.waitForTimeout(1_500);
     const a = await chartCanvas(page).screenshot();
@@ -94,7 +94,7 @@ test.describe("reduced motion", () => {
 
 test.describe("focus", () => {
   test("the log keeps Tab inside itself", async ({ page }) => {
-    await page.goto("/chart");
+    await page.goto("/");
     const sail = page.getByRole("button", { name: /Set sail/ });
     await expect(sail).toBeFocused();
     await page.keyboard.press("Tab");

@@ -3,6 +3,7 @@ import {
   INITIAL_VOYAGE,
   isAshore,
   isSailing,
+  startVoyage,
   voyageReducer,
   type VoyageEvent,
   type VoyageState,
@@ -26,24 +27,25 @@ const EVENTS: readonly VoyageEvent[] = [
   { type: "TOGGLE_LANDINGS" },
   { type: "SAIL_TO", landing: "afl" },
   { type: "ESCAPE" },
+  { type: "OPEN_INDEX" },
 ];
 
 type Want = VoyageState["mode"] | "same";
 const row = (
   SET_SAIL: Want, DROP_ANCHOR: Want, ENTER_PLACE: Want, LEAVE_PLACE: Want, LEAVE_ISLAND: Want,
-  OPEN_LANDINGS: Want, TOGGLE_LANDINGS: Want, SAIL_TO: Want, ESCAPE: Want,
+  OPEN_LANDINGS: Want, TOGGLE_LANDINGS: Want, SAIL_TO: Want, ESCAPE: Want, OPEN_INDEX: Want,
 ): Record<VoyageEvent["type"], Want> => ({
-  SET_SAIL, DROP_ANCHOR, ENTER_PLACE, LEAVE_PLACE, LEAVE_ISLAND, OPEN_LANDINGS, TOGGLE_LANDINGS, SAIL_TO, ESCAPE,
+  SET_SAIL, DROP_ANCHOR, ENTER_PLACE, LEAVE_PLACE, LEAVE_ISLAND, OPEN_LANDINGS, TOGGLE_LANDINGS, SAIL_TO, ESCAPE, OPEN_INDEX,
 });
 
 /** Expected mode after every event from every state; `same` means the state object comes back untouched. */
 const TABLE: readonly [string, VoyageState, Record<VoyageEvent["type"], Want>][] = [
-  ["LOG", log, row("CHART", "same", "same", "same", "same", "same", "same", "same", "CHART")],
-  ["CHART", chart, row("same", "ISLAND", "same", "same", "same", "LANDINGS", "LANDINGS", "same", "same")],
-  ["LANDINGS (from the chart)", landingsFromChart, row("same", "same", "same", "same", "same", "same", "CHART", "CHART", "CHART")],
-  ["LANDINGS (from an island)", landingsFromIsland, row("same", "same", "same", "same", "same", "same", "ISLAND", "CHART", "ISLAND")],
-  ["ISLAND", island, row("same", "same", "PLACE", "same", "CHART", "LANDINGS", "LANDINGS", "same", "CHART")],
-  ["PLACE", place, row("same", "same", "same", "ISLAND", "same", "same", "same", "same", "ISLAND")],
+  ["LOG", log, row("CHART", "same", "same", "same", "same", "same", "same", "same", "CHART", "CHART")],
+  ["CHART", chart, row("same", "ISLAND", "same", "same", "same", "LANDINGS", "LANDINGS", "same", "same", "same")],
+  ["LANDINGS (from the chart)", landingsFromChart, row("same", "same", "same", "same", "same", "same", "CHART", "CHART", "CHART", "CHART")],
+  ["LANDINGS (from an island)", landingsFromIsland, row("same", "same", "same", "same", "same", "same", "ISLAND", "CHART", "ISLAND", "ISLAND")],
+  ["ISLAND", island, row("same", "same", "PLACE", "same", "CHART", "LANDINGS", "LANDINGS", "same", "CHART", "same")],
+  ["PLACE", place, row("same", "same", "same", "ISLAND", "same", "same", "same", "same", "ISLAND", "ISLAND")],
 ];
 
 describe("voyage machine", () => {
@@ -79,6 +81,27 @@ describe("voyage machine", () => {
     const inside = voyageReducer(island, { type: "ENTER_PLACE", place: "quadrangle" });
     expect(inside).toMatchObject({ mode: "PLACE", landing: "sydney", place: "quadrangle" });
     expect(voyageReducer(inside, { type: "LEAVE_PLACE" })).toMatchObject({ mode: "ISLAND", landing: "sydney", place: null });
+  });
+
+  it("settles to a resting state when the index opens, keeping the island and the charted list", () => {
+    // As the town's index does: nothing scripted stays open underneath it.
+    expect(voyageReducer(log, { type: "OPEN_INDEX" })).toMatchObject({ mode: "CHART", landing: null });
+    expect(voyageReducer(place, { type: "OPEN_INDEX" })).toMatchObject({
+      mode: "ISLAND",
+      landing: "sydney",
+      place: null,
+      charted: ["sydney"],
+    });
+    expect(voyageReducer(landingsFromIsland, { type: "OPEN_INDEX" })).toMatchObject({ mode: "ISLAND", landing: "sydney" });
+    expect(voyageReducer(landingsFromChart, { type: "OPEN_INDEX" }).mode).toBe("CHART");
+    expect(voyageReducer(island, { type: "OPEN_INDEX" })).toBe(island);
+    expect(voyageReducer(chart, { type: "OPEN_INDEX" })).toBe(chart);
+  });
+
+  it("opens on the log only for a cold visit; an explicit view starts under way", () => {
+    expect(startVoyage("intro")).toBe(INITIAL_VOYAGE);
+    expect(startVoyage("world")).toEqual({ ...INITIAL_VOYAGE, mode: "CHART" });
+    expect(startVoyage("index")).toEqual({ ...INITIAL_VOYAGE, mode: "CHART" });
   });
 
   it("sails, and counts as ashore, only where it should", () => {

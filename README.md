@@ -2,11 +2,13 @@
 
 [![CI](https://github.com/EdwardH-jedi/Edward_world/actions/workflows/ci.yml/badge.svg)](https://github.com/EdwardH-jedi/Edward_world/actions/workflows/ci.yml)
 
-An interactive developer portfolio built as a side-scrolling pixel town. Explore three project demos and a personal room, or choose **VIEW PROJECTS** on the title screen to go straight to the reading view.
+An interactive developer portfolio drawn as a sea chart you sail across. Each island is a chapter of Edward's life or a project; go ashore to walk it and open three project demos and a personal room, or choose **Skip to index**, on screen in every state, to go straight to the reading view. The earlier side-scrolling pixel town is kept, unlisted, at `/town`.
 
 **[Explore the world](https://edwards-world.vercel.app)** · **[Read the project index](https://edwards-world.vercel.app/?view=index)** · [Background and contact](https://edwards-world.vercel.app/resume)
 
 ## What you can explore
+
+Each opens from a landing on the chart: SportsGang Courts, AFL Oval, Arcade Pier, and Edward's House on Sydney Harbour. The other landings hold chapter cards and reserved plots.
 
 | Location | Portfolio experience | Original project |
 | --- | --- | --- |
@@ -54,7 +56,8 @@ The central design rule is: **pure simulations own game rules, timers advance sc
 | Path | Responsibility |
 | --- | --- |
 | `app/` | Pages, metadata, styles, and API routes |
-| `components/portfolio-experience.tsx` | Top-level world, index, and experience selection |
+| `components/chart/` | The chart at `/`: sailing, islands, the captain's log, the Landings panel, and the index over them |
+| `components/portfolio-experience.tsx` | The side-view town at `/town`: world, index, and experience selection |
 | `components/` | React views, controls, dialogs, and individual project experiences |
 | `data/` and `types/` | Portfolio content, world geometry, and shared domain types |
 | `lib/game/` | Movement, interactions, state machines, and pure mini-game simulations |
@@ -66,7 +69,7 @@ The central design rule is: **pure simulations own game rules, timers advance sc
 | `lib/sportsgang-board/` | Golf-board validation, ranking, identity, client, and storage |
 | `tests/` | Simulation, state, storage, API, input, and rendering-geometry tests |
 
-The main routes are `/`, `/resume`, and `/case-studies/[slug]`. The `?view=index` query opens the reading view directly. The root `index.html` and `scenes.js` are concept-board references; the production entry point is the Next.js app.
+The main routes are `/` (the chart), `/resume`, and `/case-studies/[slug]`. The `?view=index` query opens the reading view directly, over the chart. `/town` keeps the side-view town, unlisted, until it is retired or given a place on the chart. The root `index.html` and `scenes.js` are concept-board references; the production entry point is the Next.js app.
 
 Read the [architecture reference](docs/ARCHITECTURE.md) for the component and domain boundaries, and the [case study](docs/CASE_STUDY.md) for the product decisions.
 
@@ -74,11 +77,14 @@ Read the [architecture reference](docs/ARCHITECTURE.md) for the component and do
 
 | Action | Control |
 | --- | --- |
-| Start exploring | `Enter`, click, or tap on the title screen; a sub-second camera pan then drops you into the world |
-| Read projects directly | **VIEW PROJECTS**, or the `WORLD / INDEX` control |
-| Walk | `A` / `D` or `←` / `→`; on-screen buttons are also available |
+| Start exploring | **Set sail**, or `Enter`, on the captain's log |
+| Read projects directly | **Skip to index**, on screen in every state |
+| Sail | `WASD` or the arrow keys, or hold the mouse or a finger on the water |
+| Find a landing | `M`, or **Landings**, lists every landing and sails straight there |
+| Go ashore, or through a door | `E` at an anchorage or a door, or tap its prompt; on an island, walk with `WASD`, the arrow keys, or a held pointer |
+| Walk inside a location | `A` / `D` or `←` / `→`; on-screen buttons are also available |
 | Interact | `E`, or tap the interaction bar |
-| Leave a location or overlay | `Escape` |
+| Leave a location, island, or overlay | `Escape` steps back one level |
 | Golf | `Space` / `Enter`, or tap, to stop the swing meters |
 | Basketball | Hold `Space` / `Enter`, or the on-screen action button, then release |
 | Tennis | `A` / `D` or `←` / `→` to move; `Space` / `Enter` to swing |
@@ -133,7 +139,7 @@ After building, run `npm run test:e2e` for the Chromium layout checks used in CI
 Install the matching browser first with `npx playwright install chromium` if it
 is not already available. These checks start a local production server on port
 3100. Manual recruiter smoke checks should also cover `/?view=index`, `/resume`,
-the case-study links, and the title screen's **VIEW PROJECTS** button.
+the case-study links, and **Skip to index** on the captain's log.
 
 The [10 September 2026 deployment report](docs/predeploy/FINAL_PRODUCTION_DEPLOY.md#verification) records lint, typecheck, build, and **714 tests across 46 files** passing for commit [`2b34ba9`](https://github.com/EdwardH-jedi/Edward_world/commit/2b34ba9f84ecbe0fb16b196a367b2b6a74ae446b), using Node 24.19.0 and npm 11.17.0. It also documents manual browser checks and their scope. These are historical results, not a fresh run of the current branch.
 

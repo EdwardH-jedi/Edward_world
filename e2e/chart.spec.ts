@@ -1,9 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
-/** The chart overworld at /chart. Phase 3 extends the journey ashore. */
+/** The chart overworld at `/`. Phase 3 extends the journey ashore; phase 5 makes it the front door. */
 
 async function setSail(page: Page) {
-  await page.goto("/chart");
+  await page.goto("/");
   const log = page.getByRole("dialog", { name: "It is a long story." });
   await expect(log).toBeVisible();
   await expect(page.getByRole("button", { name: /Set sail/ })).toBeFocused();
@@ -123,7 +123,7 @@ test.describe("chart overworld", () => {
   });
 
   test("Escape closes the log, and M or Escape closes the Landings panel", async ({ page }) => {
-    await page.goto("/chart");
+    await page.goto("/");
     // Focus on "Set sail" means the log's key handling is live (hydrated).
     await expect(page.getByRole("button", { name: /Set sail/ })).toBeFocused();
     await page.keyboard.press("Escape");
@@ -175,7 +175,7 @@ test.describe("chart overworld", () => {
   });
 
   test("keeps Skip to index on screen in every state", async ({ page }) => {
-    await page.goto("/chart");
+    await page.goto("/");
     await expect(page.getByRole("link", { name: /Skip to index/ }).first()).toHaveAttribute("href", "/?view=index");
     await expect(page.getByRole("button", { name: /Set sail/ })).toBeFocused();
     await page.keyboard.press("Enter");

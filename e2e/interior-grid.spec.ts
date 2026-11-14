@@ -28,7 +28,7 @@ async function enterTennis(page: Page) {
 const CONTROLS = "button, a[href], input, [role='button']";
 
 async function enter(page: Page, label: string) {
-  await page.goto("/?view=world");
+  await page.goto("/town?view=world");
   await page.locator(".world-track").waitFor();
   await page.keyboard.down("d");
   await page

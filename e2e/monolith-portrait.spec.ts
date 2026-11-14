@@ -9,7 +9,7 @@ test.use({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
 test("portrait monolith keeps the name on screen and the input clear of Skip", async ({
   page,
 }) => {
-  await page.goto("/?view=world");
+  await page.goto("/town?view=world");
   await page.locator(".world-track").waitFor();
   const house = page.locator('[data-object-id="edwards-house"][data-nearby]');
   if (!(await house.count())) {
