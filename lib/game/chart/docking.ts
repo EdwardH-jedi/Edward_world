@@ -4,9 +4,6 @@ import type { Bottle, Landing, LandingId, Vec } from "@/types/chart";
 /** How close the boat must be to an anchorage for `E` to drop anchor. */
 export const DOCK_RANGE = 30;
 
-/** How far out from the coast the anchorage sits, along the jetty. */
-export const ANCHORAGE_OFFSET = 26;
-
 /** How close the boat must pass to fish a bottle out. */
 export const BOTTLE_REACH = 11;
 
@@ -21,15 +18,12 @@ export interface Anchorage {
   readonly point: Vec;
 }
 
+/** The landing's fixed anchorage, and where its jetty meets the coast on the way there. */
 export function anchorageFor(terrain: Terrain, landing: Landing): Anchorage {
-  const coast = coastAlong(terrain, landing.centre, landing.dockAngle);
   return {
     landing: landing.id,
-    coast,
-    point: {
-      x: Math.round(coast.x + coast.ux * ANCHORAGE_OFFSET),
-      y: Math.round(coast.y + coast.uy * ANCHORAGE_OFFSET),
-    },
+    coast: coastAlong(terrain, landing.centre, landing.dockAngle),
+    point: landing.anchorage,
   };
 }
 

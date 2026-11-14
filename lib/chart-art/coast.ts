@@ -81,16 +81,17 @@ export function drawWoodland(g: Pen, woods: WoodlandPaths) {
   g.fill(woods.fruit);
 }
 
-/** The jetty: two rails out from the coast, planked across. */
-export function drawJetty(g: Pen, coast: Anchorage["coast"]) {
-  const { x, y, ux, uy } = coast;
+/** The jetty: two rails out from the coast, planked across, stopping short of the anchorage ring. */
+export function drawJetty(g: Pen, anchorage: Anchorage) {
+  const { x, y, ux, uy } = anchorage.coast;
+  const reach = Math.min(15, Math.hypot(anchorage.point.x - x, anchorage.point.y - y) - 8);
   const nx = -uy;
   const ny = ux;
   ink(g, 0.45);
-  line(g, x - ux * 3 + nx * 1.3, y - uy * 3 + ny * 1.3, x + ux * 15 + nx * 1.3, y + uy * 15 + ny * 1.3);
-  line(g, x - ux * 3 - nx * 1.3, y - uy * 3 - ny * 1.3, x + ux * 15 - nx * 1.3, y + uy * 15 - ny * 1.3);
+  line(g, x - ux * 3 + nx * 1.3, y - uy * 3 + ny * 1.3, x + ux * reach + nx * 1.3, y + uy * reach + ny * 1.3);
+  line(g, x - ux * 3 - nx * 1.3, y - uy * 3 - ny * 1.3, x + ux * reach - nx * 1.3, y + uy * reach - ny * 1.3);
   ink(g, 0.3);
-  for (let d = -2; d <= 15; d += 2.2) {
+  for (let d = -2; d <= reach; d += 2.2) {
     line(g, x + ux * d + nx * 1.3, y + uy * d + ny * 1.3, x + ux * d - nx * 1.3, y + uy * d - ny * 1.3);
   }
 }

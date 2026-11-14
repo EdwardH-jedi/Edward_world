@@ -32,15 +32,15 @@ export function drawAfl(g: Pen) {
     }
   }
   ink(g);
-  rect(g, 34, 11, 19, 11);
-  shade(g, 47, 11, 6, 11);
-  line(g, 32.6, 11, 54.4, 11);
+  rect(g, 31, 8, 19, 11);
+  shade(g, 44, 8, 6, 11);
+  line(g, 29.6, 8, 51.4, 8);
   g.fillStyle = RED;
-  g.fillRect(42, 17.6, 2.4, 4.4);
+  g.fillRect(39, 14.6, 2.4, 4.4);
   ink(g, 0.35);
-  g.strokeRect(36.6, 14, 3, 3);
+  g.strokeRect(33.6, 11, 3, 3);
   ink(g, 0.5);
-  line(g, 50, 11, 50, -1);
-  line(g, 47.4, 1, 52.6, 1);
-  line(g, 48.4, 3.4, 51.6, 3.4);
+  line(g, 47, 8, 47, -4);
+  line(g, 44.4, -2, 49.6, -2);
+  line(g, 45.4, 0.4, 48.6, 0.4);
 }

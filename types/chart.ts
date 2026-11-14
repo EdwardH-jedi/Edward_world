@@ -44,8 +44,8 @@ export type LandingId = (typeof LANDING_IDS)[number];
 /**
  * Where the trees on an island grow.
  *
- * `clearings` are rectangles relative to the island's centre, kept free so the
- * landmark and its lettering have room. `density` is the share of the tree
+ * `clearings` are rectangles in the landmark drawing's units, so they move and
+ * scale with it, kept free so the landmark and its lettering have room. `density` is the share of the tree
  * grid that is planted.
  */
 export interface Woodland {
@@ -53,6 +53,20 @@ export interface Woodland {
   readonly clearings: readonly Rect[];
   /** Jeju's tangerine groves: red dots on the western trees. */
   readonly fruit?: boolean;
+}
+
+/**
+ * How an island's landmark drawing sits on it. The routine in
+ * `lib/chart-art/landmarks/` draws in its own units around its own origin;
+ * this places and scales it, so resizing a landmark is a data change.
+ */
+export interface LandmarkPlacement {
+  /** 1.6–2: the drawing's scale on the chart. */
+  readonly scale: number;
+  /** Where the drawing's origin sits, relative to the island's centre. */
+  readonly offset: Vec;
+  /** The main landmark's horizontal extent, in drawing units. It must span at least 45% of the island. */
+  readonly main: { readonly x0: number; readonly x1: number; readonly name: string };
 }
 
 /** One island on the chart. */
@@ -67,8 +81,14 @@ export interface Landing {
   readonly radii: Vec;
   /** Drives the coastline's wobble and the tree layout. */
   readonly seed: number;
-  /** Bearing from the centre, in radians, along which the jetty and anchorage sit. */
+  /** Bearing from the centre, in radians, along which the jetty runs out to the anchorage. */
   readonly dockAngle: number;
+  /**
+   * Where the boat waits. Fixed where phase 1 put it (26 units out from the
+   * original coast); islands grown since then grew around it.
+   */
+  readonly anchorage: Vec;
+  readonly landmark: LandmarkPlacement;
   /** Bays cut out of the coast. */
   readonly carve?: readonly Ellipse[];
   readonly woodland: Woodland;
