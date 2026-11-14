@@ -136,6 +136,27 @@ Escape on `window` without stopping it. `tests/chart-islands.test.ts` checks
 every plan: footprints apart and ashore, doors standable, every door reachable
 from the jetty, and that walking never enters a footprint or leaves the coast.
 
+**Performance.** The canvases draw only ink: the paper is a CSS layer behind
+each canvas, positioned from the camera, and the vignette a CSS gradient over
+it, so no frame repaints a full screen of either. Islands, landmarks and
+bottles outside the view are skipped, and every `Path2D` is built once. Under
+reduced motion an unchanged frame is not redrawn at all. An island's distance
+field, contours and trees are cached per landing and prepared ahead of going
+ashore: all of them while the captain's log is open, then the one the boat is
+waiting at. `e2e/chart-perf.spec.ts` (`CHART_PERF=1`) measures frame rates
+against the brief's targets, including a phone profile with the CPU slowed
+fourfold.
+
+**Input and access.** Keyboard, a held pointer and a held finger all steer;
+there is no on-screen joystick, and the E prompts are buttons, so a phone can do
+everything a keyboard can. The prompt and the hint share one bottom stack, so
+they cannot overlap, and the prompt is centred without a transform that
+`:active` would replace. Reduced motion removes the zoom, bobbing, pulses,
+ripples, marquee lights, the log's rise and the island's fade. Dialogs use
+`useDialogFocus`; focus goes back to whichever canvas is current, and a polite
+live region says what E would do. `e2e/chart-access.spec.ts` covers touch,
+reduced-motion stillness, focus and HUD overlap.
+
 `e2e/chart-review.spec.ts` writes the phase review screenshots to
 `docs/chart-overworld/review/` and only runs with `CHART_REVIEW=1`.
 

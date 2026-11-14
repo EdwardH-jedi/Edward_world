@@ -25,9 +25,28 @@
   inset: 0;
   line-height: 1.5;
   overflow: hidden;
+  overscroll-behavior: none;
   position: fixed;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
   user-select: none;
+}
+
+/* Buttons answer a tap at once: no double-tap zoom, no 300 ms wait. */
+.chart-stage button,
+.chart-stage a {
+  touch-action: manipulation;
+}
+
+/* Announced, not shown: what E would do here, for screen readers. */
+.chart-sr {
+  clip-path: inset(50%);
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }
 
 .chart-stage *,
@@ -51,6 +70,22 @@
   outline-offset: 3px;
 }
 
+/* The paper is a CSS layer behind the canvas, positioned by the camera, so the
+   canvas never repaints a full screen of it; the vignette sits over the canvas. */
+.chart-paper {
+  background-color: var(--paper);
+  background-repeat: repeat;
+  inset: 0;
+  position: absolute;
+}
+
+.chart-vignette {
+  background: radial-gradient(circle farthest-corner at center, rgb(87 71 58 / 0%) 44%, rgb(87 71 58 / 20%) 120%);
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
 .chart-sea {
   display: block;
   height: 100%;
@@ -59,6 +94,12 @@
   position: absolute;
   touch-action: none;
   width: 100%;
+}
+
+/* The canvas is the helm: a keyboard user should see it has focus, without a
+   hard ring round the whole screen. */
+.chart-sea:focus-visible {
+  box-shadow: inset 0 0 0 2px rgb(43 40 35 / 35%);
 }
 
 .chart-hud {
@@ -135,14 +176,30 @@
   opacity: 0.7;
 }
 
+/* The bottom of the screen: the E prompt above the hint, stacked so they can
+   never overlap, and centred without a transform that :active would replace. */
+.chart-dock {
+  align-items: flex-start;
+  bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  left: 16px;
+  pointer-events: none;
+  right: 16px;
+}
+
+.chart-dock > * {
+  pointer-events: auto;
+}
+
 .chart-hint {
   background: rgb(246 240 224 / 86%);
   border: 1px solid var(--rule);
-  bottom: 14px;
   font-size: 14px;
   font-style: italic;
-  left: 16px;
-  max-width: min(560px, calc(100% - 32px));
+  margin: 0;
+  max-width: min(560px, 100%);
   padding: 4px 10px;
 }
 
@@ -161,9 +218,8 @@
 }
 
 .chart-prompt {
-  bottom: 66px;
-  left: 50%;
-  transform: translateX(-50%);
+  align-self: center;
+  max-width: 100%;
   white-space: nowrap;
 }
 

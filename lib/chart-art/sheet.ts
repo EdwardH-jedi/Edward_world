@@ -39,6 +39,19 @@ export function createPaperTile(): HTMLCanvasElement {
   return tile;
 }
 
+/**
+ * The paper tile as a CSS background for the layer behind a live canvas, so
+ * the canvas never repaints a full screen of paper. Size and offset are in CSS
+ * pixels; the tile is 256 device pixels, as it is when drawn into a canvas.
+ */
+export function paperLayer(tile: HTMLCanvasElement) {
+  return `url(${tile.toDataURL()})`;
+}
+
+export function paperOffset(camX: number, camY: number, k: number, dpr: number) {
+  return `${-((camX * k) % 256) / dpr}px ${-((camY * k) % 256) / dpr}px`;
+}
+
 /** Fills the canvas with paper that scrolls with the chart. Call in screen space. */
 export function drawPaper(g: Pen, pattern: CanvasPattern | null, camX: number, camY: number, k: number, pw: number, ph: number) {
   g.save();
@@ -302,11 +315,3 @@ export function drawNeatline(g: Pen, sheet: Sheet, lettered: boolean) {
   }
 }
 
-/** A faint darkening toward the corners, in screen space. */
-export function drawVignette(g: Pen, w: number, h: number) {
-  const v = g.createRadialGradient(w / 2, h / 2, Math.min(w, h) * 0.45, w / 2, h / 2, Math.hypot(w, h) * 0.6);
-  v.addColorStop(0, "rgba(87,71,58,0)");
-  v.addColorStop(1, "rgba(87,71,58,.2)");
-  g.fillStyle = v;
-  g.fillRect(0, 0, w, h);
-}
